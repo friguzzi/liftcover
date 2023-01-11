@@ -173,15 +173,14 @@ test(P,TestFolds,LL,AUCROC,ROC,AUCPR,PR):-
  * in NNeg, the log likelihood in LL
  * and in Results a list containing the probabilistic result for each query contained in TestFolds.
  */
-test_prob(P,TestFolds,NPos,NNeg,CLL,Results) :-
-  write2('Testing\n'),
-  lift_input_mod(M),
+test_prob(M:P,TestFolds,NPos,NNeg,CLL,Results) :-
+  write2(M,'Testing\n'),
   make_dynamic(M),
   %gtrace,
-  process_clauses(P,PRules),
-  generate_clauses(PRules,0,[],Prog),
+  process_clauses(P,M,PRules),
+  generate_clauses(PRules,M,0,[],Prog),
   (M:bg(RBG0)->
-    process_clauses(RBG0,RBG),
+    process_clauses(RBG0,M,RBG),
     generate_clauses_bg(RBG,ClBG),
     assert_all(ClBG,M,ClBGRef)
 %    assert_all(RBGRF,RBGRFRef)
@@ -190,7 +189,7 @@ test_prob(P,TestFolds,NPos,NNeg,CLL,Results) :-
   ),
   findall(Exs,(member(F,TestFolds),M:fold(F,Exs)),L),
   append(L,DB),
-  test_no_area(DB,Prog,NPos,NNeg,CLL,Results),
+  test_no_area(DB,M,Prog,NPos,NNeg,CLL,Results),
   % write(Results),
   (M:bg(RBG0)->
     retract_all(ClBGRef)
@@ -3339,12 +3338,12 @@ sandbox:safe_primitive(slipcover:equality(_,_,_)).
 sandbox:safe_meta(slipcover:get_node(_,_), []).
 
 */
-test_no_area(TestSet,Prog,NPos,NNeg,LL,Results):-
+test_no_area(TestSet,M,Prog,NPos,NNeg,LL,Results):-
 %  S= user_output,
 %  SA= user_output,
 %  format(SA,"Fold;\tCLL;\t AUCROC;\t AUCPR~n",[]),
   %gtrace,
-  test_folds(TestSet,Prog,Results,NPos,NNeg,LL).
+  test_folds(TestSet,M,Prog,Results,NPos,NNeg,LL).
 
 
 /*
@@ -3359,32 +3358,23 @@ test_no_area(TestSet,Prog,NPos,NNeg,LL,Results):-
            y:_{min:0.0,max:1.0,padding:_{bottom:0.0,top:0.0},
         tick:_{values:[0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]}}}}.
 */
-test_folds(F,Prog,LG,NPos,NNeg,LL):-
-  lift_input_mod(M),
+test_folds(F,M,Prog,LG,NPos,NNeg,LL):-
   find_ex(F,M,Pos,Neg,NPos,NNeg),
   maplist(compute_prob_ex_pos(Prog,M),Pos,LGP),
   maplist(compute_prob_ex_neg(Prog,M),Neg,LGN),
   append(LGP,LGN,LG0),
   keysort(LG0,LG),
-  foldl(ll,LG,0,LL).
+  foldl(ll(M),LG,0,LL).
 
-ll(P- _,LL0,LL):-
+ll(M,P- _,LL0,LL):-
   (P=:=0.0->
-    setting_lift(logzero,LZ),
+    M:local_setting(logzero,LZ),
     LL is LL0+LZ
   ;
     LL is LL0+ log(P)
   ).
  
-test_folds([],LG,LG,Pos,Pos,Neg,Neg,CLL,CLL).
 
-test_folds([HT|TT],LG0,LG,Pos0,Pos,Neg0,Neg,CLL0,CLL):-
-  test_1fold(HT,LG1,Pos1,Neg1,CLL1),
-  append(LG0,LG1,LG2),
-  Pos2 is Pos0+Pos1,
-  Neg2 is Neg0+Neg1,
-  CLL2 is CLL0+CLL1,
-  test_folds(TT,LG2,LG,Pos2,Pos,Neg2,Neg,CLL2,CLL).
 
 /*
 compute_areas(LG,Pos,Neg,AUCROC,ROC,AUCPR,PR):-
