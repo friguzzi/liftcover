@@ -152,6 +152,7 @@ test(induce_par_muta):-
 
 test(induce_nba):-
   set_lift(verbosity,0),
+  set_lift(regularization,no),
   induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
@@ -165,7 +166,7 @@ test(induce_nba):-
 
 test(induce_nba_l1):-
   set_lift(verbosity,0),
-  set_lift(regularization,0),
+  set_lift(regularization,l1),
   induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),

@@ -121,7 +121,7 @@ default_setting_lift(approx_value,100).
 default_setting_lift(zero,0.01).
 default_setting_lift(minus_infinity,-1.0e20).
 
-default_setting_lift(regularization,l1). % regularization: 0-no regularization, l1, l2, bayeisan and no otherwise
+default_setting_lift(regularization,l1). % regularization: no, l1, l2, bayesian 
 default_setting_lift(gamma,10). % set the value of gamma for regularization l1 and l2
 default_setting_lift(ab,[0,10]). % set the value of a and b for regularization baysian
 default_setting_lift(min_probability,1e-5).  % Threshold of the probability under which the clause is dropped
@@ -302,7 +302,7 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   Mod:local_setting(max_iter_structure,MS),
   cycle_structure(RCL,Mod,[C0],S,-1e20,Pos,Neg,R2,Score,MS),
 */
-  (Mod:local_setting(regularization,0)->
+  (Mod:local_setting(regularization,no)->
     R=R1
   ;
     Mod:local_setting(min_probability,Min_prob),
@@ -548,7 +548,7 @@ induce_parameters(M:Folds,R):-
   statistics(walltime,[_,_]),
   find_ex(DB,M,Pos,Neg,_NPos,_NNeg),
   learn_param(R0,M,Pos,Neg,R1,Score),
-  (M:local_setting(regularization,0)->
+  (M:local_setting(regularization,no)->
     R=R1
   ;
     M:local_setting(min_probability,Min_prob),
@@ -734,25 +734,25 @@ expectation_quick(Par,M,MI,MIN,Eta0,Eta,Score):-
   scan_pos(MI,M,Par,LL0,Eta0,Score,Eta).
 
 maximization_quick(Eta,M,Par):-
-  maplist(maximize(M),Eta,Par).
-
-maximize(M,[Eta0,Eta1],Par):-
   (M:local_setting(regularization,l1)->
-    maximize_L1(M,[Eta0,Eta1],Par)
+    maplist(maximize_L1(M),Eta,Par)
   ;
     (M:local_setting(regularization,l2)->
-        maximize_L2(M,[Eta0,Eta1],Par)
-    ;
+      maplist(maximize_L2(M),Eta,Par)
+  ;
       (M:local_setting(regularization,bayesian)->
-        maximize_bayesian(M,[Eta0,Eta1],Par)
+        maplist(maximize_bayesian(M),Eta,Par)
       ;
-        (Eta0+Eta1=:=0.0->
-          Par=0.0
-        ;
-          Par is Eta1/(Eta0+Eta1)  
-        )
-      )
+        maplist(maximize(M),Eta,Par)
+  )
     )
+  ).
+
+maximize(_M,[Eta0,Eta1],Par):-
+  (Eta0+Eta1=:=0.0->
+    Par=0.0
+  ;
+    Par is Eta1/(Eta0+Eta1)  
   ).
 
 
