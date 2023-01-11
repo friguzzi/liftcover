@@ -66,6 +66,18 @@ test(induce_carc):-
 :-ensure_loaded(library(examples/carc)).
 :-use_module(library(cplint_test/cplint_test)).
 
+test(in_carc):-
+  in(P),test(P,[all],LL,AUCROC,_ROC,AUCPR,_PR),
+writeln('Result:'),
+writeln(P),
+atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+writeln(St),
+atomic_list_concat(['Expected:\n', 
+'\nLL =', -46.00213796704799,
+'\nAUCROC =',0.43950726692662173,
+'\nAUCPR =', 0.4962773673721876],St1),
+writeln(St1).
+
 test(induce_par_carc):-
   set_lift(verbosity,0),
   induce_lift_par([train],P),test(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
@@ -79,17 +91,6 @@ test(induce_par_carc):-
   '\nAUCPR =', 0.5989337661969046],St1),
   writeln(St1).
   
-  test(in_carc):-
-    in(P),test(P,[all],LL,AUCROC,_ROC,AUCPR,_PR),
-  writeln('Result:'),
-  writeln(P),
-  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
-  writeln(St),
-  atomic_list_concat(['Expected:\n', 
-  '\nLL =', -46.00213796704799,
-  '\nAUCROC =',0.43950726692662173,
-  '\nAUCPR =', 0.4962773673721876],St1),
-  writeln(St1).
 
 :- end_tests(carc_par).
 
@@ -112,3 +113,34 @@ test(induce_mondial):-
 
 :- end_tests(mondial).
 
+:- begin_tests(muta_par, []).
+:-ensure_loaded(library(examples/muta)).
+:-use_module(library(cplint_test/cplint_test)).
+
+test(in_muta):-
+  in(P),test(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
+writeln('Result:'),
+writeln(P),
+atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+writeln(St),
+atomic_list_concat(['Expected:\n', 
+'\nLL =', -46.00213796704799,
+'\nAUCROC =',0.43950726692662173,
+'\nAUCPR =', 0.4962773673721876],St1),
+writeln(St1).
+
+test(induce_par_muta):-
+  set_lift(verbosity,0),
+  induce_lift_par([1,2,3,4,5,6,7,8,9],P),test(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =', -38.83800917968338,
+  '\nAUCROC =',0.6710526315789473,
+  '\nAUCPR =', 0.5989337661969046],St1),
+  writeln(St1).
+  
+
+:- end_tests(muta_par).

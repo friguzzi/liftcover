@@ -3341,7 +3341,7 @@ find_ex(DB,M,Pos,Neg,NPos,NNeg):-
 
 find_ex(DB,M,Pos,Neg,NPos,NNeg):-
   M:local_setting(neg_ex,cw),
-  output(P/A),!,
+  M:output(P/A),!,
   find_ex_pred_cw([P/A],M,DB,[],Pos,[],Neg),
   length(Pos,NPos),
   length(Neg,NNeg).
