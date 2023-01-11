@@ -1,2 +1,2 @@
 # liftcover
-Liftcover probabilistic inductive logic programming systme
+Liftcover probabilistic inductive logic programming system
