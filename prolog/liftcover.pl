@@ -268,7 +268,9 @@ induce_rules(M:Folds,R):-
     retract_all(ClBGRef)
   ;
     true
-  ).
+  ),
+  retractall(M:ref_clause(_)),
+  retractall(M:ref(_)).
 
 make_dynamic(M):-
   M:(dynamic int/1),
