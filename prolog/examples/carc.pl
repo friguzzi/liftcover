@@ -21,7 +21,6 @@ Machine Learning, 100(1):127-156, July 2015
 ?- induce_par([all],P).
 */
 :-use_module(library(liftcover)).
-:-use_module(library(lists)).
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
