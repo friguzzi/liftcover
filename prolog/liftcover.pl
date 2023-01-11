@@ -3617,7 +3617,7 @@ get_constants([],_Mod,_M,[]).
 
 get_constants([Type|T],Mod,M,[(Type,Co)|C]):-
   find_pred_using_type(Type,Mod,LP),
-  find_constants(LP,M,[],Co),
+  find_constants(LP,Mod,M,[],Co),
   get_constants(T,Mod,M,C).
 
 find_pred_using_type(T,M,L):-
@@ -3663,7 +3663,7 @@ find_constants([(P,Ar,A)|T],Mod,M,C0,C):-
   ),
   append(C0,LC,C1),
   remove_duplicates(C1,C2),
-  find_constants(T,M,C2,C).
+  find_constants(T,Mod,M,C2,C).
 
 call_goal(M,G):-
   M:G.
