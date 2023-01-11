@@ -150,8 +150,50 @@ test(induce_par_muta):-
 :-ensure_loaded(library(examples/nba)).
 :-use_module(library(cplint_test/cplint_test)).
 
-test(induce_mondial):-
+test(induce_nba):-
   set_lift(verbosity,0),
+  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n', 
+  '\nLL =', -69.80130553310904,
+  '\nAUCROC =',0.625,
+  '\nAUCPR =', 0.8189102564102563],St1),
+  writeln(St1).
+
+test(induce_nba_l1):-
+  set_lift(verbosity,0),
+  set_lift(regularization,0),
+  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n', 
+  '\nLL =', -69.80130553310904,
+  '\nAUCROC =',0.625,
+  '\nAUCPR =', 0.8189102564102563],St1),
+  writeln(St1).
+
+test(induce_nba_l2):-
+  set_lift(verbosity,0),
+  set_lift(regularization,l2),
+  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n', 
+  '\nLL =', -69.80130553310904,
+  '\nAUCROC =',0.625,
+  '\nAUCPR =', 0.8189102564102563],St1),
+  writeln(St1).
+
+test(induce_nba_bayesian):-
+  set_lift(verbosity,0),
+  set_lift(regularization,bayesian),
   induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),

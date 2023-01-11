@@ -121,7 +121,7 @@ default_setting_lift(approx_value,100).
 default_setting_lift(zero,0.01).
 default_setting_lift(minus_infinity,-1.0e20).
 
-default_setting_lift(regularization,1). % regularization: 0-no regularization, l1, l2, bayeisan and no otherwise
+default_setting_lift(regularization,l1). % regularization: 0-no regularization, l1, l2, bayeisan and no otherwise
 default_setting_lift(gamma,10). % set the value of gamma for regularization l1 and l2
 default_setting_lift(ab,[0,10]). % set the value of a and b for regularization baysian
 default_setting_lift(min_probability,1e-5).  % Threshold of the probability under which the clause is dropped
@@ -306,10 +306,10 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
     R=R1
   ;
     Mod:local_setting(min_probability,Min_prob),
-    remove_clauses(R1,Min_prob,R,Num)
+    remove_clauses(R1,Min_prob,R,Num),
+    length(R1,NumBR),
+    format2(Mod,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,Num])
   ),
-  length(R1,NumBR),
-  format2(Mod,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,Num]),
   format2(Mod,"Best target theory~n~n",[]),
   write_rules2(Mod,R,user_output).
 
@@ -552,10 +552,10 @@ induce_parameters(M:Folds,R):-
     R=R1
   ;
     M:local_setting(min_probability,Min_prob),
-    remove_clauses(R1,Min_prob,R,Num)
+    remove_clauses(R1,Min_prob,R,Num),
+    length(R1,NumBR),
+    format2(M,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,Num])
   ),
-  length(R1,NumBR),
-  format2(M,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,Num]),
   statistics(walltime,[_,CT]),
   CTS is CT/1000,
   format2(M,'/* EMBLEM Final score ~f~n',[Score]),
@@ -763,7 +763,7 @@ maximize_L1(M,[Eta0,Eta1],Par):-
 maximize_L2(M,[Eta0,Eta1],Par):-
   M:local_setting(gamma,Gamma),
   Sum is 3*Eta0+3*Eta1+Gamma,
-  Arccos is acos(sqrt(Gamma/Sum)*(9*Eta0/2-9*Eta1+Gamma)),
+  Arccos is acos(sqrt(Gamma/Sum)*(9*Eta0/2-9*Eta1+Gamma)/(3*Eta0+3*Eta1+Gamma)),
   Par is 2*sqrt(Sum/Gamma)*cos(Arccos/3-2*pi/3)/3+1/3.
 
 maximize_bayesian(M,[Eta0,Eta1],Par):-
