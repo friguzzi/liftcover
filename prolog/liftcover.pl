@@ -3622,29 +3622,27 @@ get_args([H|T],[H|T1]):-
 
 
 
-get_constants([],_M,[]).
+get_constants([],_Mod,_M,[]).
 
-get_constants([Type|T],M,[(Type,Co)|C]):-
-  find_pred_using_type(Type,LP),
+get_constants([Type|T],Mod,M,[(Type,Co)|C]):-
+  find_pred_using_type(Type,Mod,LP),
   find_constants(LP,M,[],Co),
-  get_constants(T,M,C).
+  get_constants(T,Mod,M,C).
 
-find_pred_using_type(T,L):-
-  (setof((P,Ar,A),pred_type(T,P,Ar,A),L)->
+find_pred_using_type(T,M,L):-
+  (setof((P,Ar,A),pred_type(T,M,P,Ar,A),L)->
     true
   ;
     L=[]
   ).
 
-pred_type(T,P,Ar,A):-
-  lift_input_mod(M),
+pred_type(T,M,P,Ar,A):-
   M:modeh(_,S),
   S=..[P|Args],
   length(Args,Ar),
   scan_args(Args,T,1,A).
 
-pred_type(T,P,Ar,A):-
-  lift_input_mod(M),
+pred_type(T,M,P,Ar,A):-
   M:modeb(_,S),
   S=..[P|Args],
   length(Args,Ar),
@@ -3662,10 +3660,9 @@ scan_args([_|Tail],T,A0,A):-
   A1 is A0+1,
   scan_args(Tail,T,A1,A).
 
-find_constants([],_M,C,C).
+find_constants([],_Mod,_M,C,C).
 
-find_constants([(P,Ar,A)|T],M,C0,C):-
-  lift_input_mod(Mod),
+find_constants([(P,Ar,A)|T],Mod,M,C0,C):-
   gen_goal(1,Ar,A,Args,ArgsNoV,V),
   G=..[P,M|Args],
   (setof(V,ArgsNoV^call_goal(Mod,G),LC)->
@@ -3693,30 +3690,28 @@ gen_goal(Arg,Ar,A,[ArgV|Args],[ArgV|ArgsNoV],V):-
 
 
 
-find_ex_db_cw([],_At,_Ty,Pos,Pos,Neg,Neg).
+find_ex_db_cw([],_M,_At,_Ty,Pos,Pos,Neg,Neg).
 
-find_ex_db_cw([H|T],At,Types,Pos0,Pos,Neg0,Neg):-
-  lift_input_mod(M),
-  get_constants(Types,H,C),
+find_ex_db_cw([H|T],M,At,Types,Pos0,Pos,Neg0,Neg):-
+  get_constants(Types,M,H,C),
   At=..[P|L],
-  get_types(At,TypesA),!,
+  get_types(At,M,TypesA),!,
   length(L,N),
   length(LN,N),
   At1=..[P,H|LN],
   findall(At1,M:At1,LP),
-  (setof(At1,neg_ex(LN,TypesA,At1,C),LNeg)->true;LNeg=[]),
+  (setof(At1,neg_ex(LN,TypesA,M,At1,C),LNeg)->true;LNeg=[]),
   append([Pos0,LP],Pos1),
   append([Neg0,LNeg],Neg1),
-  find_ex_db_cw(T,At,Types,Pos1,Pos,Neg1,Neg).
+  find_ex_db_cw(T,M,At,Types,Pos1,Pos,Neg1,Neg).
 
-neg_ex([],[],At1,_C):-
-  lift_input_mod(M),
+neg_ex([],[],M,At1,_C):-
   \+ M:At1.
 
-neg_ex([H|T],[HT|TT],At1,C):-
+neg_ex([H|T],[HT|TT],M,At1,C):-
   member((HT,Co),C),
   member(H,Co),
-  neg_ex(T,TT,At1,C).
+  neg_ex(T,TT,M,At1,C).
 
 
 
