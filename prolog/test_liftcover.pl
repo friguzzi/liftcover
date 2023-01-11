@@ -20,9 +20,9 @@ test_stru:-
   stru(S),
   run_tests(S).
 
-par([carc_par]).
+par([carc_par,muta_par]).
 
-stru([bupa,mondial]).
+stru([bupa,mondial,nba]).
 
 :- begin_tests(bupa, []).
 :-ensure_loaded(library(examples/bupa)).
@@ -124,9 +124,9 @@ writeln(P),
 atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
 writeln(St),
 atomic_list_concat(['Expected:\n', 
-'\nLL =', -46.00213796704799,
-'\nAUCROC =',0.43950726692662173,
-'\nAUCPR =', 0.4962773673721876],St1),
+'\nLL =', -57.935435521442045,
+'\nAUCROC =',0.46212121212121215,
+'\nAUCPR =', 0.6901758247756261],St1),
 writeln(St1).
 
 test(induce_par_muta):-
@@ -137,10 +137,30 @@ test(induce_par_muta):-
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
   writeln(St),
   atomic_list_concat(['Expected:\n',
-  '\nLL =', -38.83800917968338,
-  '\nAUCROC =',0.6710526315789473,
-  '\nAUCPR =', 0.5989337661969046],St1),
+  '\nLL =',-62.26891635625195,
+  '\nAUCROC =',0.6287878787878788,
+  '\nAUCPR =', 0.8184241612528028],St1),
   writeln(St1).
   
 
 :- end_tests(muta_par).
+
+
+:- begin_tests(nba, []).
+:-ensure_loaded(library(examples/nba)).
+:-use_module(library(cplint_test/cplint_test)).
+
+test(induce_mondial):-
+  set_lift(verbosity,0),
+  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n', 
+  '\nLL =', -69.80130553310904,
+  '\nAUCROC =',0.625,
+  '\nAUCPR =', 0.8189102564102563],St1),
+  writeln(St1).
+
+:- end_tests(nba).
