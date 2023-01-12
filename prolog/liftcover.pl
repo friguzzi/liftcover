@@ -1085,9 +1085,7 @@ deduct(NM,Mod,DB,InTheory0,InTheory):-
 
 
 get_head_atoms(O,M):-
-  findall(A,M:modeh(_,A),O0),
-  findall((A,B,D),M:modeh(_,A,B,D),O1),
-  append(O0,O1,O).
+  findall(A,M:modeh(_,A),O).
 
 generate_top_cl([],_M,[]):-!.
 
@@ -1100,14 +1098,6 @@ generate_top_cl([A|T],M,[(rule(R,[A1:0.5,'':0.5],[],true),-1e20)|TR]):-
 
 
 generate_head([],_M,_Mod,HL,HL):-!.
-
-generate_head([(A,G,D)|T],M,Mod,H0,H1):-!,
-  generate_head_goal(G,M,Goals),
-  findall((A,Goals,D),(member(Goal,Goals),call(Mod:Goal),ground(Goals)),L),
-  Mod:local_setting(initial_clauses_per_megaex,IC),   %IC: represents how many samples are extracted from the list L of example
-  sample(IC,L,L1),
-  append(H0,L1,H2),
-  generate_head(T,M,Mod,H2,H1).
 
 generate_head([A|T],M,Mod,H0,H1):-
   functor(A,F,N),
@@ -1227,26 +1217,6 @@ all_plus_args([H|T]):-
   all_plus_args(T).
 
 generate_body([],_Mod,[]):-!.
-
-generate_body([(A,H,Det)|T],Mod,[(rule(R,HP,[],BodyList),-1e20)|CL0]):-!,
-  get_modeb(Det,Mod,[],BL),
-  get_args(A,H,Pairs,[],Args,[],ArgsTypes,M),
-  Mod:local_setting(d,D),
-  cycle_modeb(ArgsTypes,Args,[],[],Mod,BL,a,[],BLout0,D,M),
-  variabilize((Pairs:-BLout0),CLV),  %+(Head):-Bodylist;  -CLV:(Head):-Bodylist with variables _num in place of constants
-  CLV=(Head1:-BodyList1),
-  remove_int_atom_list(Head1,Head),
-  remove_int_atom_list(BodyList1,BodyList2),
-  remove_duplicates(BodyList2,BodyList),
-  get_next_rule_number(Mod,R),
-  length(Head,LH),
-  Prob is 1/(LH+1),
-  gen_head(Head,Prob,HP),
-  copy_term((HP,BodyList),(HeadV,BodyListV)),
-  numbervars((HeadV,BodyListV),0,_V),
-  format2(Mod,"Bottom clause: example ~q~nClause~n",[H]),
-  write_disj_clause2(user_output,(HeadV:-BodyListV)),
-  generate_body(T,Mod,CL0).
 
 generate_body([(A,H)|T],Mod,[(rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20)|CL0]):-
   functor(A,F,AA),
