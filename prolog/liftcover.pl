@@ -289,7 +289,8 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
     Mod:local_setting(min_probability,Min_prob),
     remove_clauses(R1,Min_prob,R,Num),
     length(R1,NumBR),
-    format2(Mod,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,Num])
+    NumRem is NumBR-Num,
+    format2(Mod,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,NumRem])
   ),
   format2(Mod,"Best target theory~n~n",[]),
   write_rules2(Mod,R,user_output).
@@ -535,7 +536,8 @@ induce_parameters(M:Folds,R):-
     M:local_setting(min_probability,Min_prob),
     remove_clauses(R1,Min_prob,R,Num),
     length(R1,NumBR),
-    format2(M,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,Num])
+    NumRem is NumBR-Num,
+    format2(M,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,NumRem])
   ),
   statistics(walltime,[_,CT]),
   CTS is CT/1000,
@@ -554,13 +556,12 @@ remove_clauses(Rules,Prob,RulesOut,Num):-
 remove_clauses_loop([],_,Num,Num,Rules,Rules):-!.
 remove_clauses_loop([Rule|Rest],Prob,NumCur,Num,RulesCur,RulesOut):-
   Rule=rule(_N,[_Head:Par|_],_,_),
-  (Par < Prob ->
-    NumCur1 is NumCur+1,
-    remove_clauses_loop(Rest, Prob, NumCur1,Num,RulesCur, RulesOut)
-    ;
-    append(RulesCur,[Rule],RulesCurNew),
-    remove_clauses_loop(Rest, Prob, NumCur,Num,RulesCurNew, RulesOut)
-  ).
+  Par < Prob,!,
+  NumCur1 is NumCur+1,
+  remove_clauses_loop(Rest, Prob, NumCur1,Num,RulesCur, RulesOut).
+
+remove_clauses_loop([Rule|Rest],Prob,NumCur,Num,RulesCur,[Rule|RulesOut]):-
+  remove_clauses_loop(Rest, Prob, NumCur,Num,RulesCur, RulesOut).
 
 
 test_theory_neg_prob(Ex,M,Theory,MIP0,MIP):-
