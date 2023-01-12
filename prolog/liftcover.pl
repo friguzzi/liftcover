@@ -21,7 +21,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 */
 :-module(liftcover,[set_lift/2,setting_lift/2,
-  induce_lift/2,induce_par_lift/2,induce_par/8,test_lift/7,
+  induce_lift/2,induce_par_lift/2,test_lift/7,
   op(500,fx,#),op(500,fx,'-#'),
   test_prob_lift/6]).
 :-use_module(library(auc)).
@@ -106,7 +106,6 @@ default_setting_lift(tabling, off).
 default_setting_lift(bagof,false).
 /* values: false, intermediate, all, extra */
 
-default_setting_lift(compiling,off).
 
 
 default_setting_lift(depth_bound,false).  %if true, it limits the derivation of the example to the value of 'depth'
@@ -244,7 +243,6 @@ induce_rules(M:Folds,R):-
   format2(M,'/* SLIPCOVER Final score ~f~n',[Score]),
   format2(M,'Wall time ~f */~n',[WTS]),
   write_rules2(M,R,user_output),
-  %set_lift(compiling,off),
   (M:bg(RBG0)->
     retract_all(ClBGRef)
   ;
@@ -563,33 +561,6 @@ remove_clauses_loop([Rule|Rest],Prob,NumCur,Num,RulesCur,RulesOut):-
     append(RulesCur,[Rule],RulesCurNew),
     remove_clauses_loop(Rest, Prob, NumCur,Num,RulesCurNew, RulesOut)
   ).
-/**
- * induce_par(+TrainFolds:list_of_atoms,+TestFolds:list_of_atoms,-P:probabilistic_program,-LL:float,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
- *
- * The predicate learns the parameters of the program stored in the in/1 fact
- * of the input file using the folds indicated in TrainFolds for training.
- * It returns in P the input program with the updated parameters.
- * Moreover, it tests P on the folds indicated in TestFolds and returns the
- * log likelihood of the test examples in LL, the area under the Receiver
- * Operating Characteristic curve in AUCROC, a dict containing the points
- * of the ROC curve in ROC, the area under the Precision Recall curve in AUCPR
- * and a dict containing the points of the PR curve in PR
- */
-induce_par(TrainFolds,TestFolds,ROut,CLL,AUCROC,ROC,AUCPR,PR):-
-  induce_parameters(TrainFolds,R),
-  rules2terms(R,ROut),
-  write2('Testing\n'),
-  lift_input_mod(M),
-  findall(Exs,(member(F,TestFolds),M:fold(F,Exs)),L),
-  append(L,TE),
-  set_lift(compiling,on),
-  generate_clauses(R,RuleFacts,0,[],Th),
-  assert_all(Th,M,ThRef),
-  assert_all(RuleFacts,M,RFRefs),
-  set_lift(compiling,off),
-  test([TE],CLL,AUCROC,ROC,AUCPR,PR),
-  retract_all(ThRef),
-  retract_all(RFRefs).
 
 
 test_theory_neg_prob(Ex,M,Theory,MIP0,MIP):-
