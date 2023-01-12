@@ -30,7 +30,7 @@ stru([bupa,mondial,nba]).
 
 test(induce_bupa):-
   set_lift(verbosity,0),
-  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -49,7 +49,7 @@ test(induce_bupa):-
 
 test(induce_carc):-
   set_lift(verbosity,0),
-  induce_lift([train],P),test(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -67,7 +67,7 @@ test(induce_carc):-
 :-use_module(library(cplint_test/cplint_test)).
 
 test(in_carc):-
-  in(P),test(P,[all],LL,AUCROC,_ROC,AUCPR,_PR),
+  in(P),test_lift(P,[all],LL,AUCROC,_ROC,AUCPR,_PR),
 writeln('Result:'),
 writeln(P),
 atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -80,7 +80,7 @@ writeln(St1).
 
 test(induce_par_carc):-
   set_lift(verbosity,0),
-  induce_par_lift([train],P),test(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -100,7 +100,7 @@ test(induce_par_carc):-
 
 test(induce_mondial):-
   set_lift(verbosity,0),
-  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -118,7 +118,7 @@ test(induce_mondial):-
 :-use_module(library(cplint_test/cplint_test)).
 
 test(in_muta):-
-  in(P),test(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
+  in(P),test_lift(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
 writeln('Result:'),
 writeln(P),
 atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -131,7 +131,7 @@ writeln(St1).
 
 test(induce_par_muta):-
   set_lift(verbosity,0),
-  induce_par_lift([1,2,3,4,5,6,7,8,9],P),test(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_par_lift([1,2,3,4,5,6,7,8,9],P),test_lift(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -153,7 +153,7 @@ test(induce_par_muta):-
 test(induce_nba):-
   set_lift(verbosity,0),
   set_lift(regularization,no),
-  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -167,7 +167,7 @@ test(induce_nba):-
 test(induce_nba_l1):-
   set_lift(verbosity,0),
   set_lift(regularization,l1),
-  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -181,7 +181,7 @@ test(induce_nba_l1):-
 test(induce_nba_l2):-
   set_lift(verbosity,0),
   set_lift(regularization,l2),
-  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -195,7 +195,7 @@ test(induce_nba_l2):-
 test(induce_nba_bayesian):-
   set_lift(verbosity,0),
   set_lift(regularization,bayesian),
-  induce_lift([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),

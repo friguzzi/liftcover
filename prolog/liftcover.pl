@@ -20,11 +20,11 @@ SLIPCOVER
 Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 */
-:-module(liftcover_em,[set_lift/2,setting_lift/2,
-  induce_lift/2,induce/8,induce_par_lift/2,induce_par/8,test/7,list2or/2,list2and/2,
+:-module(liftcover,[set_lift/2,setting_lift/2,
+  induce_lift/2,induce/8,induce_par_lift/2,induce_par/8,test_lift/7,list2or/2,list2and/2,
   sample/4,learn_params/5,
   op(500,fx,#),op(500,fx,'-#'),
-  test_prob/6,rules2terms/2]).
+  test_prob_lift/6,rules2terms/2]).
 %:- meta_predicate get_node(:,-).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -52,8 +52,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 
 
-:- meta_predicate test(:,+,-,-,-,-,-).
-:- meta_predicate test_prob(:,+,-,-,-,-).
+:- meta_predicate test_lift(:,+,-,-,-,-,-).
+:- meta_predicate test_prob_lift(:,+,-,-,-,-).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
 
@@ -158,7 +158,7 @@ induce(TrainFolds,TestFolds,ROut,LL,AUCROC,ROC,AUCPR,PR):-
   test(ROut,TestFolds,LL,AUCROC,ROC,AUCPR,PR).
 
 /**
- * test(+P:probabilistic_program,+TestFolds:list_of_atoms,-LL:float,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
+ * test_lift(+P:probabilistic_program,+TestFolds:list_of_atoms,-LL:float,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
  *
  * The predicate takes as input in P a probabilistic program,
  * tests P on the folds indicated in TestFolds and returns the
@@ -167,12 +167,12 @@ induce(TrainFolds,TestFolds,ROut,LL,AUCROC,ROC,AUCPR,PR):-
  * of the ROC curve in ROC, the area under the Precision Recall curve in AUCPR
  * and a dict containing the points of the PR curve in PR
  */
-test(P,TestFolds,LL,AUCROC,ROC,AUCPR,PR):-
-  test_prob(P,TestFolds,_NPos,_NNeg,LL,LG),
+test_lift(P,TestFolds,LL,AUCROC,ROC,AUCPR,PR):-
+  test_prob_lift(P,TestFolds,_NPos,_NNeg,LL,LG),
   compute_areas_diagrams(LG,AUCROC,ROC,AUCPR,PR).
 
 /**
- * test_prob(+P:probabilistic_program,+TestFolds:list_of_atoms,-NPos:int,-NNeg:int,-LL:float,-Results:list) is det
+ * test_prob_lift(+P:probabilistic_program,+TestFolds:list_of_atoms,-NPos:int,-NNeg:int,-LL:float,-Results:list) is det
  *
  * The predicate takes as input in P a probabilistic program,
  * tests P on the folds indicated in TestFolds and returns
@@ -180,7 +180,7 @@ test(P,TestFolds,LL,AUCROC,ROC,AUCPR,PR):-
  * in NNeg, the log likelihood in LL
  * and in Results a list containing the probabilistic result for each query contained in TestFolds.
  */
-test_prob(M:P,TestFolds,NPos,NNeg,CLL,Results) :-
+test_prob_lift(M:P,TestFolds,NPos,NNeg,CLL,Results) :-
   write2(M,'Testing\n'),
   make_dynamic(M),
   %gtrace,
@@ -3324,7 +3324,7 @@ term_expansion_int(Head, _M,((Head1:-pita:one(Env,One)),[def_rule(Head,[],true)]
 sandbox:safe_primitive(slipcover:induce_par(_,_)).
 sandbox:safe_primitive(slipcover:induce(_,_)).
 sandbox:safe_primitive(slipcover:test(_,_,_,_,_,_,_)).
-sandbox:safe_primitive(slipcover:test_prob(_,_,_,_,_,_)).
+sandbox:safe_primitive(slipcover:test_prob_lift(_,_,_,_,_,_)).
 sandbox:safe_primitive(slipcover:set_lift(_,_)).
 
 %sandbox:safe_primitive(prolog_load_context(_,_)).
