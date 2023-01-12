@@ -21,10 +21,9 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 */
 :-module(liftcover,[set_lift/2,setting_lift/2,
-  induce_lift/2,induce/8,induce_par_lift/2,induce_par/8,test_lift/7,list2or/2,list2and/2,
-  sample/4,
+  induce_lift/2,induce_par_lift/2,induce_par/8,test_lift/7,
   op(500,fx,#),op(500,fx,'-#'),
-  test_prob_lift/6,rules2terms/2]).
+  test_prob_lift/6]).
 %:- meta_predicate get_node(:,-).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -139,23 +138,6 @@ induce_lift(TrainFolds,P):-
   induce_rules(TrainFolds,P0),
   rules2terms(P0,P).
 %  generate_clauses(P0,P,0,[],_Th).
-
-/**
- * induce(+TrainFolds:list_of_atoms,+TestFolds:list_of_atoms,-P:probabilistic_program,-LL:float,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
- *
- * The predicate performs structure learning using the folds indicated in
- * TrainFolds for training.
- * It returns in P the learned probabilistic program.
- * Moreover, it tests P on the folds indicated in TestFolds and returns the
- * log likelihood of the test examples in LL, the area under the Receiver
- * Operating Characteristic curve in AUCROC, a dict containing the points
- * of the ROC curve in ROC, the area under the Precision Recall curve in AUCPR
- * and a dict containing the points of the PR curve in PR
- */
-induce(TrainFolds,TestFolds,ROut,LL,AUCROC,ROC,AUCPR,PR):-
-  induce_rules(TrainFolds,R),
-  rules2terms(R,ROut),
-  test(ROut,TestFolds,LL,AUCROC,ROC,AUCPR,PR).
 
 /**
  * test_lift(+P:probabilistic_program,+TestFolds:list_of_atoms,-LL:float,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
