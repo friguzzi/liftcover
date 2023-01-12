@@ -22,7 +22,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 */
 :-module(liftcover,[set_lift/2,setting_lift/2,
   induce_lift/2,induce/8,induce_par_lift/2,induce_par/8,test_lift/7,list2or/2,list2and/2,
-  sample/4,learn_params/5,
+  sample/4,
   op(500,fx,#),op(500,fx,'-#'),
   test_prob_lift/6,rules2terms/2]).
 %:- meta_predicate get_node(:,-).
@@ -611,48 +611,6 @@ induce_par(TrainFolds,TestFolds,ROut,CLL,AUCROC,ROC,AUCPR,PR):-
   retract_all(RFRefs).
 
 
-/**
- * em(+FileStem:atom) is det
- *
- * The predicate performs parameter learning for the problem stored in
- * the files FileStem.l (language bias), FileStem.kb (dataset),
- * FileStem.bg (optional, background theory), FileStem.cpl
- * (theory).
- * The result is stored in FileStem.rules
- */
-em(File):-
-  generate_file_names(File,FileKB,FileIn,FileBG,FileOut,FileL),
-  reconsult(FileL),
-  load_models(FileKB,DB),
-  (file_exists(FileBG)->
-    set_lift(compiling,on),
-    load(FileBG,_ThBG,RBG),
-    set_lift(compiling,off),
-    generate_clauses(RBG,_RBG1,0,[],ThBG),
-    assert_all(ThBG,_ThBGRef)
-  ;
-    true
-  ),
-  load(FileIn,_TH,R0),
-  statistics(walltime,[_,_]),
-  learn_params(DB,R0,R,Score),
-  statistics(walltime,[_,CT]),
-  CTS is CT/1000,
-  format2("EM: Final score ~f~n",[Score]),
-  format2("Execution time ~f~n~n",[CTS]),
-  write_rules2(R,user_output),
-  listing(setting_lift/2),
-  open(FileOut,write,Stream),
-  format2(Stream,'/* EMBLEM Final score ~f~n',[Score]),
-  format2(Stream,'Execution time ~f~n',[CTS]),
-  tell(Stream),
-  listing(setting_lift/2),
-  format(Stream,'*/~n~n',[]),
-  told,
-  open(FileOut,append,Stream1),
-  write_rules(R,Stream1),
-  close(Stream1).
-
 test_theory_neg_prob(Ex,M,Theory,MIP0,MIP):-
   test_clause_prob(Theory,M,Ex,MIP0,MIP).
 
@@ -830,53 +788,6 @@ remove_zero(rule(_Name,[_H:P,_],_B,_L),[]):-
 
 remove_zero(R,[R]).
 
-
-learn_params(DB,M,R0,R,Score):-  %Parameter Learning
-  generate_clauses(R0,M,R1,0,[],Th0),
-  format2(M,"Initial theory~n",[]),
-  write_rules2(M,R1,user_output),
-  assert_all(Th0,M,Th0Ref),
-  assert_all(R1,M,R1Ref),!,
-  findall(R-HN,(M:rule(R,HL,_BL,_Lit),length(HL,HN)),L),
-  keysort(L,LS),
-  get_heads(LS,LSH),
-  length(LSH,NR),
-  init(NR,LSH,ExData),
-  retractall(pita:v(_,_,_)),
-  length(DB,NEx),
-  (M:local_setting(examples,atoms)->
-    M:local_setting(group,G),
-    derive_bdd_nodes_groupatoms(DB,M,ExData,NEx,G,[],Nodes,0,CLL0,LE,[]),!
-  ;
-   derive_bdd_nodes(DB,ExData,NEx,[],Nodes,0,CLL0),!
-  ),
-  format3(M,"Initial score ~f~n",[CLL0]),
-  M:local_setting(random_restarts_number,N),
-  random_restarts(N,ExData,Nodes,-1e20,Score,initial,Par,LE),  %computes new parameters Par
-  end(ExData),
-  retract_all(Th0Ref),
-  retract_all(R1Ref),!,
-  update_theory_par(R1,Par,R).  %replaces in R1 the probabilities Par and outputs R
-
-
-update_theory_par([],_Par,[]).
-
-update_theory_par([def_rule(H,B,L)|T0],Par,[def_rule(H,B,L)|T]):-!,
-  update_theory_par(T0,Par,T).
-
-update_theory_par([(H:-B)|T0],Par,[(H:-B)|T]):-!,
-  update_theory_par(T0,Par,T).
-
-update_theory_par([rule(N,H,_B,_L)|T0],Par,T):-
-  member([N,[1.0|_T]],Par),
-  last(H,'':_P),!,
-  update_theory_par(T0,Par,T).
-
-update_theory_par([rule(N,H,B,L)|T0],Par,[rule(N,H1,B,L)|T]):-
-  member([N,P],Par),!,
-  reverse(P,P1),
-  update_head_par(H,P1,H1),
-  update_theory_par(T0,Par,T).
 
 update_theory([],_N,[]):-!.
 
