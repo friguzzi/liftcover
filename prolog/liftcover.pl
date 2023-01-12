@@ -2830,34 +2830,6 @@ process_body_db([H|T],BDD,BDD1,DB,Vars,Vars1,
   process_body_db(T,BDD,BDD1,DB,Vars,Vars1,Rest,Env,Module).
 
 
-process_body_cw([],BDD,BDD,Vars,Vars,[],_Module).
-
-process_body_cw([\+ H|T],BDD,BDD1,Vars,Vars1,[\+ H|Rest],Module):-
-  builtin(H),!,
-  process_body_cw(T,BDD,BDD1,Vars,Vars1,Rest,Module).
-
-process_body_cw([\+ H|T],BDD,BDD1,Vars,Vars1,[\+ H|Rest],Module):-
-  db(H),!,
-  process_body_cw(T,BDD,BDD1,Vars,Vars1,Rest,Module).
-
-process_body_cw([\+ H|T],BDD,BDD1,Vars,Vars1,[
-  \+(H1)|Rest],Module):-
-  add_mod_arg(H,Module,H1),
-  process_body_cw(T,BDD,BDD1,Vars,Vars1,Rest,Module).
-
-process_body_cw([H|T],BDD,BDD1,Vars,Vars1,[H|Rest],Module):-
-  builtin(H),!,
-  process_body_cw(T,BDD,BDD1,Vars,Vars1,Rest,Module).
-
-process_body_cw([H|T],BDD,BDD1,Vars,Vars1,[H|Rest],Module):-
-  db(H),!,
-  process_body_cw(T,BDD,BDD1,Vars,Vars1,Rest,Module).
-
-process_body_cw([H|T],BDD,BDD1,Vars,Vars1,
-[H1|Rest],Module):-
-  add_mod_arg(H,Module,H1),
-  process_body_cw(T,BDD,BDD1,Vars,Vars1,Rest,Module).
-
 
 given(H):-
   lift_input_mod(M),
@@ -2976,39 +2948,6 @@ get_probs([_H:P|T], [P1|T1]) :-
   get_probs(T, T1).
 
 
-generate_clauses_cw([],[],_N,C,C):-!.
-
-generate_clauses_cw([H|T],[H1|T1],N,C0,C):-
-  gen_clause_cw(H,N,N1,H1,CL),!,  %agg.cut
-  append(C0,CL,C1),
-  generate_clauses_cw(T,T1,N1,C1,C).
-
-gen_clause_cw((H :- Body),N,N,(H :- Body),[(H :- Body)]):-!.
-
-gen_clause_cw(rule(_R,HeadList,BodyList,Lit),N,N1,
-  rule(N,HeadList,BodyList,Lit),Clauses):-!,
-% disjunctive clause with more than one head atom senza depth_bound
-  process_body_cw(BodyList,BDD,BDDAnd,[],_Vars,BodyList1,Module),
-  append([pita:one(Env,BDD)],BodyList1,BodyList2),
-  list2and(BodyList2,Body1),
-  append(HeadList,BodyList,List),
-  term_variables(List,VC),
-  get_probs(HeadList,Probs),
-  lift_input_mod(M),
-  (M:local_setting(single_var,true)->
-    generate_rules(HeadList,Env,Body1,[],N,Probs,BDDAnd,0,Clauses,Module)
-  ;
-    generate_rules(HeadList,Env,Body1,VC,N,Probs,BDDAnd,0,Clauses,Module)
-  ),
-  N1 is N+1.
-
-gen_clause_cw(def_rule(H,BodyList,Lit),N,N,def_rule(H,BodyList,Lit),Clauses) :- !,%agg. cut
-% disjunctive clause with a single head atom senza depth_bound con prob =1
-  process_body_cw(BodyList,BDD,BDDAnd,[],_Vars,BodyList2,Module),
-  append([pita:one(Env,BDD)],BodyList2,BodyList3),
-  list2and(BodyList3,Body1),
-  add_bdd_arg(H,Env,BDDAnd,Module,Head1),
-  Clauses=[(Head1 :- Body1)].
 
 
 generate_clauses([],_M,_N,C,C):-!.
