@@ -80,7 +80,7 @@ writeln(St1).
 
 test(induce_par_carc):-
   set_lift(verbosity,0),
-  induce_lift_par([train],P),test(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_par_lift([train],P),test(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
@@ -131,7 +131,7 @@ writeln(St1).
 
 test(induce_par_muta):-
   set_lift(verbosity,0),
-  induce_lift_par([1,2,3,4,5,6,7,8,9],P),test(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
+  induce_par_lift([1,2,3,4,5,6,7,8,9],P),test(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),

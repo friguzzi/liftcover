@@ -21,7 +21,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 */
 :-module(liftcover_em,[set_lift/2,setting_lift/2,
-  induce_lift/2,induce/8,induce_lift_par/2,induce_par/8,test/7,list2or/2,list2and/2,
+  induce_lift/2,induce/8,induce_par_lift/2,induce_par/8,test/7,list2or/2,list2and/2,
   sample/4,learn_params/5,
   op(500,fx,#),op(500,fx,'-#'),
   test_prob/6,rules2terms/2]).
@@ -47,7 +47,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 :- meta_predicate induce_lift(:,-).
 :- meta_predicate induce_rules(:,-).
-:- meta_predicate induce_lift_par(:,-).
+:- meta_predicate induce_par_lift(:,-).
 :- meta_predicate induce_parameters(:,-).
 
 
@@ -520,13 +520,13 @@ gen_par(N0,NC,[[N0,[0.5,0.5]]|T]):-
   N1 is N0+1,
   gen_par(N1,NC,T).
 /**
- * induce_lift_par(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
+ * induce_par_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
  *
  * The predicate learns the parameters of the program stored in the in/1 fact
  * of the input file using the folds indicated in TrainFolds for training.
  * It returns in P the input program with the updated parameters.
  */
-induce_lift_par(Folds,ROut):-
+induce_par_lift(Folds,ROut):-
   induce_parameters(Folds,R),
   rules2terms(R,ROut).
 
