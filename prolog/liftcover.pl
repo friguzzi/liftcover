@@ -501,6 +501,10 @@ gen_par(NC,NC,[]):-!.
 gen_par(N0,NC,[[N0,[0.5,0.5]]|T]):-
   N1 is N0+1,
   gen_par(N1,NC,T).
+
+
+logistic(X,Sigma_X):-
+  Sigma_X is 1/(1+exp(-X)).
 /**
  * induce_par_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
  *
@@ -693,7 +697,8 @@ em_quick(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIN,Par,Score):-
 
 expectation_quick(Par,M,MI,MIN,Eta0,Eta,Score):-
  /* LLO is the negative examples contribution in the LL*/
-  foldl(llm(M),Par,MIN,0,LL0),
+  M:local_setting(logzero,LogZero),
+  foldl(llm(LogZero),Par,MIN,0,LL0),
   maplist(eta0,MIN,Eta0),
   /* positive examples contibution in LL*/
   scan_pos(MI,M,Par,LL0,Eta0,Score,Eta).
@@ -766,8 +771,7 @@ update_eta(ProbEx,M,[Etai00,Etai10],Pi,MIR,[Etai0,Etai1]):-
 rule_contrib(MIR,Pi,P0,P):-
   P is P0*(1-Pi)^MIR.
 
-llm(M,Pi,MI,LL0,LL):-
-  M:local_setting(logzero,LogZero),
+llm(LogZero,Pi,MI,LL0,LL):-
   ((1-Pi)=:=0.0 ->
 
     ( MI==0 ->
