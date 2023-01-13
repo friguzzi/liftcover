@@ -122,6 +122,7 @@ default_setting_lift(regularization,l1). % regularization: no, l1, l2, bayesian
 default_setting_lift(gamma,10). % set the value of gamma for regularization l1 and l2
 default_setting_lift(ab,[0,10]). % set the value of a and b for regularization baysian
 default_setting_lift(min_probability,1e-5).  % Threshold of the probability under which the clause is dropped
+default_setting_lift(parameter_learning,em). % parameter learning algorithm: em, lbfgs, gd 
 
 
 
@@ -362,10 +363,10 @@ init_par(I):-
   optimizer_set_x(I1,0.5),
   init_par(I1).
 
-evaluate_L(MIP,MI,L):-
-  compute_likelihood_pos(MIP,0,0,LP),
-  compute_likelihood_neg(MI,LN),
-  compute_likelihood(LN,LP,L).
+evaluate_L(M,MIP,MI,L):-
+  compute_likelihood_pos(MIP,M,0,0,LP),
+  compute_likelihood_neg(MI,M,LN),
+  compute_likelihood(LN,M,LP,L).
   
 gen_initial_counts(0,[]):-!.
 
@@ -374,28 +375,29 @@ gen_initial_counts(N0,[0|MIP0]):-
   gen_initial_counts(N1,MIP0).
 
 evaluate(L,_N,_Step):-
-  mip(MIP),
-  mi(MI),
+  M=user,
+  M:mip(MIP),
+  M:mi(MI),
 %  write(init_ev),nl,
 %  write(Step),nl,
-  compute_likelihood_pos(MIP,0,0,LP),
+  compute_likelihood_pos(MIP,M,0,0,LP),
 %  write(lpos),nl,
-  compute_likelihood_neg(MI,LN),
+  compute_likelihood_neg(MI,M,LN),
 %  write(lneg),nl,
-  compute_likelihood(LN,LP,L),
+  compute_likelihood(LN,M,LP,L),
 %  NL is -L,
 %  write(l),nl,
-  compute_grad(MIP,0,MI,LN).
+  compute_grad(MIP,M,0,MI,LN).
 %  write(grad),nl.
 
-compute_grad([],_N,_MI,_LN):-!.
+compute_grad([],_M,_N,_MI,_LN):-!.
 
-compute_grad([HMIP|TMIP],N0,MI,LN):-
+compute_grad([HMIP|TMIP],M,N0,MI,LN):-
 %  write(prima_comp_grad),nl,
-  compute_sum_neg(MI,LN,N0,0,S),
+  compute_sum_neg(MI,M,LN,N0,0,S),
 %  write(opt),nl,
   optimizer_get_x(N0,P0),
-  setting_lift(zero,Zero),
+  M:local_setting(zero,Zero),
   (P0=<0 ->
     PI=Zero
   ;
@@ -415,18 +417,18 @@ compute_grad([HMIP|TMIP],N0,MI,LN):-
 %  write(G),write(g),nl,
   optimizer_set_g(N0,G),
   N1 is N0+1,
-  compute_grad(TMIP,N1,MI,LN).
+  compute_grad(TMIP,M,N1,MI,LN).
 
-compute_sum_neg([],_LN,_I,S,S).
+compute_sum_neg([],_M,_LN,_I,S,S).
 
-compute_sum_neg([HMI|TMI],[HLN|TLN],I,S0,S):-
+compute_sum_neg([HMI|TMI],M,[HLN|TLN],I,S0,S):-
 %  write(HMI),write(hmi),nl,
 %  write(I),write('I'),nl,
   nth0(I,HMI,MIR),
 %  write(MIR),write(mir),nl,
 %  write(HLN),write(hln),nl,
   Den is 1.0-exp(-HLN),
-  setting_lift(zero,Zero),
+  M:local_setting(zero,Zero),
   (Den=<0.0->
     Den1 is Zero
   ;
@@ -442,17 +444,17 @@ compute_sum_neg([HMI|TMI],[HLN|TLN],I,S0,S):-
     ,
 %  ),
 %  write(den),write(Den),nl,
-  compute_sum_neg(TMI,TLN,I,S1,S).
+  compute_sum_neg(TMI,M,TLN,I,S1,S).
 
-compute_likelihood([],L,L).
+compute_likelihood([],_M,L,L).
 
-compute_likelihood([HP|TP],L0,L):-
+compute_likelihood([HP|TP],M,L0,L):-
   %write(hp),write(HP),nl,
   A is 1.0-exp(-HP),
 %  write(A),write(l),nl,
 %  (A=<0->write(ll),write(A);true),
 %  write(prima),nl,
-  setting_lift(zero,Zero),
+  M:local_setting(zero,Zero),
   (A=<0.0->
     A1 is Zero
   ;
@@ -461,19 +463,19 @@ compute_likelihood([HP|TP],L0,L):-
   L1 is L0-log(A1),
 %  write(dopo),write(L1),%write(TP),
 %  nl,
-  compute_likelihood(TP,L1,L).
+  compute_likelihood(TP,M,L1,L).
 
-compute_likelihood_neg([],[]).
+compute_likelihood_neg([],_M,[]).
 
-compute_likelihood_neg([HMI|TMI],[HLN|TLN]):-
-  compute_likelihood_pos(HMI,0,0,HLN),
-  compute_likelihood_neg(TMI,TLN).
+compute_likelihood_neg([HMI|TMI],M,[HLN|TLN]):-
+  compute_likelihood_pos(HMI,M,0,0,HLN),
+  compute_likelihood_neg(TMI,M,TLN).
 
-compute_likelihood_pos([],_,LP,LP).
+compute_likelihood_pos([],_M,_,LP,LP).
 
-compute_likelihood_pos([HMIP|TMIP],I,LP0,LP):-
+compute_likelihood_pos([HMIP|TMIP],M,I,LP0,LP):-
   optimizer_get_x(I,P0),
-  setting_lift(zero,Zero),
+  M:local_setting(zero,Zero),
   (P0=<0.0 ->
     P=Zero
   ;
@@ -487,7 +489,7 @@ compute_likelihood_pos([HMIP|TMIP],I,LP0,LP):-
 %  (A=<0-> write(lp),write(A),nl;true),
   LP1 is LP0-log(1-P)*HMIP,
   I1 is I+1,
-  compute_likelihood_pos(TMIP,I1,LP1,LP).
+  compute_likelihood_pos(TMIP,M,I1,LP1,LP).
 
 progress(FX,X_Norm,G_Norm,Step,_N,Iteration,Ls,0) :-
   format('~d. Iteration :  f(X)=~4f  |X|=~4f
@@ -587,10 +589,11 @@ test_theory_pos_prob([Ex|Rest],M,Th,N,[MI|LMI]):-
   test_clause_prob(Th,M,[Ex],MI0,MI),
   test_theory_pos_prob(Rest,M,Th,N,LMI).
 
-learn_param([],_,_,_,[],MInf):-!,
-  setting_lift(minus_infinity,MInf).
+learn_param([],M,_,_,[],MInf):-!,
+  M:local_setting(minus_infinity,MInf).
 
 learn_param(Program0,M,Pos,Neg,Program,LL):-
+  M:local_setting(parameter_learning,em),!,
   generate_clauses(Program0,M,0,[],Pr1),
   length(Program0,N),
   gen_initial_counts(N,MIN0),
@@ -602,6 +605,55 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   maplist(remove_zero,Program1,Program2),
   append(Program2,Program),
   format3(M,"Final L ~f~n",[LL]).
+
+learn_param(Program0,M,Pos,Neg,Program,LL):-
+  M:local_setting(parameter_learning,lbfgs),!,
+  generate_clauses(Program0,M,0,[],Pr1),
+  length(Program0,N),
+  gen_initial_counts(N,MIP0),
+  test_theory_neg_prob(Neg,M,Pr1,MIP0,MIP),
+  M:assert(mip(MIP)),
+  test_theory_pos_prob(Pos,M,Pr1,N,MI),
+  M:assert(mi(MI)),
+%  flush_output,
+%  optimizer_set_parameter(max_step,0.001),
+% parte da modificare init
+  optimizer_initialize(N,liftcover,evaluate,progress),
+  init_par(N),
+  evaluate_L(M,MIP,MI,L),
+% parte da modificare fine
+  IL is -L,
+  format3(M,"~nInitial L ~f~n",[IL]),
+  optimizer_run(_LL,Status),
+  format3(M,"Status ~p~n",[Status]),
+  update_theory_lbfgs(Program0,M,0,Program1),
+  maplist(remove_zero,Program1,Program2),
+  append(Program2,Program),
+  evaluate_L(M,MIP,MI,NewL),
+  LL is -NewL,
+  format3(M,"Final L ~f~n",[LL]),
+  optimizer_finalize,
+  M:retract(mip(MIP)),
+  M:retract(mi(MI)).
+
+update_theory_lbfgs([],_M,_N,[]):-!.
+
+update_theory_lbfgs([rule(Name,[H:_,_],B,L)|Rest],M,N,[rule(Name,[H:P,'':PN],B,L)|Rest1]):-
+    optimizer_get_x(N,P0),
+    M:local_setting(zero,Zero),
+    (P0=<0.0->
+      P=Zero
+    ;
+      (P0>=1.0->
+        P is 1.0-Zero
+      ;
+        P=P0
+      )
+    ),
+    PN is 1-P,
+    N1 is N+1,
+    update_theory_lbfgs(Rest,M,N1,Rest1).
+
 
 random_restarts(0,_M,Score,Score,_N,Par,Par,_MI,_MIN):-!.
 
@@ -736,7 +788,7 @@ eta0(MIN,[MIN,0]).
 
 
 remove_zero(rule(_Name,[_H:P,_],_B,_L),[]):-
-    setting_lift(zero,Zero),
+    local_setting(zero,Zero),
     P=:=Zero,!.
 
 remove_zero(R,[R]).
