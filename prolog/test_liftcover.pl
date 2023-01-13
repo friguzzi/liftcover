@@ -91,7 +91,20 @@ test(induce_par_carc):-
   '\nAUCPR =', 0.5989337661969046],St1),
   writeln(St1).
   
-
+test(induce_par_gd_carc):-
+  set_lift(verbosity,3),
+  set_lift(parameter_learning,gd),
+  set_lift(eta,0.01),
+  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =', -38.83800917968338,
+  '\nAUCROC =',0.6710526315789473,
+  '\nAUCPR =', 0.5989337661969046],St1),
+  writeln(St1).
 :- end_tests(carc_par).
 
 :- begin_tests(mondial, []).
@@ -141,7 +154,22 @@ test(induce_par_muta):-
   '\nAUCROC =',0.6287878787878788,
   '\nAUCPR =', 0.8184241612528028],St1),
   writeln(St1).
-  
+
+test(induce_par_gd_muta):-
+  set_lift(verbosity,3),
+  set_lift(parameter_learning,gd),
+  set_lift(eta,0.01),
+  induce_par_lift([1,2,3,4,5,6,7,8,9],P),test_lift(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-62.26891635625195,
+  '\nAUCROC =',0.6287878787878788,
+  '\nAUCPR =', 0.8184241612528028],St1),
+  writeln(St1).
+
 
 :- end_tests(muta_par).
 

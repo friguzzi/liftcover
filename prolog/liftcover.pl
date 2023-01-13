@@ -123,8 +123,9 @@ default_setting_lift(gamma,10). % set the value of gamma for regularization l1 a
 default_setting_lift(ab,[0,10]). % set the value of a and b for regularization baysian
 default_setting_lift(min_probability,1e-5).  % Threshold of the probability under which the clause is dropped
 default_setting_lift(parameter_learning,em). % parameter learning algorithm: em, lbfgs, gd 
+default_setting_lift(max_initial_weight,0.5). % initial weights of dphil in [-0.5 0.5]
 
-
+default_setting_lift(eta,1). 
 
 /**
  * induce_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
@@ -356,6 +357,13 @@ cycle_structure([(RH,_Score)|RT],Mod,R0,S0,SP0,Pos,Neg,R,S,M):-
   cycle_structure(RT,Mod,R4,S4,SP1,Pos,Neg,R,S,M1).
 
 
+init_gd_par(0,_Max,[]):-!.
+
+init_gd_par(I,Max,[W|TW]):-
+  I1 is I-1,
+  W is -Max+random_float*2*Max,
+  init_gd_par(I1,Max,TW).
+
 init_par(0):-!.
 
 init_par(I):-
@@ -543,7 +551,12 @@ induce_parameters(M:Folds,R):-
     remove_clauses(R1,Min_prob,R,Num),
     length(R1,NumBR),
     NumRem is NumBR-Num,
-    format2(M,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,NumRem])
+    rules2terms(R1,ROut1),
+    M:test_prob_lift(ROut1,Folds,_,_,LL1,_),
+    format2(M,"Rules before regularization: ~d~nLL ~f~n",[NumBR,LL1]),
+    rules2terms(R,ROut),
+    M:test_prob_lift(ROut,Folds,_,_,LL,_),
+    format2(M,"After regularization ~d~nLL ~f~n  ",[NumRem,LL])
   ),
   statistics(walltime,[_,CT]),
   CTS is CT/1000,
@@ -610,8 +623,23 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   append(Program2,Program),
   format3(M,"Final L ~f~n",[LL]).
 
+
 learn_param(Program0,M,Pos,Neg,Program,LL):-
-  M:local_setting(parameter_learning,lbfgs),!,
+  M:local_setting(parameter_learning,gd),!,
+  generate_clauses(Program0,M,0,[],Pr1),
+  length(Program0,N),
+  gen_initial_counts(N,MIP0),
+  test_theory_neg_prob(Neg,M,Pr1,MIP0,MIP),
+  test_theory_pos_prob(Pos,M,Pr1,N,MI),
+  M:local_setting(random_restarts_number,NR),
+  random_restarts_gd(NR,M,-1e20,PLL,N,initial,Par,MI,MIP),  %computes new parameters Par
+  maplist(logistic,Par,Prob),
+  update_theory(Program0,Prob,Program),
+  LL is -PLL,
+  format3(M,"Final L ~f~n",[LL]).
+
+learn_param(Program0,M,Pos,Neg,Program,LL):-
+  M:local_setting(parameter_learning,lbfgs),
   generate_clauses(Program0,M,0,[],Pr1),
   length(Program0,N),
   gen_initial_counts(N,MIP0),
@@ -639,6 +667,7 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   optimizer_finalize,
   M:retract(mip(MIP)),
   M:retract(mi(MI)).
+
 
 update_theory_lbfgs([],_M,_N,[]):-!.
 
@@ -671,13 +700,126 @@ random_restarts(N,M,Score0,Score,NR,Par0,Par,MI,MIN):-
   M:local_setting(epsilon_em_fraction,ER),
   M:local_setting(iter,Iter),
   em_quick(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
-  format3(M,"Random_restarupdate_theory(t: Score ~f~n",[ScoreR]),
+  format3(M,"Random_restart: Score ~f~n",[ScoreR]),
   N1 is N-1,
   (ScoreR>Score0->
     random_restarts(N1,M,ScoreR,Score,NR,ParR,Par,MI,MIN)
   ;
     random_restarts(N1,M,Score0,Score,NR,Par0,Par,MI,MIN)
   ).
+
+random_restarts_gd(0,_M,Score,Score,_N,Par,Par,_MI,_MIN):-!.
+
+random_restarts_gd(N,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
+  M:local_setting(random_restarts_number,NMax),
+  Num is NMax-N+1,
+  format3(M,"Restart number ~d~n~n",[Num]),
+  M:local_setting(max_initial_weight,Max),
+  init_gd_par(NR,Max,Par1),
+  evaluate_L_gd(M,MIN,MI,Par1,L),
+  ScoreIn is -L,
+  format3(M,"GD Random_restart: initial score ~f~n",[ScoreIn]),
+  M:local_setting(epsilon_em,EA),
+  M:local_setting(epsilon_em_fraction,ER),
+  M:local_setting(iter,Iter),
+  gd(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
+  format3(M,"GD Random_restart: Score ~f~n",[ScoreR]),
+  N1 is N-1,
+  random_restarts_gd(N1,M,ScoreR,Score,NR,ParR,Par,MI,MIN).
+
+
+gd(_EA,_ER,0,_M,_NR,Par,Score,_MI,_MIP,Par,Score):-!.
+
+gd(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIP,Par,Score):-
+  compute_gradient_gd(MIP,MI,M,Par0,G,LL),
+  Score1 is -LL,
+  Iter is Iter0-1,
+  Diff is Score1-Score0,
+  Fract is -Score1*ER,
+  (( Diff<EA;Diff<Fract)->
+    Score=Score1,
+    Par=Par0
+  ;
+    M:local_setting(eta,Eta),
+    maplist(update_par(Eta),Par0,G,Par1),
+    gd(EA,ER,Iter,M,NR,Par1,Score1,MI,MIP,Par,Score)
+  ).
+
+update_par(Eta,Par0,G,Par1):-
+  Par1 is Par0-Eta*G.
+
+evaluate_L_gd(M,MIP,MI,Par,L):-
+  maplist(logistic,Par,Prob),
+  compute_likelihood_pos_gd(MIP,Prob,M,0,0,LP),
+%  write(lpos),nl,
+  compute_likelihood_neg_gd(MI,Prob,M,LN),
+%  write(lneg),nl,
+  compute_likelihood_gd(LN,M,LP,L).
+
+
+
+compute_gradient_gd(MIP,MI,M,Par,G,L):-
+  maplist(logistic,Par,Prob),
+  compute_likelihood_pos_gd(MIP,Prob,M,0,0,LP),
+%  write(lpos),nl,
+  compute_likelihood_neg_gd(MI,Prob,M,LN),
+%  write(lneg),nl,
+  compute_likelihood_gd(LN,M,LP,L),
+
+%  NL is -L,
+  write(L),nl,
+  compute_grad_gd(MIP,Prob,M,0,MI,LN,G).
+%  write(grad),nl.
+
+compute_likelihood_neg_gd([],_Prob,_M,[]).
+
+compute_likelihood_neg_gd([HMI|TMI],Prob,M,[HLN|TLN]):-
+  compute_likelihood_pos_gd(HMI,Prob,M,0,0,HLN),
+  compute_likelihood_neg_gd(TMI,Prob,M,TLN).
+
+compute_likelihood_pos_gd([],[],_M,_,LP,LP).
+
+compute_likelihood_pos_gd([HMIP|TMIP],[P|TP],M,I,LP0,LP):-
+  LP1 is LP0-log(1-P)*HMIP,
+  I1 is I+1,
+  compute_likelihood_pos_gd(TMIP,TP,M,I1,LP1,LP).
+
+
+compute_likelihood_gd([],_M,L,L).
+
+compute_likelihood_gd([HP|TP],M,L0,L):-
+  A is 1.0-exp(-HP),
+  (A=:=0.0->
+    M:local_setting(logzero,LZ),
+    L1 is L0-LZ
+  ;
+    L1 is L0-log(A)
+  ),
+  compute_likelihood_gd(TP,M,L1,L).
+
+
+compute_grad_gd([],[],_M,_N,_MI,_LN,[]):-!.
+
+compute_grad_gd([HMIP|TMIP],[P|TP],M,N0,MI,LN,[G|TG]):-
+%  write(prima_comp_grad),nl,
+  compute_sum_neg(MI,M,LN,N0,0,S),
+%  write(opt),nl,
+  G is (HMIP-S)*P,
+  N1 is N0+1,
+  compute_grad_gd(TMIP,TP,M,N1,MI,LN,TG).
+
+compute_sum_neg_gd([],_M,_LN,_I,S,S).
+
+compute_sum_neg_gd([HMI|TMI],M,[HLN|TLN],I,S0,S):-
+%  write(HMI),write(hmi),nl,
+%  write(I),write('I'),nl,
+  nth0(I,HMI,MIR),
+%  write(MIR),write(mir),nl,
+%  write(HLN),write(hln),nl,
+  Den is 1.0-exp(-HLN),
+  S1 is S0+MIR*exp(-HLN)/Den,
+  compute_sum_neg_gd(TMI,M,TLN,I,S1,S).
+
 
 em_quick(_EA,_ER,0,_M,_NR,Par,Score,_MI,_MIN,Par,Score):-!.
 
