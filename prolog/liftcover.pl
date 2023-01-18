@@ -279,6 +279,7 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   Mod:set_lift(depth_bound,false),
   cycle_beam(Beam,Mod,Pos,Neg,[],CL,[],_BG,M),
   maplist(get_cl,CL,LC),
+  write2(Mod,"Final parameter learning"),nl2(Mod),
   learn_param(LC,Mod,Pos,Neg,R1,Score),
 /*  CL=[(C0,S)|RCL],
   format2("Theory search~n~n",[]),
@@ -830,6 +831,7 @@ em_quick(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIN,Par,Score):-
   Iter is Iter0-1,
   Diff is Score1-Score0,
   Fract is -Score1*ER,
+%  writeln(Score1),
   (( Diff<EA;Diff<Fract)->
     Score=Score1,
     Par=Par1
@@ -870,7 +872,17 @@ maximize(_M,[Eta0,Eta1],Par):-
 
 maximize_L1(M,[Eta0,Eta1],Par):-
   M:local_setting(gamma,Gamma),
-  Par is 4*Eta1/(2*(Gamma+Eta0+Eta1+sqrt((Eta0+Eta1)^2+Gamma^2+2*Gamma*(Eta0-Eta1)))).
+/*(((Eta0+Eta1)^2+Gamma^2+2*Gamma*(Eta0-Eta1))<0 ->
+writeln((Eta0+Eta1)^2+Gamma^2+2*Gamma*(Eta0-Eta1)),
+  Par is 4*Eta1/(2*(Gamma+Eta0+Eta1))
+;((2*(Gamma+Eta0+Eta1+sqrt((Eta0+Eta1)^2+Gamma^2+2*Gamma*(Eta0-Eta1)))=:=0.0)->
+writeln((2*(Gamma+Eta0+Eta1+sqrt((Eta0+Eta1)^2+Gamma^2+2*Gamma*(Eta0-Eta1)))))
+
+;*/
+  Par is 4*Eta1/(2*(Gamma+Eta0+Eta1+sqrt((Eta0+Eta1)^2+Gamma^2+2*Gamma*(Eta0-Eta1))))
+%)
+  %)
+  .
 
 maximize_L2(M,[Eta0,Eta1],Par):-
   M:local_setting(gamma,Gamma),
@@ -907,7 +919,13 @@ update_eta(ProbEx,M,[Etai00,Etai10],Pi,MIR,[Etai0,Etai1]):-
   ;
     CondP is Pi/ProbEx
   ),
-  Etai0 is Etai00+MIR*(1-CondP),
+  OCondP0 is 1-CondP,
+  ( OCondP0 <0.0->
+    OCondP = 0.0
+  ;
+    OCondP = OCondP0
+  ),
+  Etai0 is Etai00+MIR*OCondP,
   Etai1 is Etai10+MIR*CondP.
 
 rule_contrib(MIR,Pi,P0,P):-
