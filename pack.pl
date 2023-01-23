@@ -4,4 +4,4 @@ version('0.1').
 author('Fabrizio Riguzzi','fabrizio.riguzzi@unife.it').
 author('Arnaud Nguembang Fadja','arnaud.nguembafadja@unife.it').
 requires(lbfgs).
-requires(cplint).
+requires(auc).

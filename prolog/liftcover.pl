@@ -1283,7 +1283,7 @@ deduct(0,_Mod,_DB,Th,Th):-!.
 
 deduct(NM,Mod,DB,InTheory0,InTheory):-
   get_head_atoms(O,Mod),
-  sample(1,DB,Sampled,DB1),
+  sample_lift(1,DB,Sampled,DB1),
   (Sampled=[M]->
     generate_head(O,M,Mod,[],HL),
     %gtrace,
@@ -1325,7 +1325,7 @@ generate_head([A|T],M,Mod,H0,H1):-
   keep_const(ArgM,Arg),
   findall((A,Pred1),call(Mod:Pred1),L),
   Mod:local_setting(initial_clauses_per_megaex,IC),
-  sample(IC,L,L1),
+  sample_lift(IC,L,L1),
   append(H0,L1,H2),
   generate_head(T,M,Mod,H2,H1).
 
@@ -1355,38 +1355,38 @@ keep_const([H|T],[H1|T1]):-
 
 
 /**
- * sample(+N,List:list,-Sampled:list,-Rest:list) is det
+ * sample_lift(+N,List:list,-Sampled:list,-Rest:list) is det
  *
  * Samples N elements from List and returns them in Sampled.
  * The rest of List is returned in Rest
  * If List contains less than N elements, Sampled is List and Rest
  * is [].
 */
-sample(0,List,[],List):-!.
+sample_lift(0,List,[],List):-!.
 
-sample(N,List,List,[]):-
+sample_lift(N,List,List,[]):-
   length(List,L),
   L=<N,!.
 
-sample(N,List,[El|List1],Li):-
+sample_lift(N,List,[El|List1],Li):-
   length(List,L),
   random(0,L,Pos),
   nth0(Pos,List,El,Rest),
   N1 is N-1,
-  sample(N1,Rest,List1,Li).
+  sample_lift(N1,Rest,List1,Li).
 
-sample(0,_List,[]):-!.
+sample_lift(0,_List,[]):-!.
 
-sample(N,List,List):-
+sample_lift(N,List,List):-
   length(List,L),
   L=<N,!.
 
-sample(N,List,[El|List1]):-
+sample_lift(N,List,[El|List1]):-
   length(List,L),
   random(0,L,Pos),
   nth0(Pos,List,El,Rest),
   N1 is N-1,
-  sample(N1,Rest,List1).
+  sample_lift(N1,Rest,List1).
 
 get_args([],[],[],A,A,AT,AT,_).
 
@@ -1546,7 +1546,7 @@ find_atoms([(R,\+ H)|T],Mod,ArgsTypes0,Args0,ArgsTypes,Args,L0,L1,M):-!,
   ;
     R1=R
   ),
-  sample(R1,At1,At2),
+  sample_lift(R1,At1,At2),
   append(L0,At2,L2),
   find_atoms(T,Mod,ArgsTypes0,Args0,ArgsTypes,Args,L2,L1,M).
 
@@ -1560,7 +1560,7 @@ find_atoms([(R,H)|T],Mod,ArgsTypes0,Args0,ArgsTypes,Args,L0,L1,M):-
   ;
     R1=R
   ),
-  sample(R1,At1,At2),
+  sample_lift(R1,At1,At2),
   extract_output_args(At2,ArgsT,ArgsTypes0,Args0,ArgsTypes1,Args1),
   append(L0,At2,L2),
   find_atoms(T,Mod,ArgsTypes1,Args1,ArgsTypes,Args,L2,L1,M).
@@ -1798,7 +1798,7 @@ generalize_rule(Rule,Ref):-
 add_rule(add(rule(ID,Head,[],Lits))):-
   setting_lift(specialization,bottom),!,
   database(DB),
-  sample(1,DB,[M]),
+  sample_lift(1,DB,[M]),
   get_head_atoms(O),
   member(A,O),
   functor(A,F,N),
@@ -1808,7 +1808,7 @@ add_rule(add(rule(ID,Head,[],Lits))):-
   A=..[F|ArgM],
   keep_const(ArgM,Arg),
   findall((A,Pred1),call(Pred1),L),
-  sample(1,L,LH),
+  sample_lift(1,L,LH),
   generate_body(LH,[rule(ID,Head,[],Lits)]).
 
 add_rule(add(rule(ID,Head,[],true))):-
