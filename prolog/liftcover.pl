@@ -55,7 +55,11 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
 
-%:- multifile init/3,init_bdd/2,init_test/2,ret_prob/3,end/1,end_bdd/1,end_test/1,one/2,zero/2,and/4,or/4,add_var/5,equality/4,remove/3.
+
+
+
+
+
 
 
 default_setting_lift(eps,0.0001).
@@ -2648,45 +2652,7 @@ term_expansion_int(Head, _M,((Head1:-pita:one(Env,One)),[def_rule(Head,[],true)]
   (Head\= end_of_file),!,
   add_bdd_arg(Head,Env,One,_Module,Head1).
 
-/*-----------*/
-:- multifile sandbox:safe_primitive/1.
 
-%sandbox:safe_primitive(write(_)).
-%sandbox:safe_primitive(random:setrand(_)).
-
-sandbox:safe_primitive(slipcover:induce_par(_,_)).
-sandbox:safe_primitive(slipcover:induce(_,_)).
-sandbox:safe_primitive(slipcover:test(_,_,_,_,_,_,_)).
-sandbox:safe_primitive(slipcover:test_prob_lift(_,_,_,_,_,_)).
-sandbox:safe_primitive(slipcover:set_lift(_,_)).
-
-%sandbox:safe_primitive(prolog_load_context(_,_)).
-%sandbox:safe_primitive(random:setran(_)).
-/*
-:- multifile sandbox:safe_primitive/1.
-
-sandbox:safe_primitive(slipcover:set_lift(_,_)).
-sandbox:safe_primitive(slipcover:setting_lift(_,_)).
-sandbox:safe_primitive(slipcover:init(_,_,_)).
-sandbox:safe_primitive(slipcover:init_bdd(_,_)).
-sandbox:safe_primitive(slipcover:init_test(_)).
-sandbox:safe_primitive(slipcover:ret_prob(_,_)).
-sandbox:safe_primitive(slipcover:end(_)).
-sandbox:safe_primitive(slipcover:end_bdd(_)).
-sandbox:safe_primitive(slipcover:end_test).
-sandbox:safe_primitive(slipcover:one(_)).
-sandbox:safe_primitive(slipcover:zero(_)).
-sandbox:safe_primitive(slipcover:and(_,_,_)).
-sandbox:safe_primitive(slipcover:or(_,_,_)).
-sandbox:safe_primitive(slipcover:bdd_not(_,_)).
-sandbox:safe_primitive(slipcover:get_var_n(_,_,_,_)).
-sandbox:safe_primitive(slipcover:add_var(_,_,_,_)).
-sandbox:safe_primitive(slipcover:equality(_,_,_)).
-
-:- multifile sandbox:safe_meta/2.
-
-
-*/
 test_no_area(TestSet,M,Prog,NPos,NNeg,LL,Results):-
 %  S= user_output,
 %  SA= user_output,
@@ -3205,7 +3171,14 @@ lift_expansion(At, A) :-
     )
   ).
 
+  :- multifile sandbox:safe_meta/2.
 
+  sandbox:safe_meta(liftcover:induce_par_lift(_,_) ,[]).
+  sandbox:safe_meta(liftcover:induce_lift(_,_), []).
+  sandbox:safe_meta(liftcover:test_prob_lift(_,_,_,_,_,_), []).
+  sandbox:safe_meta(liftcover:test_lift(_,_,_,_,_,_,_), []).
+  sandbox:safe_meta(liftcover:set_lift(_,_), []).
+  sandbox:safe_meta(liftcover:setting_lift(_,_), []).
 
 
 

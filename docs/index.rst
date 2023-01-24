@@ -30,13 +30,13 @@ Requirements
 It requires the packs
 
  * `lbfgs <https://github.com/friguzzi/lbfgs>`_
- * `cplint <https://github.com/friguzzi/cplint>`_
+ * `auc <https://github.com/friguzzi/auc>`_
  
 They are installed automatically when installing pack `liftcover` or can be installed manually as follows ::
 
 	$ swipl
 	?- pack_install(lfbgs).
-	?- pack_install(cplint).
+	?- pack_install(auc).
 
 
 You can upgrade the pack with ::
