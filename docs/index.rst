@@ -483,7 +483,5 @@ License
 phil follows the MIT License that you can find in phil root folder. 
 The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.
 
-References
-==========
 .. bibliography:: newbib.bib
 
