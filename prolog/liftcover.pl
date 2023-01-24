@@ -57,63 +57,38 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 %:- multifile init/3,init_bdd/2,init_test/2,ret_prob/3,end/1,end_bdd/1,end_test/1,one/2,zero/2,and/4,or/4,add_var/5,equality/4,remove/3.
 
-default_setting_lift(epsilon_em,0.0001).
-default_setting_lift(epsilon_em_fraction,0.00001).
+
 default_setting_lift(eps,0.0001).
 default_setting_lift(eps_f,0.00001).
 
-/* if the difference in log likelihood in two successive em iteration is smaller
-than epsilon_em, then EM stops */
-default_setting_lift(epsilon_sem,2).
 
 /* number of random restarts of em */
-default_setting_lift(random_restarts_REFnumber,1).
 default_setting_lift(random_restarts_number,1).
-default_setting_lift(iterREF,-1).
 default_setting_lift(iter,-1).
-default_setting_lift(examples,atoms).
-default_setting_lift(group,1).
 default_setting_lift(d,1).
 default_setting_lift(verbosity,0).
 default_setting_lift(logzero,log(0.000001)).
 default_setting_lift(megaex_bottom,1).
 default_setting_lift(initial_clauses_per_megaex,1).
 default_setting_lift(max_iter,10).
-default_setting_lift(max_iter_structure,10000).
 default_setting_lift(max_var,4).
-default_setting_lift(max_rules,10).
 default_setting_lift(maxdepth_var,2).
 default_setting_lift(beamsize,100).
 default_setting_lift(max_body_length,100).
 default_setting_lift(neg_literals,false).
-default_setting_lift(background_clauses,50).
 
 default_setting_lift(specialization,bottom).
 %setting_lift(specialization,mode).
 /* allowed values: mode,bottom */
-default_setting_lift(specialize_head,false).
 
 default_setting_lift(seed,rand(10,1231,3032)).
-default_setting_lift(score,ll).
-/* allowed values: ll aucpr */
 default_setting_lift(neg_ex,cw).
 
 
 default_setting_lift(epsilon_parsing, 1e-5).
-default_setting_lift(tabling, off).
-/* on, off */
-
-default_setting_lift(bagof,false).
-/* values: false, intermediate, all, extra */
 
 
 
-default_setting_lift(depth_bound,false).  %if true, it limits the derivation of the example to the value of 'depth'
-default_setting_lift(depth,2).
-default_setting_lift(single_var,true). %false:1 variable for every grounding of a rule; true: 1 variable for rule (even if a rule has more groundings),simpler.
-
-default_setting_lift(prob_approx,false). %if true, it limits the number of different solutions found when computing the probability
-default_setting_lift(approx_value,100).
 
 default_setting_lift(zero,0.01).
 default_setting_lift(minus_infinity,-1.0e20).
@@ -276,7 +251,6 @@ to_dyn(M,P/A):-
 learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rule(NR,[h],[b]],...], -R:final theory of the same form, -CLL
   format2(Mod,"Clause search~n~n",[]),
   Mod:local_setting(max_iter,M),
-  Mod:set_lift(depth_bound,false),
   cycle_beam(Beam,Mod,Pos,Neg,[],CL,[],_BG,M),
   maplist(get_cl,CL,LC),
   write2(Mod,"Final parameter learning"),nl2(Mod),
@@ -697,8 +671,8 @@ random_restarts(N,M,Score0,Score,NR,Par0,Par,MI,MIN):-
   format3(M,"Restart number ~d~n~n",[Num]),
   length(Par1,NR),
   maplist(random,Par1),
-  M:local_setting(epsilon_em,EA),
-  M:local_setting(epsilon_em_fraction,ER),
+  M:local_setting(eps,EA),
+  M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
   em_quick(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
   format3(M,"Random_restart: Score ~f~n",[ScoreR]),
@@ -720,8 +694,8 @@ random_restarts_gd(N,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
   evaluate_L_gd(M,MIN,MI,Par1,L),
   ScoreIn is -L,
   format3(M,"GD Random_restart: initial score ~f~n",[ScoreIn]),
-  M:local_setting(epsilon_em,EA),
-  M:local_setting(epsilon_em_fraction,ER),
+  M:local_setting(eps,EA),
+  M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
   gd(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
   format3(M,"GD Random_restart: Score ~f~n",[ScoreR]),
@@ -1727,166 +1701,8 @@ Copyright (c) 2011, Fabrizio Riguzzi, Nicola di Mauro and Elena Bellodi
 */
 
 
-theory_revisions_op(Theory,TheoryRevs):-
-  setof(RevOp, Theory^revise_theory(Theory,RevOp), TheoryRevs),!.
-
-theory_revisions_op(_Theory,[]).
 
 
-theory_revisions(Theory,TheoryRevs):-
-  theory_revisions_op(Theory,TheoryRevs1),
-  apply_operators(TheoryRevs1,Theory,TheoryRevs).
-
-
-apply_operators([],_Theory,[]).
-
-apply_operators([add(Rule)|RestOps],Theory,[NewTheory|RestTheory]) :-
-  append(Theory, [Rule], NewTheory),
-  apply_operators(RestOps,Theory,RestTheory).
-
-apply_operators([add_body(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-
-  delete_matching(Theory,Rule1,Theory1),
-  append(Theory1, [Rule2], NewTheory),
-  apply_operators(RestOps,Theory,RestTheory).
-
-apply_operators([remove_body(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-
-  delete_matching(Theory,Rule1,Theory1),
-  append(Theory1, [Rule2], NewTheory),
-  apply_operators(RestOps,Theory,RestTheory).
-
-apply_operators([add_head(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-
-  delete_matching(Theory,Rule1,Theory1),
-  append(Theory1, [Rule2], NewTheory),
-  apply_operators(RestOps,Theory,RestTheory).
-
-apply_operators([remove_head(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-
-  delete_matching(Theory,Rule1,Theory1),
-  append(Theory1, [Rule2], NewTheory),
-  apply_operators(RestOps,Theory,RestTheory).
-
-apply_operators([remove(Rule)|RestOps],Theory,[NewTheory|RestTheory]) :-
-  delete_matching(Theory,Rule,NewTheory),
-  apply_operators(RestOps,Theory,RestTheory).
-
-
-revise_theory(Theory,Ref):-
-  specialize_theory(Theory,Ref).
-
-revise_theory(Theory,Ref):-
-  generalize_theory(Theory,Ref).
-
-
-generalize_theory(Theory,Ref):-
-  Theory \== [],
-  choose_rule(Theory,Rule),
-  generalize_rule(Rule,Ref).
-
-generalize_theory(Theory,Ref):-
-  length(Theory,LT),
-  setting_lift(max_rules,MR),
-  LT<MR,
-  add_rule(Ref).
-
-
-generalize_rule(Rule,Ref):-
-  generalize_head(Rule,Ref).
-
-generalize_rule(Rule,Ref):-
-  generalize_body(Rule,Ref).
-
-
-add_rule(add(rule(ID,Head,[],Lits))):-
-  setting_lift(specialization,bottom),!,
-  database(DB),
-  sample_lift(1,DB,[M]),
-  get_head_atoms(O),
-  member(A,O),
-  functor(A,F,N),
-  functor(F1,F,N),
-  F1=..[F|Arg],
-  Pred1=..[F,M|Arg],
-  A=..[F|ArgM],
-  keep_const(ArgM,Arg),
-  findall((A,Pred1),call(Pred1),L),
-  sample_lift(1,L,LH),
-  generate_body(LH,[rule(ID,Head,[],Lits)]).
-
-add_rule(add(rule(ID,Head,[],true))):-
-  findall(HL , modeh(_,HL), HLS),
-  length(HLS,L),
-  L1 is L+1,
-  P is 1/L1,
-  generate_head(HLS,P,Head),
-  get_next_rule_number(ID).
-
-
-generate_head([H|_T],_P,[H1:0.5,'':0.5]):-
-  H=..[Pred|Args],
-  length(Args,LA),
-  length(Args1,LA),
-  H1=..[Pred|Args1].
-
-generate_head([_H|T],P,Head):-
-  generate_head(T,P,Head).
-
-
-generalize_head(Rule,Ref):-
-  Rule = rule(ID,LH,BL),
-  generalize_head1(LH,LH1,NewAt),
-  Ref = add_head(Rule,rule(ID,LH1,BL),NewAt).
-
-
-generalize_head1(LH,LH1,NH):-
-  findall(HL , modeh(_,HL), HLS),
-  generalize_head2(HLS,LH,LH1,NH).
-
-
-generalize_head2([X|_R],LH,LH1,PH) :-
-  X =.. [P|A],
-  length(A,LA),
-  length(A1,LA),
-  PH =.. [P|A1],
-  \+ member(PH:_, LH),
-  (setting_lift(new_head_atoms_zero_prob,true)->
-    delete_matching(LH,'':PNull,LH0),
-    append(LH0,[PH:0.0,'':PNull],LH1)
-  ;
-    length(LH,NH),
-    add_to_head(LH,NH,PH,LH1)
-  ).
-
-generalize_head2([_X|R],LH,LH1) :-
-  generalize_head2(R,LH,LH1).
-
-
-add_to_head(['':PN],NH,At,[At:PA,'':PN1]):-!,
-  PN1 is PN*NH/(NH+1),
-  PA is 1/(NH+1).
-
-add_to_head([H:PH|T],NH,At,[H:PH1|T1]):-
-  PH1 is PH*NH/(NH+1),
-  add_to_head(T,NH,At,T1).
-
-
-get_module_var(LH,Module):-
-  member(H:_,LH),!,
-  H=..[_F,Module|_].
-
-
-generalize_body(Rule,Ref):-
-  Rule = rule(ID,LH,BL),
-  delete_one(BL,BL1,A),
-  remove_prob(LH,LH1),
-  delete(LH1,'',LH2),
-  linked_clause(BL1,LH2),
-  Ref = remove_body(Rule,rule(ID,LH,BL1),A).
-
-
-specialize_theory(Theory,Ref):-
-  Theory \== [],
-  choose_rule(Theory,Rule),
-  specialize_rule(Rule,SpecRule,Lit),
-  Ref = add_body(Rule,SpecRule,Lit).
 
 specialize_rule(Rule,M,_SpecRule,_Lit):-
   M:local_setting(max_body_length,ML),
@@ -1969,14 +1785,6 @@ specialize_rule(Rule,M,SpecRule,Lit):-
   findall(BL , M:modeb(_,BL), BLS),
   specialize_rule(BLS,Rule,M,SpecRule,Lit).
 
-%specializes the clause's head
-specialize_rule(rule(ID,LH,BL,Lits),M,rule(ID,LH2,BL,Lits),Lit):-
-  M:local_setting(specialize_head,true),
-	length(LH,L),
-	L>2,
-	delete_one(LH,LH1,Lit),  %deletes Lit
-	Lit\='',
-	update_head1(LH1,L-1,LH2).  %updates parameters
 
 update_head1([],_N,[]):-!.
 
@@ -2747,44 +2555,16 @@ generate_clauses([H|T],M,N,C0,C):-
 
 gen_clause((H :- Body),_M,N,N,(H :- Body),[(H :- Body)]):-!.
 
-gen_clause(rule(_R,HeadList,BodyList,Lit),M,N,N1,
-  rule(N,HeadList,BodyList,Lit),Clauses):-
-  M:local_setting(depth_bound,true),!,
-% disjunctive clause with more than one head atom e depth_bound
-  process_body_db(BodyList,_BDD,BDDAnd, DB,[],_Vars,BodyList1,Env,Module),
-  list2and(BodyList1,Body1),
-  append(HeadList,BodyList,List),
-  term_variables(List,VC),
-  get_probs(HeadList,Probs),
-  (M:local_setting(single_var,true)->
-    generate_rules_db(HeadList,Env,Body1,[],N,Probs,DB,BDDAnd,0,Clauses,Module)
-  ;
-    generate_rules_db(HeadList,Env,Body1,VC,N,Probs,DB,BDDAnd,0,Clauses,Module)
-   ),
-  N1 is N+1.
 
-gen_clause(rule(_R,HeadList,BodyList,Lit),M,N,N1,
+
+gen_clause(rule(_R,HeadList,BodyList,Lit),_M,N,N1,
   rule(N,HeadList,BodyList,Lit),Clauses):-!,
 % disjunctive clause with more than one head atom senza depth_bound
   process_body(BodyList,_BDD,BDDAnd,[],_Vars,BodyList1,Env,Module),
   list2and(BodyList1,Body1),
-  append(HeadList,BodyList,List),
-  term_variables(List,VC),
   get_probs(HeadList,Probs),
-  (M:local_setting(single_var,true)->
-    generate_rules(HeadList,Env,Body1,[],N,Probs,BDDAnd,0,Clauses,Module)
-  ;
-    generate_rules(HeadList,Env,Body1,VC,N,Probs,BDDAnd,0,Clauses,Module)
-  ),
+  generate_rules(HeadList,Env,Body1,[],N,Probs,BDDAnd,0,Clauses,Module),
   N1 is N+1.
-
-gen_clause(def_rule(H,BodyList,Lit),M,N,N,def_rule(H,BodyList,Lit),Clauses) :-
-% disjunctive clause with a single head atom e depth_bound
-  M:local_setting(depth_bound,true),!,
-  process_body_db(BodyList,_BDD,BDDAnd,DB,[],_Vars,BodyList2,Env,Module),
-  list2and(BodyList2,Body1),
-  add_bdd_arg_db(H,Env,BDDAnd,DBH,Module,Head1),
-  Clauses=[(Head1 :- (DBH>=1,DB is DBH-1,Body1))].
 
 gen_clause(def_rule(H,BodyList,Lit),_M,N,N,def_rule(H,BodyList,Lit),Clauses) :- !,%agg. cut
 % disjunctive clause with a single head atom senza depth_bound con prob =1
@@ -2843,17 +2623,6 @@ term_expansion_int((Head :- Body),M, (_Clauses,[rule(R,HeadList,BodyList,true)])
   list2and(BodyList, Body).
 
 
-term_expansion_int((Head :- Body),M,(Clauses,[def_rule(Head,BodyList,true)])) :-
-% definite clause with depth_bound
-  M:local_setting(depth_bound,true),
-   ((Head:-Body) \= ((user:term_expansion(_,_)) :- _ )),!,
-  list2and(BodyList, Body),
-  process_body_db(BodyList,BDD,BDDAnd,DB,[],_Vars,BodyList2,Env,Module),
-  append([pita:one(Env,BDD)],BodyList2,BodyList3),
-  list2and(BodyList3,Body1),
-  add_bdd_arg_db(Head,Env,BDDAnd,DBH,Module,Head1),
-  Clauses=(Head1 :- (DBH>=1,DB is DBH-1,Body1)).
-
 term_expansion_int((Head :- Body),_M,(Clauses,[def_rule(Head,BodyList,true)])) :-
 % definite clause senza DB
   ((Head:-Body) \= ((user:term_expansion(_,_)) :- _ )),!,
@@ -2865,67 +2634,13 @@ term_expansion_int((Head :- Body),_M,(Clauses,[def_rule(Head,BodyList,true)])) :
   Clauses=(Head1 :- Body2).
 
 
-term_expansion_int(Head,_M,([],[])) :-
-% disjunctive fact with a single head atom con prob. 0
-  (Head \= ((user:term_expansion(_,_)) :- _ )),
-  Head = (_H:P),P=:=0.0, !.
-
-term_expansion_int(Head,M,(Clause,[def_rule(H,[],true)])) :-
-  M:local_setting(depth_bound,true),
-% disjunctive fact with a single head atom con prob.1 e db
-  (Head \= ((user:term_expansion(_,_)) :- _ )),
-  Head = (H:P),P=:=1.0, !,
-  list2and([pita:one(Env,BDD)],Body1),
-  add_bdd_arg_db(H,Env,BDD,_DB,_Module,Head1),
-  Clause=(Head1 :- Body1).
-
-term_expansion_int(Head,_M,(Clause,[def_rule(H,[],true)])) :-
-% disjunctive fact with a single head atom con prob. 1, senza db
-  (Head \= ((user:term_expansion(_,_)) :- _ )),
-  Head = (H:P),P=:=1.0, !,
-  list2and([pita:one(Env,BDD)],Body1),
-  add_bdd_arg(H,Env,BDD,_Module,Head1),
-  Clause=(Head1 :- Body1).
-
-term_expansion_int(Head,M,(Clause,[rule(R,HeadList,[],true)])) :-
-  M:local_setting(depth_bound,true),
-% disjunctive fact with a single head atom e prob. generiche, con db
-  (Head \= ((user:term_expansion(_,_)) :- _ )),
-  Head=(H:_), !,
-  list2or(HeadListOr, Head),
-  process_head(HeadListOr,M, HeadList),
-  term_variables(HeadList,VC),
-  get_next_rule_number(M,R),
-  get_probs(HeadList,Probs),
-  add_bdd_arg_db(H,Env,BDD,_DB,_Module,Head1),
-  (M:local_setting(single_var,true)->
-    Clause=(Head1:-(pita:get_var_n(Env,R,[],Probs,V),pita:equality(Env,V,0,BDD)))
-  ;
-    Clause=(Head1:-(pita:get_var_n(Env,R,VC,Probs,V),pita:equality(Env,V,0,BDD)))
-  ).
-
-term_expansion_int(Head,M,(Clause,[rule(R,HeadList,[],true)])) :-
+term_expansion_int(Head,M,(_,[rule(R,HeadList,[],true)])) :-
 % disjunctive fact with a single head atom e prob. generiche, senza db
   (Head \= ((user:term_expansion(_,_)) :- _ )),
-  Head=(H:_), !,
+  Head=(_H:_), !,
   list2or(HeadListOr, Head),
   process_head(HeadListOr,M, HeadList),
-  term_variables(HeadList,VC),
-  get_next_rule_number(M,R),
-  get_probs(HeadList,Probs),
-  add_bdd_arg(H,Env,BDD,_Module,Head1),%***test single_var
-  (M:local_setting(single_var,true)->
-    Clause=(Head1:-(pita:get_var_n(Env,R,[],Probs,V),pita:equality(Env,V,0,BDD)))
-  ;
-    Clause=(Head1:-(pita:get_var_n(Env,R,VC,Probs,V),pita:equality(Env,V,0,BDD)))
-  ).
-
-term_expansion_int(Head, M,((Head1:-pita:one(Env,One)),[def_rule(Head,[],true)])) :-
-  M:local_setting(depth_bound,true),
-% definite fact with db
-  (Head \= ((user:term_expansion(_,_) ):- _ )),
-  (Head\= end_of_file),!,
-  add_bdd_arg_db(Head,Env,One,_DB,_Module,Head1).
+  get_next_rule_number(M,R).
 
 term_expansion_int(Head, _M,((Head1:-pita:one(Env,One)),[def_rule(Head,[],true)])) :-
 % definite fact without db
@@ -3469,24 +3184,6 @@ lift_expansion(end(model(_I)), []) :-
   prolog_load_context(module, M),
   lift_input_mod(M),!,
   retractall(M:model(_)).
-
-lift_expansion(output(P/A), [output(P/A)|TabDir]) :-
-  prolog_load_context(module, M),
-  lift_input_mod(M),
-  M:local_setting(tabling,auto),!,
-  tab(M,P/A,P1),
-  zero_clause(M,P/A,Z),
-  system:term_expansion((:- table P1),TabDir),
-  assert(M:zero_clauses([Z])).
-
-lift_expansion(input(P/A), [input(P/A)|TabDir]) :-
-  prolog_load_context(module, M),
-  lift_input_mod(M),
-  M:local_setting(tabling,auto),!,
-  tab(M,P/A,P1),
-  zero_clause(M,P/A,Z),
-  system:term_expansion((:- table P1),TabDir),
-  assert(M:zero_clauses([Z])).
 
 lift_expansion(At, A) :-
   prolog_load_context(module, M),

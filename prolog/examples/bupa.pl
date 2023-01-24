@@ -9,12 +9,9 @@
 
 :-lift.
 
-:- set_lift(depth_bound,false).
-:- set_lift(single_var,false).
 :- set_lift(neg_ex,given).
 :- set_lift(megaex_bottom,4).
 :- set_lift(max_iter,20).
-:- set_lift(max_iter_structure,50).
 :- set_lift(max_var,100).
 :- set_lift(maxdepth_var,20). %da inserire nel tutorial
 :- set_lift(verbosity,3).

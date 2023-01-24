@@ -18,12 +18,12 @@ LIFTCOVER is a system for learning simple probabilistic logic programs with scal
 
 Installation
 ============
-LIFTCOVER is distributed as a `pack <http://www.swi-prolog.org/pack/list?p=liftcover>`_ of
- `SWI-Prolog <http://www.swi-prolog.org/>`_. 
+LIFTCOVER is distributed as a `pack <http://www.swi-prolog.org/pack/list?p=liftcover>`_ of `SWI-Prolog <http://www.swi-prolog.org/>`_. 
 To install it, use ::
 
     $ swipl
     ?- pack_install(liftcover).
+
 
 Requirements
 -------------
@@ -368,46 +368,44 @@ Commands
 
 Parameter Learning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To execute PHIL, prepare an input file as indicated above and call ::
+To execute LIFTCOVER, prepare an input file as indicated above and call ::
 
-	?- induce_hplp_par(+List_of_folds:list,-P:list).
+	?- induce_lift_par(+List_of_folds:list,-P:list).
 
-where :code:`<list of folds>` is a list of the folds for training and :code:`P` will contain the input program with updated parameters.
+where :code:`<list of folds>` is a list of the folds for training and :code:`P` will contain 
+the input program with updated parameters.
 
-For example `bongard.pl <http://cplint.eu/e/phil/bongard.pl>`__, you can perform parameter learning on the :code:`train` fold with ::
+For example `bongard.pl <http://cplint.eu/e/lift/bongard.pl>`__, you can perform parameter learning on the :code:`train` fold with ::
 
-	?- induce_hplp_par([train],P).
+	?- induce_lift_par([train],P).
 
 Structure Learning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To execute SLEAHP, prepare an input file in the editor panel as indicated above and call ::
+To execute LIFTCOVER, prepare an input file in the editor panel as indicated above and call ::
 
-	?- induce_hplp(+List_of_folds:list,-P:list).
+	?- induce_lift(+List_of_folds:list,-P:list).
 
 where :code:`List_of_folds` is a list of the folds for training and :code:`P` will contain the learned program.
 
-For example `bongard.pl <http://cplint.eu/e/phil/bongard.pl>`__, you can perform structure learning on the :code:`train` fold with ::
+For example `bongard.pl <http://cplint.eu/e/lift/bongard.pl>`__, you can perform structure learning on the :code:`train` fold with ::
 
-	?- induce_hplp([train],P).
+	?- induce_lift([train],P).
 
-A program can also be tested on a test set with :code:`test_hplp/7`  as described below.
-
-Between two executions of :code:`induce_hplp/2` you should exit SWI-Prolog to have a clean database.
-
+A program can also be tested on a test set with :code:`test_lift/7`  as described below.
 
 
 Testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-A program can also be tested on a test set in SLEAHP with ::
+A program can also be tested on a test set in LIFTCOVER with ::
 
-	test_hplp(+Program:list,+List_of_folds:list,-LL:float,-AUCROC:float,-ROC:list,-AUCPR:float,-PR:list) is det
+	test_lift(+Program:list,+List_of_folds:list,-LL:float,-AUCROC:float,-ROC:list,-AUCPR:float,-PR:list) is det
 
 where :code:`Program` is a list of terms representing clauses and :code:`List_of_folds` is a list of folds.
 
-:code:`test_hplp/7` returns the log likelihood of the test examples in :code:`LL`, the Area Under the ROC curve in :code:`AUCROC`, a dictionary containing the list of points (in the form of Prolog pairs :code:`x-y`) of the ROC curve in :code:`ROC`, the Area Under the PR curve in :code:`AUCPR`, a dictionary containing the list of points of the PR curve in :code:`PR`.
+:code:`test_lift/7` returns the log likelihood of the test examples in :code:`LL`, the Area Under the ROC curve in :code:`AUCROC`, a dictionary containing the list of points (in the form of Prolog pairs :code:`x-y`) of the ROC curve in :code:`ROC`, the Area Under the PR curve in :code:`AUCPR`, a dictionary containing the list of points of the PR curve in :code:`PR`.
 
 
-Then you can draw the curves in :code:`phil` using C3.js as follows ::
+Then you can draw the curves using C3.js as follows ::
 
 	compute_areas_diagrams(+ExampleList:list,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
 
@@ -415,81 +413,75 @@ Then you can draw the curves in :code:`phil` using C3.js as follows ::
 
 For example, to test on fold :code:`test` the program learned on fold :code:`train` you can run the query ::
 
-	?- induce_hplp_par([train],P),
-  	test_hplp(P,[test],LL,AUCROC,ROC,AUCPR,PR).
+	?- induce_lift_par([train],P),
+  	test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 
 Or you can test the input program on the fold :code:`test` with ::
 
-	?- in(P),test_hplp(P,[test],LL,AUCROC,ROC,AUCPR,PR).
+	?- in(P),test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 
-In :code:`phil` on SWISH, by including ::
+In SWISH, by including ::
 
 	:- use_rendering(c3).
 	:- use_rendering(lpad).
 
-in the code before :code:`:- phil.` the curves will be shown as graphs using C3.js and the output program will be pretty printed.
+in the code before :code:`:- lift.` the curves will be shown as graphs using C3.js and the output program will be pretty printed.
 
 Hyper-parameters for Learning
 -----------------------------
 Hyper-parameters are set with commands of the form ::
 
-	:- set_hplp(<parameter>,<value>).
+	:- set_lift(<parameter>,<value>).
 
-They are available both for PHIL and SLEAHP:
+and read with commands of the form ::
 
-* PHIL hyper-parameters
+	:- setting_lift(<parameter>,<value>).
 
-    - :code:`algorithmType` (values: :code:`{dphil,emphil}`, default value: :code:`dphil`): defines the parameter learning algorithm.
-    - :code:`maxIter_phil` (values: integer, default value: 1000): maximum number of iteration of PHIL. If set to -1, no maximum number of iterations is imposed.
-    - :code:`epsilon_deep` (values: real, default value: 0.0001): if the difference in the log likelihood in two successive PHIL (DPHIL and EMPHIL) iteration is smaller than :code:`epsilon_deep`, then PHIL stops.
-    - :code:`epsilon_deep_fraction` (values: real, default value: 0.00001): if the difference in the log likelihood in two successive PHIL iteration is smaller than :code:`epsilon_deep_fraction*(-current log likelihood)`, then PHIL stops.
-    - :code:`seed` (values: seed(integer) or seed(random), default value :code:`seed(3032)`): seed for the Prolog random functions, see `SWI-Prolog manual <http://www.swi-prolog.org/pldoc/man?predicate=set_random/1>`__ .
-    - :code:`setSeed` (values: :code:`{no,yes}`, default value: :code:`no`): if :code:`yes`, the value of :code:`c_seed` is used as seed for randomly initializing the probabilities in PHIL  otherwise the actual clock value is used.
-    - :code:`c_seed` (values: unsigned integer, default value 21344)): seed for the C random functions if :code:`setSeed` is set to :code:`yes`.
-    - :code:`useInitParams` (values: :code:`{no,yes}`, default value: :code:`no`): if :code:`yes` the initial parameters during the learning are the ones indicated in the program. Otherwise, the initial parameters are generated randomly using the clock seed.
-    - :code:`logzero` (values: negative real, default value :math:`\log(0.000001)`): value assigned to :math:`\log(0)`.
-    - :code:`zero` (values: real, default value :math:`0.000001`): value assigned to :math:`0`.
-    - :code:`max_initial_weight` (values: real number , default value: 0.5): weights in DPHIL are randomly initialized with values in the interval [-max_initial_weight, max_initial_weight].
-    - :code:`adam_params` (values: list of four values [learningRate, beta1, beta2, epsilon], default value: [0.001,0.9,0.999,1e-8]): provides Adam's hyper-parameters.
-    - :code:`batch_strategy` (values: :code:`minibatch(size)`, :code:`stoch_minibatch(size)`, :code:`batch`, default value: :code:`minibatch(10)`): defines the gradient descent strategy in DPHIL. If set to :code:`minibatch(size)` the mini batch strategy with batch size :code:`size` is used i.e at each iteration, :code:`size` arithmetic circuits (ACs) are used to compute the gradients. If set to :code:`batch` the whole set of ACs are used to compute the gradients. :code:`stoch_minibatch(size)` is a modified version of mini batch in which at each iteration, :code:`size`  ACs are randomly selected for computing the gradients.
-    - :code:`saveStatistics` (values: :code:`{no,yes}`, default value: :code:`no`): if :code:`yes`, the statistics (evolution of the likelihood and other values) during parameter learning are saved in a folder whose name is the value of :code:`statistics_folder` hyper-parameter. 
-    - :code:`statistics_folder` (values: string , default value: :code:`statistics`): folder where to save the statistics if :code:`saveStatistics` is set to :code:`yes`.
-    - :code:`regularized` (values: :code:`{no,yes}` , default value: :code:`no`): if set to :code:`yes` regularization is enabled. 
-    - :code:`regularizationType` (values: integer in :code:`[0,3]` , default value: :code:`0`):  :code:`0` to disable regularization, :code:`1`, :code:`2` and :code:`3` for L1, L2 and Bayesian regularization respectively.
-    - :code:`gamma` (values: real number, default value: :code:`10`): regularization coefficient for L1 and L2. Is equal to the Dirichlet coefficient :code:`a` for Bayesian regularization. 
-    - :code:`gammaCount` (values:real number , default value: 0): Dirichlet coefficient :code:`b` for Bayesian regularization and typically 0 for L1 and l2 regularization.
+* hyper-parameters
 
-* SLEAHP hyper-parameters
-
+    - :code:`parameter_learning`: (values: :code:`{em,lbfgs,gd}`, default value: :code:`em`) parameter learning algorithm
+    - :code:`regularization`: (values: :code:`{no,l1,l2,bayes}`, default value: :code:`l1`) type of regularization
+    - :code:`gamma` (values: real number, default value: :code:`10`): regularization coefficient for L1 and L2
+    - :code:`ab` (values: list of two real numbers, default value: :code:`[0,10]`): values of a and b for bayesian regularization 
+    - :code:`eta` (values: real number, default value: :code:`1`): eta parameter in gradient descent (the parameters are updated as par=par+eta*gradient)
+    - :code:`max_initial_weight` (values: real number , default value: 0.5): weights in lbfgs and gd are randomly initialized with values in the interval [-max_initial_weight, max_initial_weight].
+    - :code:`min_probability` (values: real number in :code:`[0,1]`, default value: :code:`1e-5`):  probability threshold under which a clause is dropped out.
+    - :code:`eps` (values: real, default value: 0.0001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than :code:`eps`, then parameter learning stops.
+    - :code:`eps_f` (values: real, default value: 0.00001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than :code:`eps_f*(-current log likelihood)`, then LIFTCOVER stops.
+    - :code:`random_restarts_number` (values: integer, default value: 1): number of random restarts of parameter learning algorithms 
+    - :code:`iter` (values: integer, default value: -1): maximum number of parameter learning iterations (-1 means not limits)
+    - :code:`max_iter` (values: integer, default value: :code:`10`): iterations of clause search.
+    - :code:`beamsize` (values: integer, default value: 100): size of the beam in the search for clauses
+    - :code:`neg_ex` (values: :code:`given`, :code:`cw`, default value: :code:`cw`): if set to :code:`given`, the negative examples in training and testing are taken from the test folds interpretations, i.e., those examples :code:`ex` stored as :code:`neg(ex)`; if set to :code:`cw`, the negative examples in training and testing are generated according to the closed world assumption, i.e., all atoms for target predicates that are not positive examples. The set of all atoms is obtained by collecting the set of constants for each type of the arguments of the target predicate, so the target predicates must have at least one fact for :code:`modeh/2` or :code:`modeb/2` also for parameter learning.
+    - :code:`specialization`: (values: :code:`{bottom,mode}`, default value: :code:`bottom`) specialization mode.
     - :code:`megaex_bottom` (values: integer, default value: 1, valid for SLEAHP): number of mega-examples on which to build the bottom clauses.
     - :code:`initial_clauses_per_megaex` (values: integer, default value: 1, valid for SLEAHP): number of bottom clauses to build for each mega-example (or model or interpretation).
     - :code:`d` (values: integer, default value: 1, valid for SLEAHP): number of saturation steps when building the bottom clause.
-    - :code:`neg_ex` (values: :code:`given`, :code:`cw`, default value: :code:`cw`): if set to :code:`given`, the negative examples in training and testing are taken from the test folds interpretations, i.e., those examples :code:`ex` stored as :code:`neg(ex)`; if set to :code:`cw`, the negative examples in training and testing are generated according to the closed world assumption, i.e., all atoms for target predicates that are not positive examples. The set of all atoms is obtained by collecting the set of constants for each type of the arguments of the target predicate, so the target predicates must have at least one fact for :code:`modeh/2` or :code:`modeb/2` also for parameter learning.
-    - :code:`probability` (values:real number in :code:`[0,1]` , default value: :code:`1.0`): initial value which indicates the probability to go from the current layer to the next when generating the initial HPLP.
-    - :code:`rate` (values: real number in :code:`[0,1]`, default value: :code:`0.95`): at each layer during the tree generation, the probability to go deeper is equal to :code:`probability=probability*rate`. The deeper the layer the lower is the probability to go deeper.
-    - :code:`min_probability` (values: real number in :code:`[0,1]`, default value: :code:`1e-5`):  probability threshold under which a clause is dropped out.
-    - :code:`use_all_mega_examples` (values: :code:`{no,yes}` , default value::code:`yes`): if set to :code:`yes` all the the bottom clauses are used to create the tree otherwise only one of them is used (typically the first).
-    - :code:`saveHPLP` (values: :code:`{no,yes}`, default value: :code:`no`): if set to :code:`yes` the initial and the learned hierarchical programs are saved in the current folder.
-    - :code:`saveFile` (values: string, default value: "hplp"): file name where to save the initial hierarchical programs if :code:`saveHPLP`  is set to :code:`yes`. If the file name is :code:`hplp`, the learned program is saved in file :code:`hplp_learned`.
-    - :code:`max_layer` (values: integer, default value: -1): maximum layer of clauses. If set to -1, no maximum is imposed.
+    - :code:`max_var` (values: integer, default value: 4): maximum number of distinct variables in a clause
+    - :code:`maxdepth_var` (values: integer, default value: 2): maximum depth of variables in clauses (as defined in :cite:`DBLP:journals/ai/Cohen95`).
+    - :code:`max_body_length` (values: integer, default value: 100): maximum number of literals in the body of clauses
+    - :code:`neg_literals` (values: :code:`{true,false}`, default value: :code:`false`): whether to consider negative literals when building the bottom clause
+    - :code:`minus_infinity`: (values: real, default value: -1.0e20) minus infinity
+    - :code:`logzero` (values: negative real, default value :math:`\log(0.000001)`): value assigned to :math:`\log(0)`.
+    - :code:`zero` (values: real, default value :math:`0.000001`): value assigned to :math:`0`.
+    - :code:`seed` (values: seed(integer) or seed(random), default value :code:`seed(3032)`): seed for the Prolog random functions, see `SWI-Prolog manual <http://www.swi-prolog.org/pldoc/man?predicate=set_random/1>`__ .
     - :code:`verbosity` (values: integer in :code:`[1,3]`, default value: :code:`1`): level of verbosity of the algorithms.
 
-	
+
 
 Example Files
 =============
-The :code:`pack/phil/prolog/examples` folder in SWI-Prolog home contains some example programs. 
-The subfolder :code:`learning` contains some learning examples.
-The :code:`pack/phil/docs` folder contains this manual in latex, html and pdf.
+The :code:`pack/liftcover/prolog/examples` folder in SWI-Prolog home contains some example programs. 
+The :code:`pack/liftcover/docs` folder contains this manual in latex, html and pdf.
 
 Manual in PDF
 ==================
-A PDF version of the manual is available at `https://arnaudfadja.github.io/phil/_build/latex/phil.pdf <https://arnaudfadja.github.io/phil/_build/latex/phil.pdf>`_.
+A PDF version of the manual is available at `https://friguzzi.github.io/liftcover/_build/latex/liftcover.pdf <https://friguzzi.github.io/liftcover/_build/latex/liftcover.pdf>`_.
 
 License
 =======
-phil follows the Artistic License 2.0 that you can find in phil root folder. 
-The copyright is by Arnaud Nguembang Fadja.
+phil follows the MIT License that you can find in phil root folder. 
+The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.
 
 References
 ==========

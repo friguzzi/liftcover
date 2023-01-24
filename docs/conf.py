@@ -32,7 +32,7 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinxcontrib.bibtex','sphinx.ext.autosectionlabel','sphinx.ext.mathjax']
-
+bibtex_bibfiles = ['newbib.bib']
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -46,9 +46,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'phil'
-copyright = '2020, Arnaud Nguembang Fadja, Riguzzi Fabrizio'
-author = 'Arnaud Nguembang Fadja, Fabrizio Riguzzi'
+project = 'liftcover'
+copyright = '2023, Riguzzi Fabrizio, Arnaud Nguembang Fadja'
+author = 'Fabrizio Riguzzi, Arnaud Nguembang Fadja'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -119,7 +119,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'phildoc'
+htmlhelp_basename = 'liftdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -146,8 +146,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'phil.tex', 'phil Documentation',
-     'Arnaud Nguembang Fadja, Fabrizio Riguzzi', 'manual'),
+    (master_doc, 'liftcover.tex', 'LIFTCOVER Documentation',
+     'Fabrizio Riguzzi', 'manual'),
 ]
 
 
@@ -156,7 +156,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'phil', 'phil Documentation',
+    (master_doc, 'liftcover', 'LIFTCOVER Documentation',
      [author], 1)
 ]
 
@@ -167,8 +167,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'phil', 'phil Documentation',
-     author, 'phil', 'One line description of project.',
+    (master_doc, 'liftcover', 'LIFTCOVER Documentation',
+     author, 'liftcover', 'Learning simple probabilistic logic programs',
      'Miscellaneous'),
 ]
 

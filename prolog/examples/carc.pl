@@ -53,17 +53,14 @@ in([
         symbond(B,D,1))
 ]).
 
-:-set_lift(single_var,false).
 :-set_lift(megaex_bottom,16).
 :-set_lift(max_iter,60).
 :-set_lift(beamsize,100).
 :-set_lift(d,2).
 :-set_lift(max_var,3).
-:-set_lift(max_iter_structure,50).
 %:-set_lift(seed,rand(12452,14223,9322)).
 :- set_lift(seed,rand(22,33,1000)).
 %:-set_lift(initial_clauses_per_megaex,4).
-:-set_lift(depth_bound,false).
 fold(train,[
   % pos
   d1,d10,d101,d102,d103,d106,d107,d108,d11,d12,d13,d134,d135,d136,d138,d140,
