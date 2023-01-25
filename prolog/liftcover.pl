@@ -116,8 +116,6 @@ default_setting_lift(eta,1).
 induce_lift(TrainFolds,P):-
   induce_rules(TrainFolds,P0),
   rules2terms(P0,P).
-%  generate_clauses(P0,P,0,[],_Th).
-
 /**
  * test_lift(+P:probabilistic_program,+TestFolds:list_of_atoms,-LL:float,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
  *
@@ -216,7 +214,8 @@ induce_rules(M:Folds,R):-
     get_head_atoms(O,M),
     generate_top_cl(O,M,R1)
   ),
-  learn_struct(Pos,Neg,M,R1,R,Score),
+  learn_struct(Pos,Neg,M,R1,R2,Score),
+  sort_rules(R2,R),
   statistics(walltime,[_,WT]),
   WTS is WT/1000,
   %LearningTime is WTS,
@@ -231,6 +230,17 @@ induce_rules(M:Folds,R):-
   ),
   retractall(M:ref_clause(_)),
   retractall(M:ref(_)).
+
+%  generate_clauses(P0,P,0,[],_Th).
+
+sort_rules(P0,P):-
+  maplist(to_pair,P0,P1),
+  sort(1,@>=,P1,P2),
+  maplist(to_pair,P,P2).
+
+%to_pair((H:P;R:- B),P-(H:P;R:- B)).
+to_pair(rule(N,[H:P|R],BL,Lit),P-rule(N,[H:P|R],BL,Lit)).
+
 
 make_dynamic(M):-
   M:(dynamic int/1),
