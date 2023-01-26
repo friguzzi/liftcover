@@ -664,12 +664,32 @@ gd(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIP,Par,Score):-
     Par=Par0
   ;
     M:local_setting(eta,Eta),
-    maplist(update_par(Eta),Par0,G,Par1),
+    M:local_setting(gamma,Gamma),
+    (M:local_setting(regularization,l2)->
+      maplist(l2,Par0,Reg)
+    ;
+      (M:local_setting(regularization,l1)->
+        maplist(l1,Par0,Reg)
+      ;
+        findall(0,between(1,NR,_),Reg)
+      )
+    ),
+    maplist(update_par(Eta,Gamma),Par0,Reg,G,Par1),
     gd(EA,ER,Iter,M,NR,Par1,Score1,MI,MIP,Par,Score)
   ).
 
-update_par(Eta,Par0,G,Par1):-
-  Par1 is Par0-Eta*G.
+l1(W,R):-
+  logistic(W,S),
+  R is S*(1-S).
+
+l2(W,R):-
+  logistic(W,S),
+  R is 2*S^2*(1-S).
+
+update_par(Eta,Gamma,Par0,Reg,G,Par1):-
+  Par1 is Par0-Eta*G-Gamma*Reg.
+
+
 
 evaluate_L_gd(M,MIP,MI,Par,L):-
   maplist(logistic,Par,Prob),

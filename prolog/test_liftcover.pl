@@ -237,7 +237,7 @@ test(induce_par_bongard):-
   writeln(St1).
 
 test(induce_par_gd_bongard):-
-  set_lift(verbosity,3),
+  set_lift(verbosity,4),
   set_lift(parameter_learning,gd),
   set_lift(eta,0.01),
   induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
@@ -249,6 +249,57 @@ test(induce_par_gd_bongard):-
   '\nLL =',-218.22925642272494,
   '\nAUCROC =',0.7485951468710089,
   '\nAUCPR =', 0.5979409655734421],St1),
+  writeln(St1).
+
+test(induce_gd_bongard):-
+  set_lift(verbosity,1),
+  set_lift(parameter_learning,gd),
+  set_lift(regularization, no),
+  set_lift(eta,0.01),
+  set_lift(gamma,0.1),
+  induce_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-88.11894369013643,
+  '\nAUCROC =',0.8199872286079184,
+  '\nAUCPR =',0.6676162174173899],St1),
+  writeln(St1).
+
+test(induce_gd_l1_bongard):-
+  set_lift(verbosity,1),
+  set_lift(parameter_learning,gd),
+  set_lift(regularization, l1),
+  set_lift(eta,0.01),
+  set_lift(gamma,1),
+  induce_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-86.45340693767905,
+  '\nAUCROC =',0.8247126436781609,
+  '\nAUCPR =', 0.6620667885942804],St1),
+  writeln(St1).
+
+test(induce_gd_l2_bongard):-
+  set_lift(verbosity,1),
+  set_lift(parameter_learning,gd),
+  set_lift(regularization, l2),
+  set_lift(eta,0.01),
+  set_lift(gamma,1),
+  induce_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-87.36727076138638,
+  '\nAUCROC =',0.8188378033205619,
+  '\nAUCPR =', 0.6550280976471973],St1),
   writeln(St1).
 
 
