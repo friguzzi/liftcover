@@ -1,28 +1,16 @@
 
 :- module(test,
-  [test/0,test_all/0,test_par/0,test_stru/0]).
+  [test/0,test_all/0]).
 :- use_module(library(plunit)).
 
 test:-
   test_all.
 
 test_all:-
-  par(P),
-  stru(S),
-  append(P,S,A),
+  tests(A),
   run_tests(A).
 
-test_par:-
-  par(P),
-  run_tests(P).
-
-test_stru:-
-  stru(S),
-  run_tests(S).
-
-par([carc_par,muta_par]).
-
-stru([bupa,mondial,nba]).
+tests([carc,muta,bupa,mondial,nba,bongard]).
 
 :- begin_tests(bupa, []).
 :-ensure_loaded(library(examples/bupa)).
@@ -62,7 +50,7 @@ test(induce_carc):-
 
 :- end_tests(carc).
 */
-:- begin_tests(carc_par, []).
+:- begin_tests(carc, []).
 :-ensure_loaded(library(examples/carc)).
 :-use_module(library(cplint_test/cplint_test)).
 
@@ -105,7 +93,7 @@ test(induce_par_gd_carc):-
   '\nAUCROC =',0.6710526315789473,
   '\nAUCPR =', 0.5989337661969046],St1),
   writeln(St1).
-:- end_tests(carc_par).
+:- end_tests(carc).
 
 :- begin_tests(mondial, []).
 :-ensure_loaded(library(examples/mondial)).
@@ -126,7 +114,7 @@ test(induce_mondial):-
 
 :- end_tests(mondial).
 
-:- begin_tests(muta_par, []).
+:- begin_tests(muta, []).
 :-ensure_loaded(library(examples/muta)).
 :-use_module(library(cplint_test/cplint_test)).
 
@@ -171,7 +159,7 @@ test(induce_par_gd_muta):-
   writeln(St1).
 
 
-:- end_tests(muta_par).
+:- end_tests(muta).
 
 
 :- begin_tests(nba, []).
@@ -235,3 +223,51 @@ test(induce_nba_bayesian):-
   writeln(St1).
 
 :- end_tests(nba).
+
+
+:- begin_tests(bongard, []).
+:-ensure_loaded(library(examples/bongard)).
+:-use_module(library(cplint_test/cplint_test)).
+
+test(in_bongard):-
+  in(P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+writeln('Result:'),
+writeln(P),
+atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+writeln(St),
+atomic_list_concat(['Expected:\n', 
+'\nLL =', -57.935435521442045,
+'\nAUCROC =',0.46212121212121215,
+'\nAUCPR =', 0.6901758247756261],St1),
+writeln(St1).
+
+test(induce_par_bongard):-
+  set_lift(verbosity,1),
+  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-62.26891635625195,
+  '\nAUCROC =',0.6287878787878788,
+  '\nAUCPR =', 0.8184241612528028],St1),
+  writeln(St1).
+
+test(induce_par_gd_bongard):-
+  set_lift(verbosity,3),
+  set_lift(parameter_learning,gd),
+  set_lift(eta,0.01),
+  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-62.26891635625195,
+  '\nAUCROC =',0.6287878787878788,
+  '\nAUCPR =', 0.8184241612528028],St1),
+  writeln(St1).
+
+
+:- end_tests(bongard).

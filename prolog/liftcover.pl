@@ -70,7 +70,7 @@ default_setting_lift(eps_f,0.00001).
 default_setting_lift(random_restarts_number,1).
 default_setting_lift(iter,-1).
 default_setting_lift(d,1).
-default_setting_lift(verbosity,0).
+default_setting_lift(verbosity,1).
 default_setting_lift(logzero,log(0.000001)).
 default_setting_lift(megaex_bottom,1).
 default_setting_lift(initial_clauses_per_megaex,1).
@@ -82,7 +82,6 @@ default_setting_lift(max_body_length,100).
 default_setting_lift(neg_literals,false).
 
 default_setting_lift(specialization,bottom).
-%setting_lift(specialization,mode).
 /* allowed values: mode,bottom */
 
 default_setting_lift(seed,rand(10,1231,3032)).
@@ -94,7 +93,7 @@ default_setting_lift(epsilon_parsing, 1e-5).
 
 
 
-default_setting_lift(zero,0.01).
+default_setting_lift(zero,0.000001).
 default_setting_lift(minus_infinity,-1.0e20).
 
 default_setting_lift(regularization,l1). % regularization: no, l1, l2, bayesian 
@@ -142,21 +141,18 @@ test_lift(P,TestFolds,LL,AUCROC,ROC,AUCPR,PR):-
 test_prob_lift(M:P,TestFolds,NPos,NNeg,CLL,Results) :-
   write2(M,'Testing\n'),
   make_dynamic(M),
-  %gtrace,
   process_clauses(P,M,PRules),
   generate_clauses(PRules,M,0,[],Prog),
   (M:bg(RBG0)->
     process_clauses(RBG0,M,RBG),
     generate_clauses_bg(RBG,ClBG),
     assert_all(ClBG,M,ClBGRef)
-%    assert_all(RBGRF,RBGRFRef)
   ;
     true
   ),
   findall(Exs,(member(F,TestFolds),M:fold(F,Exs)),L),
   append(L,DB),
   test_no_area(DB,M,Prog,NPos,NNeg,CLL,Results),
-  % write(Results),
   (M:bg(RBG0)->
     retract_all(ClBGRef)
   ;
@@ -164,21 +160,11 @@ test_prob_lift(M:P,TestFolds,NPos,NNeg,CLL,Results) :-
   ).
 
 induce_rules(M:Folds,R):-
-  %tell(ciao1),
-  %write(ciao1),
   make_dynamic(M),
   M:local_setting(seed,Seed),
   setrand(Seed),
-  %set_prolog_flag(unknown,warning),
   findall(Exs,(member(F,Folds),M:fold(F,Exs)),L),
   append(L,DB),
-  %write2('\n\n\n\n\n\n'),
-  %write(DB),
-  %write2('\n\n\n\n\n\n'),
-  %tell(ciao2),
-  assert(M:database(DB)),
-  %gtrace,
-%  findall(C,M:bg(C),RBG),
   (M:bg(RBG0)->
     process_clauses(RBG0,M,RBG),
     generate_clauses_bg(RBG,ClBG),
@@ -187,15 +173,6 @@ induce_rules(M:Folds,R):-
     true
   ),
   find_ex(DB,M,Pos,Neg,NPos,_Neg),
-  /*write2('\n\n\n\n\n\nesempi positivi'),
-  write(NPos),
-  write(Pos),
-  write('\n'),
-  write(_Neg),
-  write2('esempi positivi\n\n\n\n\n\n'),
-  write2('\n\n\n\n\n\nesempi negativi'),
-  write(Neg),
-  write2('esempi negativi\n\n\n\n\n\n'),*/
   M:local_setting(megaex_bottom, NumMB),
   (NPos >= NumMB ->
       true
@@ -203,7 +180,6 @@ induce_rules(M:Folds,R):-
       format2(M,"~nWARN: Number of required bottom clauses is greater than the number of training examples!~n. The number of required bottom clauses will be equal to the number of training examples", []),
       M:set_lift(megaex_bottom, NPos)
   ),
-
   statistics(walltime,[_,_]),
   (M:local_setting(specialization,bottom)->
     M:local_setting(megaex_bottom,MB),
@@ -218,9 +194,8 @@ induce_rules(M:Folds,R):-
   sort_rules(R2,R),
   statistics(walltime,[_,WT]),
   WTS is WT/1000,
-  %LearningTime is WTS,
   write2(M,'\n\n'),
-  format2(M,'/* SLIPCOVER Final score ~f~n',[Score]),
+  format2(M,'/* Final score ~f~n',[Score]),
   format2(M,'Wall time ~f */~n',[WTS]),
   write_rules2(M,R,user_output),
   (M:bg(RBG0)->
@@ -231,14 +206,11 @@ induce_rules(M:Folds,R):-
   retractall(M:ref_clause(_)),
   retractall(M:ref(_)).
 
-%  generate_clauses(P0,P,0,[],_Th).
-
 sort_rules(P0,P):-
   maplist(to_pair,P0,P1),
   sort(1,@>=,P1,P2),
   maplist(to_pair,P,P2).
 
-%to_pair((H:P;R:- B),P-(H:P;R:- B)).
 to_pair(rule(N,[H:P|R],BL,Lit),P-rule(N,[H:P|R],BL,Lit)).
 
 
@@ -269,11 +241,6 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   maplist(get_cl,CL,LC),
   write2(Mod,"Final parameter learning"),nl2(Mod),
   learn_param(LC,Mod,Pos,Neg,R1,Score),
-/*  CL=[(C0,S)|RCL],
-  format2("Theory search~n~n",[]),
-  Mod:local_setting(max_iter_structure,MS),
-  cycle_structure(RCL,Mod,[C0],S,-1e20,Pos,Neg,R2,Score,MS),
-*/
   (Mod:local_setting(regularization,no)->
     R=R1
   ;
@@ -281,7 +248,7 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
     remove_clauses(R1,Min_prob,R,Num),
     length(R1,NumBR),
     NumRem is NumBR-Num,
-    format2(Mod,"Rules before regularization: ~d~nAfter regularization ~d~n ",[NumBR,NumRem])
+    format2(Mod,"Rules: ~d~nAfter removing rules with small parameters ~d~n ",[NumBR,NumRem])
   ),
   format2(Mod,"Best target theory~n~n",[]),
   write_rules2(Mod,R,user_output).
@@ -328,7 +295,7 @@ cycle_structure([(RH,_Score)|RT],Mod,R0,S0,SP0,Pos,Neg,R,S,M):-
   format3(Mod,"Initial theory~n~n",[]),
   write_rules3(Mod,[RH|R0],user_output),
   learn_param([RH|R0],Mod,Pos,Neg,R3,Score),
-  format3(Mod,"Score after EMBLEM = ~f~n",[Score]),
+  format3(Mod,"Score after parameter learning = ~f~n",[Score]),
   write3(Mod,'Updated Theory\n'),
   write_rules3(Mod,R3,user_output),   %definite rules without probabilities in the head are not written
   (Score>S0->
@@ -375,24 +342,15 @@ evaluate(L,_N,_Step):-
   M=user,
   M:mip(MIP),
   M:mi(MI),
-%  write(init_ev),nl,
-%  write(Step),nl,
   compute_likelihood_pos(MIP,M,0,0,LP),
-%  write(lpos),nl,
   compute_likelihood_neg(MI,M,LN),
-%  write(lneg),nl,
   compute_likelihood(LN,M,LP,L),
-%  NL is -L,
-%  write(l),nl,
   compute_grad(MIP,M,0,MI,LN).
-%  write(grad),nl.
 
 compute_grad([],_M,_N,_MI,_LN):-!.
 
 compute_grad([HMIP|TMIP],M,N0,MI,LN):-
-%  write(prima_comp_grad),nl,
   compute_sum_neg(MI,M,LN,N0,0,S),
-%  write(opt),nl,
   optimizer_get_x(N0,P0),
   M:local_setting(zero,Zero),
   (P0=<0 ->
@@ -406,12 +364,10 @@ compute_grad([HMIP|TMIP],M,N0,MI,LN):-
   ),
 
  (PI=:= 1.0->
-%   write(overflow),nl,
     G is 1.0/Zero
   ;
     G is (HMIP-S)/(1.0-PI)
   ),
-%  write(G),write(g),nl,
   optimizer_set_g(N0,G),
   N1 is N0+1,
   compute_grad(TMIP,M,N1,MI,LN).
@@ -419,11 +375,7 @@ compute_grad([HMIP|TMIP],M,N0,MI,LN):-
 compute_sum_neg([],_M,_LN,_I,S,S).
 
 compute_sum_neg([HMI|TMI],M,[HLN|TLN],I,S0,S):-
-%  write(HMI),write(hmi),nl,
-%  write(I),write('I'),nl,
   nth0(I,HMI,MIR),
-%  write(MIR),write(mir),nl,
-%  write(HLN),write(hln),nl,
   Den is 1.0-exp(-HLN),
   M:local_setting(zero,Zero),
   (Den=<0.0->
@@ -431,26 +383,13 @@ compute_sum_neg([HMI|TMI],M,[HLN|TLN],I,S0,S):-
   ;
     Den1 = Den
   ),
-%  write(den0),write(Den),nl,
-/*  (Den =< 0.0 ->
-    S1 is 10e6
-    ,write(exc),nl
-  ;*/
-    S1 is S0+MIR*exp(-HLN)/Den1
-%    , write(S1),write(s1),nl
-    ,
-%  ),
-%  write(den),write(Den),nl,
+  S1 is S0+MIR*exp(-HLN)/Den1,
   compute_sum_neg(TMI,M,TLN,I,S1,S).
 
 compute_likelihood([],_M,L,L).
 
 compute_likelihood([HP|TP],M,L0,L):-
-  %write(hp),write(HP),nl,
   A is 1.0-exp(-HP),
-%  write(A),write(l),nl,
-%  (A=<0->write(ll),write(A);true),
-%  write(prima),nl,
   M:local_setting(zero,Zero),
   (A=<0.0->
     A1 is Zero
@@ -458,8 +397,6 @@ compute_likelihood([HP|TP],M,L0,L):-
     A1=A
   ),
   L1 is L0-log(A1),
-%  write(dopo),write(L1),%write(TP),
-%  nl,
   compute_likelihood(TP,M,L1,L).
 
 compute_likelihood_neg([],_M,[]).
@@ -482,8 +419,6 @@ compute_likelihood_pos([HMIP|TMIP],M,I,LP0,LP):-
        P=P0
      )
   ),
-%  write(A),write(lp),nl,
-%  (A=<0-> write(lp),write(A),nl;true),
   LP1 is LP0-log(1-P)*HMIP,
   I1 is I+1,
   compute_likelihood_pos(TMIP,M,I1,LP1,LP).
@@ -519,7 +454,6 @@ induce_parameters(M:Folds,R):-
   setrand(Seed),
   findall(Exs,(member(F,Folds),M:fold(F,Exs)),L),
   append(L,DB),
-  assert(M:database(DB)),
   statistics(walltime,[_,_]),
   (M:bg(RBG0)->
     process_clauses(RBG0,M,RBG),
@@ -542,14 +476,14 @@ induce_parameters(M:Folds,R):-
     NumRem is NumBR-Num,
     rules2terms(R1,ROut1),
     M:test_prob_lift(ROut1,Folds,_,_,LL1,_),
-    format2(M,"Rules before regularization: ~d~nLL ~f~n",[NumBR,LL1]),
+    format2(M,"Rules: ~d~nLL ~f~n",[NumBR,LL1]),
     rules2terms(R,ROut),
     M:test_prob_lift(ROut,Folds,_,_,LL,_),
-    format2(M,"After regularization ~d~nLL ~f~n  ",[NumRem,LL])
+    format2(M,"After removing rules with small parameters ~d~nLL ~f~n",[NumRem,LL])
   ),
   statistics(walltime,[_,CT]),
   CTS is CT/1000,
-  format2(M,'/* EMBLEM Final score ~f~n',[Score]),
+  format2(M,'/* Final score ~f~n',[Score]),
   format2(M,'Wall time ~f */~n',[CTS]),
   write_rules2(M,R,user_output),
   (M:bg(RBG0)->
@@ -610,7 +544,7 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   update_theory(Program0,Par,Program1),
   maplist(remove_zero,Program1,Program2),
   append(Program2,Program),
-  format3(M,"Final L ~f~n",[LL]).
+  format3(M,"Final LL ~f~n",[-LL]).
 
 
 learn_param(Program0,M,Pos,Neg,Program,LL):-
@@ -739,7 +673,7 @@ update_par(Eta,Par0,G,Par1):-
 
 evaluate_L_gd(M,MIP,MI,Par,L):-
   maplist(logistic,Par,Prob),
-  compute_likelihood_pos_gd(MIP,Prob,M,0,0,LP),
+  compute_likelihood_pos_gd(MIP,Prob,M,0,LP),
 %  write(lpos),nl,
   compute_likelihood_neg_gd(MI,Prob,M,LN),
 %  write(lneg),nl,
@@ -749,29 +683,28 @@ evaluate_L_gd(M,MIP,MI,Par,L):-
 
 compute_gradient_gd(MIP,MI,M,Par,G,L):-
   maplist(logistic,Par,Prob),
-  compute_likelihood_pos_gd(MIP,Prob,M,0,0,LP),
+  compute_likelihood_pos_gd(MIP,Prob,M,0,LP),
 %  write(lpos),nl,
   compute_likelihood_neg_gd(MI,Prob,M,LN),
 %  write(lneg),nl,
   compute_likelihood_gd(LN,M,LP,L),
 
 %  NL is -L,
-  write(L),nl,
+  write4(M,'LL '),write4(M,-L),nl4(M),
   compute_grad_gd(MIP,Prob,M,0,MI,LN,G).
 %  write(grad),nl.
 
 compute_likelihood_neg_gd([],_Prob,_M,[]).
 
 compute_likelihood_neg_gd([HMI|TMI],Prob,M,[HLN|TLN]):-
-  compute_likelihood_pos_gd(HMI,Prob,M,0,0,HLN),
+  compute_likelihood_pos_gd(HMI,Prob,M,0,HLN),
   compute_likelihood_neg_gd(TMI,Prob,M,TLN).
 
-compute_likelihood_pos_gd([],[],_M,_,LP,LP).
+compute_likelihood_pos_gd([],[],_M,LP,LP).
 
-compute_likelihood_pos_gd([HMIP|TMIP],[P|TP],M,I,LP0,LP):-
+compute_likelihood_pos_gd([HMIP|TMIP],[P|TP],M,LP0,LP):-
   LP1 is LP0-log(1-P)*HMIP,
-  I1 is I+1,
-  compute_likelihood_pos_gd(TMIP,TP,M,I1,LP1,LP).
+  compute_likelihood_pos_gd(TMIP,TP,M,LP1,LP).
 
 
 compute_likelihood_gd([],_M,L,L).
@@ -2691,6 +2624,14 @@ test_folds(F,M,Prog,LG,NPos,NNeg,LL):-
   keysort(LG0,LG),
   foldl(ll(M),LG,0,LL).
 
+ll(M,P- (\+ _),LL0,LL):-!,
+  (P=:=1.0->
+    M:local_setting(logzero,LZ),
+    LL is LL0+LZ
+  ;
+    LL is LL0+ log(1-P)
+  ).
+
 ll(M,P- _,LL0,LL):-
   (P=:=0.0->
     M:local_setting(logzero,LZ),
@@ -2979,6 +2920,20 @@ write3(M,A):-
   ;
     true
   ).
+
+/**
+ * write4(+Module:atom,+Message:term) is det
+ *
+ * The predicate calls write(Message) if the verbosity is at least 4.
+ * Module is used to get the verbosity setting.
+ */
+write4(M,A):-
+  M:local_setting(verbosity,Ver),
+  (Ver>3->
+    write(A)
+  ;
+    true
+  ).
 /**
  * nl2(+Module:atom) is det
  *
@@ -3005,6 +2960,20 @@ nl3(M):-
   ;
     true
   ).
+
+/**
+ * nl4(+Module:atom) is det
+ *
+ * The predicate prints a newline if the verbosity is at least 4.
+ * Module is used to get the verbosity setting.
+ */
+nl4(M):-
+  M:local_setting(verbosity,Ver),
+  (Ver>3->
+    nl
+  ;
+    true
+  ).
 /**
  * format2(+Module:atom,+Format, :Arguments) is det
  *
@@ -3027,6 +2996,19 @@ format2(M,A,B):-
 format3(M,A,B):-
   M:local_setting(verbosity,Ver),
   (Ver>2->
+    format(A,B)
+  ;
+    true
+  ).
+/**
+ * format4(+Module:atom,+Format, :Arguments) is det
+ *
+ * The predicate calls format(Format,Arguments) if the verbosity is at least 4.
+ * Module is used to get the verbosity setting.
+ */
+format4(M,A,B):-
+  M:local_setting(verbosity,Ver),
+  (Ver>3->
     format(A,B)
   ;
     true

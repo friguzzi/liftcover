@@ -61,13 +61,13 @@ To install it, use</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="reference external" href="https://github.com/friguzzi/lbfgs">lbfgs</a></p></li>
-<li><p><a class="reference external" href="https://github.com/friguzzi/cplint">cplint</a></p></li>
+<li><p><a class="reference external" href="https://github.com/friguzzi/auc">auc</a></p></li>
 </ul>
 </div></blockquote>
 <p>They are installed automatically when installing pack <cite>liftcover</cite> or can be installed manually as follows</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ swipl
 ?- pack_install(lfbgs).
-?- pack_install(cplint).
+?- pack_install(auc).
 </pre></div>
 </div>
 <p>You can upgrade the pack with</p>
@@ -463,7 +463,7 @@ test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 <li><p><code class="code docutils literal notranslate"><span class="pre">logzero</span></code> (values: negative real, default value <span class="math notranslate nohighlight">\(\log(0.000001)\)</span>): value assigned to <span class="math notranslate nohighlight">\(\log(0)\)</span>.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">zero</span></code> (values: real, default value <span class="math notranslate nohighlight">\(0.000001\)</span>): value assigned to <span class="math notranslate nohighlight">\(0\)</span>.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">seed</span></code> (values: seed(integer) or seed(random), default value <code class="code docutils literal notranslate"><span class="pre">seed(3032)</span></code>): seed for the Prolog random functions, see <a class="reference external" href="http://www.swi-prolog.org/pldoc/man?predicate=set_random/1">SWI-Prolog manual</a> .</p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">verbosity</span></code> (values: integer in <code class="code docutils literal notranslate"><span class="pre">[1,3]</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">1</span></code>): level of verbosity of the algorithms.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">verbosity</span></code> (values: integer in <code class="code docutils literal notranslate"><span class="pre">[1,4]</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">1</span></code>): level of verbosity of the algorithms.</p></li>
 </ul>
 </div></blockquote>
 </li>
@@ -483,9 +483,6 @@ The <code class="code docutils literal notranslate"><span class="pre">pack/liftc
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>phil follows the MIT License that you can find in phil root folder.
 The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
-</section>
-<section id="references">
-<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <p id="id6"><dl class="citation">
 <dt class="label" id="id22"><span class="brackets"><a class="fn-backref" href="#id5">Coh95</a></span></dt>
 <dd><p>William W. Cohen. Pac-learning non-recursive prolog clauses. <em>Artif. Intell.</em>, 79(1):1–38, 1995.</p>
@@ -549,7 +546,6 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
 <li><a class="reference internal" href="#example-files">Example Files</a></li>
 <li><a class="reference internal" href="#manual-in-pdf">Manual in PDF</a></li>
 <li><a class="reference internal" href="#license">License</a></li>
-<li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
 </ul>
