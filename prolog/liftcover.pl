@@ -338,10 +338,9 @@ gen_initial_counts(N0,[0|MIP0]):-
   N1 is N0-1,
   gen_initial_counts(N1,MIP0).
 
-evaluate(L,_N,_Step):-
-  M=user,
-  M:mip(MIP),
-  M:mi(MI),
+evaluate(L,_N,_Step,[M,MIP,MI]):-
+%  M:mip(MIP),
+%  M:mi(MI),
   compute_likelihood_pos(MIP,M,0,0,LP),
   compute_likelihood_neg(MI,M,LN),
   compute_likelihood(LN,M,LP,L),
@@ -423,8 +422,8 @@ compute_likelihood_pos([HMIP|TMIP],M,I,LP0,LP):-
   I1 is I+1,
   compute_likelihood_pos(TMIP,M,I1,LP1,LP).
 
-progress(FX,X_Norm,G_Norm,Step,_N,Iteration,Ls,0) :-
-  format('~d. Iteration :  f(X)=~4f  |X|=~4f
+progress(FX,X_Norm,G_Norm,Step,_N,Iteration,Ls,0,[M|_]) :-
+  format3(M,'~d. Iteration :  f(X)=~4f  |X|=~4f
                 |g(X)|=~4f  Step=~4f  Ls=~4f~n',
                 [Iteration,FX,X_Norm,G_Norm,Step,Ls]).
 
@@ -567,13 +566,11 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   length(Program0,N),
   gen_initial_counts(N,MIP0),
   test_theory_neg_prob(Neg,M,Pr1,MIP0,MIP),
-  M:assert(mip(MIP)),
   test_theory_pos_prob(Pos,M,Pr1,N,MI),
-  M:assert(mi(MI)),
 %  flush_output,
 %  optimizer_set_parameter(max_step,0.001),
 % parte da modificare init
-  optimizer_initialize(N,liftcover,evaluate,progress),
+  optimizer_initialize(N,liftcover,evaluate,progress,[M,MIP,MI]),
   init_par(N),
   evaluate_L(M,MIP,MI,L),
 % parte da modificare fine
@@ -587,9 +584,7 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   evaluate_L(M,MIP,MI,NewL),
   LL is -NewL,
   format3(M,"Final L ~f~n",[LL]),
-  optimizer_finalize,
-  M:retract(mip(MIP)),
-  M:retract(mi(MI)).
+  optimizer_finalize.
 
 
 update_theory_lbfgs([],_M,_N,[]):-!.
