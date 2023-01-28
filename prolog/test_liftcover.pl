@@ -246,9 +246,9 @@ test(induce_par_lbfgs_bongard):-
   atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
   writeln(St),
   atomic_list_concat(['Expected:\n',
-  '\nLL =',-218.22925642272494,
-  '\nAUCROC =',0.7485951468710089,
-  '\nAUCPR =', 0.5979409655734421],St1),
+  '\nLL =',-219.6533450232687,
+  '\nAUCROC =',0.7501277139208173,
+  '\nAUCPR =', 0.5997247517658881],St1),
   writeln(St1).
 
 test(induce_par_gd_bongard):-

@@ -320,16 +320,16 @@ init_gd_par(I,Max,[W|TW]):-
   W is -Max+random_float*2*Max,
   init_gd_par(I1,Max,TW).
 
-init_par(0):-!.
+init_par(_Env,0):-!.
 
-init_par(I):-
+init_par(Env,I):-
   I1 is I-1,
-  optimizer_set_x(I1,0.5),
-  init_par(I1).
+  optimizer_set_x(Env,I1,0.5),
+  init_par(Env,I1).
 
-evaluate_L(M,MIP,MI,L):-
-  compute_likelihood_pos(MIP,M,0,0,LP),
-  compute_likelihood_neg(MI,M,LN),
+evaluate_L(Env,M,MIP,MI,L):-
+  compute_likelihood_pos(MIP,Env,M,0,0,LP),
+  compute_likelihood_neg(MI,Env,M,LN),
   compute_likelihood(LN,M,LP,L).
   
 gen_initial_counts(0,[]):-!.
@@ -338,19 +338,19 @@ gen_initial_counts(N0,[0|MIP0]):-
   N1 is N0-1,
   gen_initial_counts(N1,MIP0).
 
-evaluate(L,_N,_Step,[M,MIP,MI]):-
+evaluate(Env,L,_N,_Step,[M,MIP,MI]):-
 %  M:mip(MIP),
 %  M:mi(MI),
-  compute_likelihood_pos(MIP,M,0,0,LP),
-  compute_likelihood_neg(MI,M,LN),
+  compute_likelihood_pos(MIP,Env,M,0,0,LP),
+  compute_likelihood_neg(MI,Env,M,LN),
   compute_likelihood(LN,M,LP,L),
-  compute_grad(MIP,M,0,MI,LN).
+  compute_grad(MIP,Env,M,0,MI,LN).
 
-compute_grad([],_M,_N,_MI,_LN):-!.
+compute_grad([],_Env,_M,_N,_MI,_LN):-!.
 
-compute_grad([HMIP|TMIP],M,N0,MI,LN):-
+compute_grad([HMIP|TMIP],Env,M,N0,MI,LN):-
   compute_sum_neg(MI,M,LN,N0,0,S),
-  optimizer_get_x(N0,P0),
+  optimizer_get_x(Env,N0,P0),
   M:local_setting(zero,Zero),
   (P0=<0 ->
     PI=Zero
@@ -367,9 +367,9 @@ compute_grad([HMIP|TMIP],M,N0,MI,LN):-
   ;
     G is (HMIP-S)/(1.0-PI)
   ),
-  optimizer_set_g(N0,G),
+  optimizer_set_g(Env,N0,G),
   N1 is N0+1,
-  compute_grad(TMIP,M,N1,MI,LN).
+  compute_grad(TMIP,Env,M,N1,MI,LN).
 
 compute_sum_neg([],_M,_LN,_I,S,S).
 
@@ -398,16 +398,16 @@ compute_likelihood([HP|TP],M,L0,L):-
   L1 is L0-log(A1),
   compute_likelihood(TP,M,L1,L).
 
-compute_likelihood_neg([],_M,[]).
+compute_likelihood_neg([],_Env,_M,[]).
 
-compute_likelihood_neg([HMI|TMI],M,[HLN|TLN]):-
-  compute_likelihood_pos(HMI,M,0,0,HLN),
-  compute_likelihood_neg(TMI,M,TLN).
+compute_likelihood_neg([HMI|TMI],Env,M,[HLN|TLN]):-
+  compute_likelihood_pos(HMI,Env,M,0,0,HLN),
+  compute_likelihood_neg(TMI,Env,M,TLN).
 
-compute_likelihood_pos([],_M,_,LP,LP).
+compute_likelihood_pos([],_Env,_M,_,LP,LP).
 
-compute_likelihood_pos([HMIP|TMIP],M,I,LP0,LP):-
-  optimizer_get_x(I,P0),
+compute_likelihood_pos([HMIP|TMIP],Env,M,I,LP0,LP):-
+  optimizer_get_x(Env,I,P0),
   M:local_setting(zero,Zero),
   (P0=<0.0 ->
     P=Zero
@@ -420,9 +420,9 @@ compute_likelihood_pos([HMIP|TMIP],M,I,LP0,LP):-
   ),
   LP1 is LP0-log(1-P)*HMIP,
   I1 is I+1,
-  compute_likelihood_pos(TMIP,M,I1,LP1,LP).
+  compute_likelihood_pos(TMIP,Env,M,I1,LP1,LP).
 
-progress(FX,X_Norm,G_Norm,Step,_N,Iteration,Ls,0,[M|_]) :-
+progress(_Env,FX,X_Norm,G_Norm,Step,_N,Iteration,Ls,0,[M|_]) :-
   format3(M,'~d. Iteration :  f(X)=~4f  |X|=~4f
                 |g(X)|=~4f  Step=~4f  Ls=~4f~n',
                 [Iteration,FX,X_Norm,G_Norm,Step,Ls]).
@@ -570,27 +570,27 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
 %  flush_output,
 %  optimizer_set_parameter(max_step,0.001),
 % parte da modificare init
-  optimizer_initialize(N,liftcover,evaluate,progress,[M,MIP,MI]),
-  init_par(N),
-  evaluate_L(M,MIP,MI,L),
+  optimizer_initialize(N,liftcover,evaluate,progress,[M,MIP,MI],Env),
+  init_par(Env,N),
+  evaluate_L(Env,M,MIP,MI,L),
 % parte da modificare fine
   IL is -L,
   format3(M,"~nInitial L ~f~n",[IL]),
-  optimizer_run(_LL,Status),
+  optimizer_run(Env,_LL,Status),
   format3(M,"Status ~p~n",[Status]),
-  update_theory_lbfgs(Program0,M,0,Program1),
+  update_theory_lbfgs(Program0,Env,M,0,Program1),
   maplist(remove_zero,Program1,Program2),
   append(Program2,Program),
-  evaluate_L(M,MIP,MI,NewL),
+  evaluate_L(Env,M,MIP,MI,NewL),
   LL is -NewL,
   format3(M,"Final L ~f~n",[LL]),
-  optimizer_finalize.
+  optimizer_finalize(Env).
 
 
-update_theory_lbfgs([],_M,_N,[]):-!.
+update_theory_lbfgs([],_Env,_M,_N,[]):-!.
 
-update_theory_lbfgs([rule(Name,[H:_,_],B,L)|Rest],M,N,[rule(Name,[H:P,'':PN],B,L)|Rest1]):-
-    optimizer_get_x(N,P0),
+update_theory_lbfgs([rule(Name,[H:_,_],B,L)|Rest],Env,M,N,[rule(Name,[H:P,'':PN],B,L)|Rest1]):-
+    optimizer_get_x(Env,N,P0),
     M:local_setting(zero,Zero),
     (P0=<0.0->
       P=Zero
@@ -603,7 +603,7 @@ update_theory_lbfgs([rule(Name,[H:_,_],B,L)|Rest],M,N,[rule(Name,[H:P,'':PN],B,L
     ),
     PN is 1-P,
     N1 is N+1,
-    update_theory_lbfgs(Rest,M,N1,Rest1).
+    update_theory_lbfgs(Rest,Env,M,N1,Rest1).
 
 
 random_restarts(0,_M,Score,Score,_N,Par,Par,_MI,_MIN):-!.
