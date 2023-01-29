@@ -318,4 +318,23 @@ test(induce_gd_l2_bongard):-
   writeln(St1).
 
 
+test(induce_par_gd_adam_bongard):-
+  set_lift(verbosity,4),
+  set_lift(parameter_learning,gd),
+  set_lift(parameter_update, adam),
+  set_lift(gamma,1),
+  set_lift(iter,20),
+  set_lift(adam_params,[0.2,0.8,0.9,1e-8]),
+  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-218.57571674633985,
+  '\nAUCROC =',0.7485951468710089,
+  '\nAUCPR =', 0.5979409655734421],St1),
+  writeln(St1).
+
+
 :- end_tests(bongard).

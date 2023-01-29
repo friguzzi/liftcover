@@ -103,7 +103,9 @@ default_setting_lift(min_probability,1e-5).  % Threshold of the probability unde
 default_setting_lift(parameter_learning,em). % parameter learning algorithm: em, lbfgs, gd 
 default_setting_lift(max_initial_weight,0.5). % initial weights of dphil in [-0.5 0.5]
 
-default_setting_lift(eta,1). 
+default_setting_lift(parameter_update,adam). % values: fixed_learning_rate,adam
+default_setting_lift(eta,1). % fixed learning rate
+default_setting_lift(adam_params,[0.001,0.9,0.999,1e-8]). % default Adam hyper-pameters
 
 /**
  * induce_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
@@ -640,7 +642,13 @@ random_restarts_gd(N,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
   M:local_setting(eps,EA),
   M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
-  gd(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
+  (M:local_setting(parameter_update,adam)->
+    findall(0,between(1,NR,_),M0),
+    findall(0,between(1,NR,_),M1),
+    gd_adam(EA,ER,0,Iter,M,NR,Par1,M0,M1,-1e20,MI,MIN,ParR,ScoreR)
+  ;
+    gd(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR)
+  ),
   format3(M,"GD Random_restart: Score ~f~n",[ScoreR]),
   N1 is N-1,
   random_restarts_gd(N1,M,ScoreR,Score,NR,ParR,Par,MI,MIN).
@@ -673,6 +681,51 @@ gd(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIP,Par,Score):-
     gd(EA,ER,Iter,M,NR,Par1,Score1,MI,MIP,Par,Score)
   ).
 
+gd_adam(_EA,_ER,Iter,Iter,_M,_NR,Par,_M0,_M1,Score,_MI,_MIP,Par,Score):-!.
+
+gd_adam(EA,ER,Iter0,MaxIter,M,NR,Par0,M00,M10,Score0,MI,MIP,Par,Score):-
+  compute_gradient_gd(MIP,MI,M,Par0,G,LL),
+  Score1 is -LL,
+  Iter is Iter0+1,
+  Diff is Score1-Score0,
+  Fract is -Score1*ER,
+  (( Diff<EA;Diff<Fract)->
+    Score=Score1,
+    Par=Par0
+  ;
+    M:local_setting(gamma,Gamma),
+    M:local_setting(adam_params,[Eta,Beta1,Beta2,Epsilon]),
+    (M:local_setting(regularization,l2)->
+      maplist(l2,Par0,Reg)
+    ;
+      (M:local_setting(regularization,l1)->
+        maplist(l1,Par0,Reg)
+      ;
+        findall(0,between(1,NR,_),Reg)
+      )
+    ),
+    maplist(update_grad(Gamma),G,Reg,G1),
+    maplist(update_M0(Beta1),M00,G1,M0),
+    maplist(update_M1(Beta2),M10,G1,M1),
+    EtaIter is Eta*sqrt(1-Beta2^Iter)/(1-Beta1^Iter),
+    maplist(update_par_adam(EtaIter,Epsilon),Par0,M0,M1,Par1),
+    gd_adam(EA,ER,Iter,MaxIter,M,NR,Par1,M0,M1,Score1,MI,MIP,Par,Score)
+  ).
+
+update_par_adam(EtaIter,Epsilon,Par0,M0,M1,Par1):-
+  Par1 is Par0-EtaIter*M0/(sqrt(M1)+Epsilon).
+
+
+update_M0(Beta1,M00,G,M0):-
+  M0 is Beta1*M00+(1-Beta1)*G.
+
+update_M1(Beta2,M10,G,M1):-
+  M1 is Beta2*M10+(1-Beta2)*G^2.
+
+update_grad(Gamma,G,Reg,G1):-
+  G1 is G+Gamma*Reg.
+
+
 l1(W,R):-
   logistic(W,S),
   R is S*(1-S).
@@ -682,7 +735,7 @@ l2(W,R):-
   R is 2*S^2*(1-S).
 
 update_par(Eta,Gamma,Par0,Reg,G,Par1):-
-  Par1 is Par0-Eta*G-Gamma*Reg.
+  Par1 is Par0-Eta*(G+Gamma*Reg).
 
 
 
