@@ -103,7 +103,7 @@ default_setting_lift(min_probability,1e-5).  % Threshold of the probability unde
 default_setting_lift(parameter_learning,em). % parameter learning algorithm: em, lbfgs, gd 
 default_setting_lift(max_initial_weight,0.5). % initial weights of dphil in [-0.5 0.5]
 
-default_setting_lift(parameter_update,adam). % values: fixed_learning_rate,adam
+default_setting_lift(parameter_update,fixed_learning_rate). % values: fixed_learning_rate,adam
 default_setting_lift(eta,1). % fixed learning rate
 default_setting_lift(adam_params,[0.001,0.9,0.999,1e-8]). % default Adam hyper-pameters
 

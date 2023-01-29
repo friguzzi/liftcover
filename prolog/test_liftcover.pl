@@ -319,7 +319,7 @@ test(induce_gd_l2_bongard):-
 
 
 test(induce_par_gd_adam_bongard):-
-  set_lift(verbosity,4),
+  set_lift(verbosity,1),
   set_lift(parameter_learning,gd),
   set_lift(parameter_update, adam),
   set_lift(gamma,1),
