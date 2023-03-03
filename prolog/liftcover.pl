@@ -31,7 +31,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :-use_module(library(terms)).
 :-use_module(library(rbtrees)).
 :-use_module(library(apply)).
-:-use_module(library(lbfgs)).
+:-absolute_file_name(library(lbfgs),F,[solutions(all)]),atomic_concat(F,'.pl',Fpl),exists_file(Fpl),use_module(library(lbfgs));true.
 %:-use_foreign_library(foreign(bddem),install).
 :-set_prolog_flag(unknown,warning).
 
@@ -1006,7 +1006,7 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
   (NewR=[R3]->
     M:local_setting(beamsize,BS),
     insert_in_order(NB0,(R3,Score),BS,NB1),
-    insert_in_order(CL0,(R3,Score),+1e20,CL1),
+    insert_in_order(CL0,(R3,Score),200,CL1),
     length(CL1,LCL1),
     format2(M,"N. of target clauses ~d~n~n",[LCL1]),
     store_clause_refinement(R1,R3,M,Score),

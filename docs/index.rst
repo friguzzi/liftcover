@@ -27,7 +27,7 @@ To install it, use ::
 
 Requirements
 -------------
-It requires the packs
+It uses the packs
 
  * `lbfgs <https://github.com/friguzzi/lbfgs>`_
  * `auc <https://github.com/friguzzi/auc>`_
@@ -38,6 +38,7 @@ They are installed automatically when installing pack `liftcover` or can be inst
 	?- pack_install(lbfgs).
 	?- pack_install(auc).
 
+Pack `lbfgs` is optional, if absent the versions of the algorithms that use  `lbfgs` do not work but the other versions work.
 
 You can upgrade the pack with ::
 
