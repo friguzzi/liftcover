@@ -43,7 +43,7 @@ Pack `lbfgs` is optional, if absent the versions of the algorithms that use  `lb
 You can upgrade the pack with ::
 
     $ swipl
-    ?- pack_upgrade(liftcovver).
+    ?- pack_upgrade(liftcover).
 
 Note that the packs on which `liftcover` depends are not upgraded automatically. 
 In this case, they need to be upgraded manually.
