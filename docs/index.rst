@@ -35,7 +35,7 @@ It requires the packs
 They are installed automatically when installing pack `liftcover` or can be installed manually as follows ::
 
 	$ swipl
-	?- pack_install(lfbgs).
+	?- pack_install(lbfgs).
 	?- pack_install(auc).
 
 
