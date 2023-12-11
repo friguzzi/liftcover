@@ -16,6 +16,11 @@ Introduction
 LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind
  :cite:`NguRig19-ML-IJ`. 
 
+Predicate Reference
+===================
+
+ * `liftcover <https://friguzzi.github.io/liftcover/pldoc/liftcover.html>`_
+
 Installation
 ============
 LIFTCOVER is distributed as a `pack <http://www.swi-prolog.org/pack/list?p=liftcover>`_ of `SWI-Prolog <http://www.swi-prolog.org/>`_. 
@@ -27,7 +32,7 @@ To install it, use ::
 
 Requirements
 -------------
-It requires the packs
+It uses the packs
 
  * `lbfgs <https://github.com/friguzzi/lbfgs>`_
  * `auc <https://github.com/friguzzi/auc>`_
@@ -35,14 +40,15 @@ It requires the packs
 They are installed automatically when installing pack `liftcover` or can be installed manually as follows ::
 
 	$ swipl
-	?- pack_install(lfbgs).
+	?- pack_install(lbfgs).
 	?- pack_install(auc).
 
+Pack `lbfgs` is optional, if absent the versions of the algorithms that use  `lbfgs` do not work but the other versions work.
 
 You can upgrade the pack with ::
 
     $ swipl
-    ?- pack_upgrade(liftcovver).
+    ?- pack_upgrade(liftcover).
 
 Note that the packs on which `liftcover` depends are not upgraded automatically. 
 In this case, they need to be upgraded manually.

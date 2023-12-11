@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>liftcover.pl</title>
+
+<link rel="stylesheet" type="text/css" href="pldoc.css">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+</head>
+<body>
+
+
+<h1 class="file"><span style="float:right"></span>liftcover.pl</h1>
+
+<dl>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="induce_lift/2"><b class="pred">induce_lift</b><var class="arglist">(+TrainFolds:list_of_atoms, -P:probabilistic_program)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate performs structure learning using the folds indicated in
+<var>TrainFolds</var> for training.
+It returns in <var>P</var> the learned probabilistic program.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="test_lift/7"><b class="pred">test_lift</b><var class="arglist">(+P:probabilistic_program, +TestFolds:list_of_atoms, -LL:float, -AUCROC:float, -ROC:dict, -AUCPR:float, -PR:dict)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate takes as input in <var>P</var> a probabilistic program,
+tests <var>P</var> on the folds indicated in <var>TestFolds</var> and returns the
+log likelihood of the test examples in <var>LL</var>, the area under the Receiver
+Operating Characteristic curve in <var>AUCROC</var>, a dict containing the points
+of the <var>ROC</var> curve in <var>ROC</var>, the area under the Precision Recall curve in <var>AUCPR</var>
+and a dict containing the points of the <var>PR</var> curve in <var>PR</var></dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="test_prob_lift/6"><b class="pred">test_prob_lift</b><var class="arglist">(+P:probabilistic_program, +TestFolds:list_of_atoms, -NPos:int, -NNeg:int, -LL:float, -Results:list)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate takes as input in <var>P</var> a probabilistic program,
+tests <var>P</var> on the folds indicated in <var>TestFolds</var> and returns
+the number of positive examples in <var>NPos</var>, the number of negative examples
+in <var>NNeg</var>, the log likelihood in <var>LL</var>
+and in <var>Results</var> a list containing the probabilistic result for each query contained in <var>TestFolds</var>.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="induce_par_lift/2"><b class="pred">induce_par_lift</b><var class="arglist">(+TrainFolds:list_of_atoms, -P:probabilistic_program)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate learns the parameters of the program stored in the <a class="extmanual" href="http://www.swi-prolog.org/pldoc/man?predicate=in/1">in/1</a> fact
+of the input file using the folds indicated in <var>TrainFolds</var> for training.
+It returns in <var>P</var> the input program with the updated parameters.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="set_lift/2"><b class="pred">set_lift</b><var class="arglist">(+Parameter:atom, +Value:term)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate sets the value of a parameter
+For a list of parameters see
+<a href="https://github.com/friguzzi/cplint/blob/master/doc/manual.pdf">https://github.com/friguzzi/cplint/blob/master/doc/manual.pdf</a> or
+<a href="http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html">http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html</a></dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="setting_lift/2"><b class="pred">setting_lift</b><var class="arglist">(+Parameter:atom, -Value:term)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate returns the value of a parameter
+For a list of parameters see
+<a href="https://github.com/friguzzi/cplint/blob/master/doc/manual.pdf">https://github.com/friguzzi/cplint/blob/master/doc/manual.pdf</a> or
+<a href="http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html">http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html</a></dd>
+</dl>
+
+</body>
+</html>

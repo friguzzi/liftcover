@@ -16,6 +16,11 @@ Introduction
 LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind
  :cite:`NguRig19-ML-IJ`. 
 
+Predicate Reference
+===================
+
+ * `liftcover <https://friguzzi.github.io/liftcover/pldoc/liftcover.html>`_
+
 Installation
 ============
 LIFTCOVER is distributed as a `pack <http://www.swi-prolog.org/pack/list?p=liftcover>`_ of `SWI-Prolog <http://www.swi-prolog.org/>`_. 

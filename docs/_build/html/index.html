@@ -47,6 +47,14 @@
 </dd>
 </dl>
 </section>
+<section id="predicate-reference">
+<h2>Predicate Reference<a class="headerlink" href="#predicate-reference" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://friguzzi.github.io/liftcover/pldoc/liftcover.html">liftcover</a></p></li>
+</ul>
+</div></blockquote>
+</section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>LIFTCOVER is distributed as a <a class="reference external" href="http://www.swi-prolog.org/pack/list?p=liftcover">pack</a> of <a class="reference external" href="http://www.swi-prolog.org/">SWI-Prolog</a>.
@@ -57,7 +65,7 @@ To install it, use</p>
 </div>
 <section id="requirements">
 <h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
-<p>It requires the packs</p>
+<p>It uses the packs</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="reference external" href="https://github.com/friguzzi/lbfgs">lbfgs</a></p></li>
@@ -66,13 +74,14 @@ To install it, use</p>
 </div></blockquote>
 <p>They are installed automatically when installing pack <cite>liftcover</cite> or can be installed manually as follows</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ swipl
-?- pack_install(lfbgs).
+?- pack_install(lbfgs).
 ?- pack_install(auc).
 </pre></div>
 </div>
+<p>Pack <cite>lbfgs</cite> is optional, if absent the versions of the algorithms that use  <cite>lbfgs</cite> do not work but the other versions work.</p>
 <p>You can upgrade the pack with</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ swipl
-?- pack_upgrade(liftcovver).
+?- pack_upgrade(liftcover).
 </pre></div>
 </div>
 <p>Note that the packs on which <cite>liftcover</cite> depends are not upgraded automatically.
@@ -518,6 +527,7 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
   <ul>
 <li><a class="reference internal" href="#">LIFTCOVER Manual</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#predicate-reference">Predicate Reference</a></li>
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#example-of-use">Example of use</a></li>

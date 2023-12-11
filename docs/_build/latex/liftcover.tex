@@ -60,7 +60,7 @@
 
 
 \title{LIFTCOVER Documentation}
-\date{Jan 26, 2023}
+\date{Dec 11, 2023}
 \release{1.0.0}
 \author{Fabrizio Riguzzi}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -86,6 +86,15 @@
 \end{description}
 
 
+\chapter{Predicate Reference}
+\label{\detokenize{index:predicate-reference}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+\sphinxhref{https://friguzzi.github.io/liftcover/pldoc/liftcover.html}{liftcover}
+
+\end{itemize}
+
+
 \chapter{Installation}
 \label{\detokenize{index:installation}}
 \sphinxAtStartPar
@@ -101,7 +110,7 @@ To install it, use
 \section{Requirements}
 \label{\detokenize{index:requirements}}
 \sphinxAtStartPar
-It requires the packs
+It uses the packs
 \begin{itemize}
 \item {} 
 \sphinxAtStartPar
@@ -118,16 +127,19 @@ They are installed automatically when installing pack \sphinxtitleref{liftcover}
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYGZdl{} swipl
-?\PYGZhy{} pack\PYGZus{}install(lfbgs).
+?\PYGZhy{} pack\PYGZus{}install(lbfgs).
 ?\PYGZhy{} pack\PYGZus{}install(auc).
 \end{sphinxVerbatim}
+
+\sphinxAtStartPar
+Pack \sphinxtitleref{lbfgs} is optional, if absent the versions of the algorithms that use  \sphinxtitleref{lbfgs} do not work but the other versions work.
 
 \sphinxAtStartPar
 You can upgrade the pack with
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYGZdl{} swipl
-?\PYGZhy{} pack\PYGZus{}upgrade(liftcovver).
+?\PYGZhy{} pack\PYGZus{}upgrade(liftcover).
 \end{sphinxVerbatim}
 
 \sphinxAtStartPar
