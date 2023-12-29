@@ -539,7 +539,9 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   length(Program0,N),
   gen_initial_counts(N,MIN0),
   test_theory_neg_prob(Neg,M,Pr1,MIN0,MIN),
+  py_call(print(MIN)),
   test_theory_pos_prob(Pos,M,Pr1,N,MI),
+  py_call(print(MI)),
   M:local_setting(random_restarts_number,NR),
   random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN),  %computes new parameters Par
   update_theory(Program0,Par,Program1),
@@ -832,7 +834,11 @@ expectation_quick(Par,M,MI,MIN,Eta0,Eta,Score):-
  /* LLO is the negative examples contribution in the LL*/
   M:local_setting(logzero,LogZero),
   foldl(llm(LogZero),Par,MIN,0,LL0),
+  py_call(liftcover:ll(Par,MIN),LLP),
+  format('LL0 ~f  LLP ~f~n',[LL0,LLP]),
   maplist(eta0,MIN,Eta0),
+  py_call(liftcover:eta0(MIN),Eta0P),
+  format('Eta0 ~w  Eta0P ~w~n',[Eta0,Eta0P]),
   /* positive examples contibution in LL*/
   scan_pos(MI,M,Par,LL0,Eta0,Score,Eta).
 
@@ -889,14 +895,19 @@ scan_pos([],_M,_Par,LL,Eta,LL,Eta).
 
 scan_pos([MIH|MIT],M,Par,LL0,Eta0,LL,Eta):-
   M:local_setting(logzero,LogZero),
-  foldl(rule_contrib,MIH,Par,1,Prod),
+%  foldl(rule_contrib,MIH,Par,1,Prod),
+  py_call(liftcover:rule_contrib(MIH,Par),Prod),
+%  format('Prod ~f  ProdP ~f~n',[Prod,ProdP]),
   ProbEx is 1-Prod,
   (ProbEx=:=0.0->
     LLCurrent is LL0+LogZero
    ;
     LLCurrent is LL0+log(ProbEx)
   ),
-  maplist(update_eta(ProbEx,M),Eta0,Par,MIH,EtaCurrent),
+  maplist(update_eta(ProbEx,M),Eta0,Par,MIH,EtaCurrentP),
+%  writeln(py_call(liftcover:update_eta(ProbEx,Eta0,Par,MIH),EtaCurrentP)),
+  py_call(liftcover:update_eta(ProbEx,Eta0,Par,MIH),EtaCurrent),
+  format('EtaCurrent ~w  ~nEtaCurrentP ~w~n',[EtaCurrent,EtaCurrentP]),
   scan_pos(MIT,M,Par,LLCurrent,EtaCurrent,LL,Eta).
 
 /*scan_pos(MI,Par,LL0,Eta0,Eta):-foldl(scan_pos_loop,Mi,EtaO,Eta)*/
