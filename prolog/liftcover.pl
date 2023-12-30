@@ -764,8 +764,10 @@ update_par(Eta,Gamma,Par0,Reg,G,Par1):-
 evaluate_L_gd(M,MIP,MI,Par,L):-
   maplist(logistic,Par,Prob),
   compute_likelihood_pos_gd(MIP,Prob,M,0,LP),
+  format("LP ~w~n",[LP]),
 %  write(lpos),nl,
   compute_likelihood_neg_gd(MI,Prob,M,LN),
+  format("LN ~w~n",[LN]),
 %  write(lneg),nl,
   compute_likelihood_gd(LN,M,LP,L).
 
@@ -773,13 +775,17 @@ evaluate_L_gd(M,MIP,MI,Par,L):-
 
 compute_gradient_gd(MIP,MI,M,Par,G,L):-
   maplist(logistic,Par,Prob),
+  format("Par ~w~n",[Par]),
+  format("Prob ~w~n",[Prob]),
   compute_likelihood_pos_gd(MIP,Prob,M,0,LP),
 %  write(lpos),nl,
+  format("LP ~w~n",[LP]),
   compute_likelihood_neg_gd(MI,Prob,M,LN),
 %  write(lneg),nl,
   compute_likelihood_gd(LN,M,LP,L),
-
+  py_call(liftcover:compute_ll(MI,MIP,Par),LLP),
 %  NL is -L,
+  format('LL ~f  LLP ~f~n',[L,LLP]),
   write4(M,'LL '),write4(M,-L),nl4(M),
   compute_grad_gd(MIP,Prob,M,0,MI,LN,G).
 %  write(grad),nl.

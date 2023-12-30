@@ -1,6 +1,7 @@
 
 
 import numpy as xp
+import torch
 
 def ll(pr, co, zero=0.000001):
     probs=xp.array(pr)
@@ -123,3 +124,18 @@ def random_restarts(mi0,min0,random_restarts_number=1, maxiter=100, tol=0.0001, 
             max_ll=ll1
             max_par=par1
     return list(max_par), max_ll
+
+def compute_ll(mi,min,parR,zero=0.000001):
+    parR=xp.array(parR)
+    mi= xp.array(mi)
+    min=xp.array(min)
+    par=1/(1+xp.exp(-parR))
+    print("parR ",parR)
+    print("par ",par)
+    lln=lli(par,min)
+    print("lln ",lln)
+    #print("mi ",mi,"min ",min,"par ",par)
+    prod=xp.multiply.reduce((1-par)**mi,axis=1)
+    probex=xp.maximum(1.0-prod, zero)
+    ll=lln+xp.sum(xp.log(probex))
+    return ll
