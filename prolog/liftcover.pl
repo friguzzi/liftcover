@@ -543,7 +543,14 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   test_theory_pos_prob(Pos,M,Pr1,N,MI),
   py_call(print(MI)),
   M:local_setting(random_restarts_number,NR),
+  M:local_setting(eps,EA),
+  M:local_setting(eps_f,ER),
+  M:local_setting(iter,Iter),
+  M:local_setting(regularization,Reg),
+  py_call(liftcover:random_restarts(MI,MIN,NR,Iter,EA,ER,Reg),-(ParP,LLP)),
   random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN),  %computes new parameters Par
+  format("Par ~w~nParP ~w~n",[Par,ParP]),
+  format("LL ~w~nLLP ~w~n",[LL,LLP]),
   update_theory(Program0,Par,Program1),
   maplist(remove_zero,Program1,Program2),
   append(Program2,Program),
@@ -621,7 +628,11 @@ random_restarts(N,M,Score0,Score,NR,Par0,Par,MI,MIN):-
   M:local_setting(eps,EA),
   M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
+  %M:local_setting(regularization,Reg),
+  %py_call(liftcover:em(Par1,MI,MIN,Iter,EA,ER,Reg),-(ParRP,ScoreRP)),
   em_quick(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
+  %format("ParRP ~w~nParR ~w~n",[ParRP,ParR]),
+  %format("ScoreRP ~w~nScoreR ~w~n",[ScoreRP,ScoreR]),
   format3(M,"Random_restart: Score ~f~n",[ScoreR]),
   N1 is N-1,
   (ScoreR>Score0->
@@ -817,14 +828,15 @@ em_quick(_EA,_ER,0,_M,_NR,Par,Score,_MI,_MIN,Par,Score):-!.
 
 em_quick(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIN,Par,Score):-
   length(Eta0,NR),
+%  format("Par0 ~w~n",[Par0]),
   expectation_quick(Par0,M,MI,MIN,Eta0,Eta,Score1),
-  py_call(liftcover:expectation(Par0,MI,MIN,0.000001),-(EtaP,ScoreP)),
-  format('Score1 ~f  ScoreP ~f~n',[Score1,ScoreP]),
-  format('Eta ~w  ~nEtaP ~w~n',[Eta,EtaP]),
+  %py_call(liftcover:expectation(Par0,MI,MIN,0.000001),-(EtaP,ScoreP)),
+  %format('Score1 ~f  ScoreP ~f~n',[Score1,ScoreP]),
+  %format('Eta ~w  ~nEtaP ~w~n',[Eta,EtaP]),
   maximization_quick(Eta,M,Par1),
-  M:local_setting(regularization,Reg),
-  py_call(liftcover:maximization(Eta,Reg),Par1P),
-  format('Par1 ~w  ~nPar1P ~w~n',[Par1,Par1P]),
+  %M:local_setting(regularization,Reg),
+  %py_call(liftcover:maximization(Eta,Reg),Par1P),
+  %format('Par1 ~w  ~nPar1P ~w~n',[Par1,Par1P]),
   Iter is Iter0-1,
   Diff is Score1-Score0,
   Fract is -Score1*ER,
@@ -840,14 +852,14 @@ expectation_quick(Par,M,MI,MIN,Eta0,Eta,Score):-
  /* LLO is the negative examples contribution in the LL*/
   M:local_setting(logzero,LogZero),
   foldl(llm(LogZero),Par,MIN,0,LL0),
-  py_call(liftcover:ll(Par,MIN),LLP),
+  %py_call(liftcover:ll(Par,MIN),LLP),
   %format('LL0 ~f  LLP ~f~n',[LL0,LLP]),
   maplist(eta0,MIN,Eta0),
-  py_call(liftcover:eta0(MIN),Eta0P),
+  %py_call(liftcover:eta0(MIN),Eta0P),
   %format('Eta0 ~w  Eta0P ~w~n',[Eta0,Eta0P]),
   /* positive examples contibution in LL*/
-  scan_pos(MI,M,Par,LL0,Eta0,Score,Eta),
-  format("Eta0 ~w  Eta ~w~n",[Eta0,Eta]).
+  scan_pos(MI,M,Par,LL0,Eta0,Score,Eta).
+%  format("Eta0 ~w  Eta ~w~n",[Eta0,Eta]).
 
 maximization_quick(Eta,M,Par):-
   (M:local_setting(regularization,l1)->
