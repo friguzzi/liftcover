@@ -68,7 +68,7 @@ default_setting_lift(eps_f,0.00001).
 
 /* number of random restarts of em */
 default_setting_lift(random_restarts_number,1).
-default_setting_lift(iter,-1).
+default_setting_lift(iter,100).
 default_setting_lift(d,1).
 default_setting_lift(verbosity,1).
 default_setting_lift(logzero,log(0.000001)).
