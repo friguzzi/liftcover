@@ -100,7 +100,7 @@ default_setting_lift(regularization,l1). % regularization: no, l1, l2, bayesian
 default_setting_lift(gamma,10). % set the value of gamma for regularization l1 and l2
 default_setting_lift(ab,[0,10]). % set the value of a and b for regularization baysian
 default_setting_lift(min_probability,1e-5).  % Threshold of the probability under which the clause is dropped
-default_setting_lift(parameter_learning,em). % parameter learning algorithm: em_python, em, lbfgs, gd 
+default_setting_lift(parameter_learning,em). % parameter learning algorithm: em_python, em, lbfgs, gd_python, gd 
 default_setting_lift(max_initial_weight,0.5). % initial weights of dphil in [-0.5 0.5]
 
 default_setting_lift(parameter_update,fixed_learning_rate). % values: fixed_learning_rate,adam
@@ -581,6 +581,20 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   format3(M,"Final L ~f~n",[LL]).
 
 learn_param(Program0,M,Pos,Neg,Program,LL):-
+  M:local_setting(parameter_learning,gd_python),!,
+  generate_clauses(Program0,M,0,[],Pr1),
+  length(Program0,N),
+  gen_initial_counts(N,MIP0),
+  test_theory_neg_prob(Neg,M,Pr1,MIP0,MIP),
+  test_theory_pos_prob(Pos,M,Pr1,N,MI),
+  M:local_setting(random_restarts_number,NR),
+  M:local_setting(verbosity,Verb),
+  py_call(liftcover:random_restarts_gd(MI,MIP,NR,Verb),-(Par,LL)),
+  maplist(logistic,Par,Prob),
+  update_theory(Program0,Prob,Program),
+  format3(M,"Final L ~f~n",[LL]).
+
+learn_param(Program0,M,Pos,Neg,Program,LL):-
   M:local_setting(parameter_learning,lbfgs),
   generate_clauses(Program0,M,0,[],Pr1),
   length(Program0,N),
@@ -669,7 +683,10 @@ random_restarts_gd(N,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
     findall(0,between(1,NR,_),M1),
     gd_adam(EA,ER,0,Iter,M,NR,Par1,M0,M1,-1e20,MI,MIN,ParR,ScoreR)
   ;
+%    py_call(liftcover:gd(MIN,MI,Par1),-(ParRP,ScoreRP)),
     gd(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR)
+%    format("ParRP ~w~nParR ~w~n",[ParRP,ParR]),
+%    format("ScoreRP ~w~nScoreR ~w~n",[ScoreRP,ScoreR])
   ),
   format3(M,"GD Random_restart: Score ~f~n",[ScoreR]),
   N1 is N-1,
@@ -783,9 +800,9 @@ compute_gradient_gd(MIP,MI,M,Par,G,L):-
   compute_likelihood_neg_gd(MI,Prob,M,LN),
 %  write(lneg),nl,
   compute_likelihood_gd(LN,M,LP,L),
-  py_call(liftcover:compute_ll(MI,MIP,Par),LLP),
+%  py_call(liftcover:compute_ll(MI,MIP,Par),LLP),
 %  NL is -L,
-  format('LL ~f  LLP ~f~n',[L,LLP]),
+%  format('LL ~f  LLP ~f~n',[L,LLP]),
   write4(M,'LL '),write4(M,-L),nl4(M),
   compute_grad_gd(MIP,Prob,M,0,MI,LN,G).
 %  write(grad),nl.

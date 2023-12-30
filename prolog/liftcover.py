@@ -125,17 +125,105 @@ def random_restarts(mi0,min0,random_restarts_number=1, maxiter=100, tol=0.0001, 
             max_par=par1
     return list(max_par), max_ll
 
+
+def lltorch(probs, counts, zero=0.000001):
+    one=torch.tensor(1.0)
+    zero=torch.tensor(zero)
+    nprobs=one-probs
+    nprobs=nprobs.maximum(zero)
+    return torch.sum(counts * nprobs.log())
+
 def compute_ll(mi,min,parR,zero=0.000001):
-    parR=xp.array(parR)
-    mi= xp.array(mi)
-    min=xp.array(min)
-    par=1/(1+xp.exp(-parR))
+    parR=torch.tensor(parR,requires_grad=True)
+    mi= torch.tensor(mi)
+    min=torch.tensor(min)
+    par=torch.special.expit(parR)
     print("parR ",parR)
     print("par ",par)
-    lln=lli(par,min)
+    lln=lltorch(par,min)
     print("lln ",lln)
     #print("mi ",mi,"min ",min,"par ",par)
-    prod=xp.multiply.reduce((1-par)**mi,axis=1)
-    probex=xp.maximum(1.0-prod, zero)
-    ll=lln+xp.sum(xp.log(probex))
-    return ll
+    one=torch.tensor(1.0)
+    zero=torch.tensor(zero)
+    prod=torch.sum(torch.log(one-par)*mi,axis=1)
+    print("prod ",prod)
+    probex=torch.maximum(one-torch.exp(prod), zero)
+    ll=lln+torch.sum(torch.log(probex))
+    print("ll ",ll)
+    ll.backward()
+    print("par.grad ",parR.grad)
+    return ll.item()
+
+class Model:
+    def __init__(self,min,mi,parR=False,zero=0.000001):
+        self.min=min
+        self.mi=mi
+        self.zero=zero
+        if parR:
+            self.parR=torch.tensor(parR,dtype=torch.float64,requires_grad=True)
+        else:
+            self.parR=torch.randn_like(self.min,dtype=torch.float64,requires_grad=True)
+        print("self.parR ",self.parR)
+
+    def forward(self,parR):
+        par=torch.special.expit(parR)
+        lln=lltorch(par,self.min)
+        one=torch.tensor(1.0)
+        zero=torch.tensor(self.zero)
+        prod=torch.sum(torch.log(one-par)*self.mi,axis=1)
+        probex=torch.maximum(one-torch.exp(prod), zero)
+        ll=lln+torch.sum(torch.log(probex))
+        ll=-ll
+        return ll
+    
+    def parameters(self):
+        return [self.parR]
+
+def gd(min,mi,parR=False,lr=0.01,maxiter=1000,tol=0.0001):
+    model=Model(min,mi,parR)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    ll=1e20
+    for i in range(maxiter):
+#        print("i ",i)
+        optimizer.zero_grad()
+        ll1=model.forward(model.parR)
+ #       print("ll1 ",ll1)
+        ll1.backward()
+        optimizer.step()
+        diff=torch.abs(ll1-ll)
+  #      print("par.grad ",model.parR.grad)
+        ll=ll1
+   #     print("diff ",diff)
+        if diff.item()<tol:
+            break
+        
+    return model.parR.tolist(), -ll.item()
+
+
+def random_restarts_gd(mi,min,random_restarts_number=1, ver=0, maxiter=100, tol=0.0001 ):
+    min=torch.tensor(min)
+    mi=torch.tensor(mi)
+    max_ll=-1e20
+    max_par=[]
+    for i in range(random_restarts_number):
+        print3(ver,"Restart number ",i)
+        par1, ll1=gd(min,mi,maxiter=maxiter,tol=tol)
+        print3(ver,"Random_restart: Score ",ll1)
+        print("par1 ",par1)
+        print("ll1 ",ll1)
+        if ll1>max_ll:
+            max_ll=ll1
+            max_par=par1
+    return max_par, max_ll
+
+def print1(ver,*arg):
+    if ver>0:
+        print(*arg)
+
+def print2(ver,*arg):
+    if ver>1:
+        print(*arg)
+
+def print3(ver,*arg):
+    if ver>2:
+        print(*arg)
