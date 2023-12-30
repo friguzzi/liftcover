@@ -163,7 +163,6 @@ class Model:
             self.parR=torch.tensor(parR,dtype=torch.float64,requires_grad=True)
         else:
             self.parR=torch.randn_like(self.min,dtype=torch.float64,requires_grad=True)
-        print("self.parR ",self.parR)
 
     def forward(self,parR):
         par=torch.special.expit(parR)
@@ -179,38 +178,48 @@ class Model:
     def parameters(self):
         return [self.parR]
 
-def gd(min,mi,parR=False,lr=0.01,maxiter=1000,tol=0.0001):
+def gd(min,mi,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", lr=0.01,
+       lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
     model=Model(min,mi,parR)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+
+    if opt=="fixed_learning_rate":
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    elif opt=="adam":
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr_adam, betas=betas, eps=eps)
+    else:
+        raise ValueError("Unknown optimizer")
+    
     ll=1e20
     for i in range(maxiter):
-#        print("i ",i)
+        print3(ver,"GD step i ",i)
         optimizer.zero_grad()
         ll1=model.forward(model.parR)
- #       print("ll1 ",ll1)
+        print3(ver,"Current LL ",ll1.item())
         ll1.backward()
         optimizer.step()
         diff=torch.abs(ll1-ll)
-  #      print("par.grad ",model.parR.grad)
         ll=ll1
-   #     print("diff ",diff)
+        print(diff.item(),tol)
         if diff.item()<tol:
             break
         
     return model.parR.tolist(), -ll.item()
 
 
-def random_restarts_gd(mi,min,random_restarts_number=1, ver=0, maxiter=100, tol=0.0001 ):
+def random_restarts_gd(mi,min,random_restarts_number=1, 
+                       opt="fixed_learning_rate", maxiter=100, tol=0.0001, lr=0.01,
+                        lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
     min=torch.tensor(min)
     mi=torch.tensor(mi)
     max_ll=-1e20
     max_par=[]
+    
     for i in range(random_restarts_number):
         print3(ver,"Restart number ",i)
-        par1, ll1=gd(min,mi,maxiter=maxiter,tol=tol)
+        par1, ll1=gd(min,mi,maxiter=maxiter,tol=tol, opt=opt, lr=lr, lr_adam=lr_adam, 
+                     betas=betas, eps=eps, ver=ver)
         print3(ver,"Random_restart: Score ",ll1)
-        print("par1 ",par1)
-        print("ll1 ",ll1)
+        print3(ver,"LL after GD ",ll1)
         if ll1>max_ll:
             max_ll=ll1
             max_par=par1

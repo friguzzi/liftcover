@@ -589,7 +589,12 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   test_theory_pos_prob(Pos,M,Pr1,N,MI),
   M:local_setting(random_restarts_number,NR),
   M:local_setting(verbosity,Verb),
-  py_call(liftcover:random_restarts_gd(MI,MIP,NR,Verb),-(Par,LL)),
+  M:local_setting(parameter_update,UpdateMethod),
+  M:local_setting(iter,Iter),
+  M:local_setting(eps,Eps),
+  M:local_setting(adam_params,[Eta,Beta1,Beta2,Epsilon]),
+  M:local_setting(eta,LearningRate),
+  py_call(liftcover:random_restarts_gd(MI,MIP,NR,UpdateMethod,Iter,Eps,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Verb),-(Par,LL)),
   maplist(logistic,Par,Prob),
   update_theory(Program0,Prob,Program),
   format3(M,"Final L ~f~n",[LL]).
@@ -781,10 +786,8 @@ update_par(Eta,Gamma,Par0,Reg,G,Par1):-
 evaluate_L_gd(M,MIP,MI,Par,L):-
   maplist(logistic,Par,Prob),
   compute_likelihood_pos_gd(MIP,Prob,M,0,LP),
-  format("LP ~w~n",[LP]),
 %  write(lpos),nl,
   compute_likelihood_neg_gd(MI,Prob,M,LN),
-  format("LN ~w~n",[LN]),
 %  write(lneg),nl,
   compute_likelihood_gd(LN,M,LP,L).
 
@@ -792,11 +795,8 @@ evaluate_L_gd(M,MIP,MI,Par,L):-
 
 compute_gradient_gd(MIP,MI,M,Par,G,L):-
   maplist(logistic,Par,Prob),
-  format("Par ~w~n",[Par]),
-  format("Prob ~w~n",[Prob]),
   compute_likelihood_pos_gd(MIP,Prob,M,0,LP),
 %  write(lpos),nl,
-  format("LP ~w~n",[LP]),
   compute_likelihood_neg_gd(MI,Prob,M,LN),
 %  write(lneg),nl,
   compute_likelihood_gd(LN,M,LP,L),
