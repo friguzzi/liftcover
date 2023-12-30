@@ -843,8 +843,8 @@ expectation_quick(Par,M,MI,MIN,Eta0,Eta,Score):-
   py_call(liftcover:eta0(MIN),Eta0P),
   %format('Eta0 ~w  Eta0P ~w~n',[Eta0,Eta0P]),
   /* positive examples contibution in LL*/
-  writeln(MI),
-  scan_pos(MI,M,Par,LL0,Eta0,Score,Eta).
+  scan_pos(MI,M,Par,LL0,Eta0,Score,Eta),
+  format("Eta0 ~w  Eta ~w~n",[Eta0,Eta]).
 
 maximization_quick(Eta,M,Par):-
   (M:local_setting(regularization,l1)->
@@ -908,10 +908,10 @@ scan_pos([MIH|MIT],M,Par,LL0,Eta0,LL,Eta):-
    ;
     LLCurrent is LL0+log(ProbEx)
   ),
-  maplist(update_eta(ProbEx,M),Eta0,Par,MIH,EtaCurrentP),
+%  maplist(update_eta(ProbEx,M),Eta0,Par,MIH,EtaCurrentP),
 %  writeln(py_call(liftcover:update_eta(ProbEx,Eta0,Par,MIH),EtaCurrentP)),
   py_call(liftcover:update_eta(ProbEx,Eta0,Par,MIH),EtaCurrent),
-  %format('EtaCurrent ~w  ~nEtaCurrentP ~w~n',[EtaCurrent,EtaCurrentP]),
+%  format('EtaCurrent ~w  ~nEtaCurrentP ~w~n',[EtaCurrent,EtaCurrentP]),
   scan_pos(MIT,M,Par,LLCurrent,EtaCurrent,LL,Eta).
 
 /*scan_pos(MI,Par,LL0,Eta0,Eta):-foldl(scan_pos_loop,Mi,EtaO,Eta)*/
