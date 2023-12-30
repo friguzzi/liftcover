@@ -100,7 +100,7 @@ default_setting_lift(regularization,l1). % regularization: no, l1, l2, bayesian
 default_setting_lift(gamma,10). % set the value of gamma for regularization l1 and l2
 default_setting_lift(ab,[0,10]). % set the value of a and b for regularization baysian
 default_setting_lift(min_probability,1e-5).  % Threshold of the probability under which the clause is dropped
-default_setting_lift(parameter_learning,em). % parameter learning algorithm: em, lbfgs, gd 
+default_setting_lift(parameter_learning,em). % parameter learning algorithm: em_python, em, lbfgs, gd 
 default_setting_lift(max_initial_weight,0.5). % initial weights of dphil in [-0.5 0.5]
 
 default_setting_lift(parameter_update,fixed_learning_rate). % values: fixed_learning_rate,adam
@@ -539,23 +539,32 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   length(Program0,N),
   gen_initial_counts(N,MIN0),
   test_theory_neg_prob(Neg,M,Pr1,MIN0,MIN),
-  py_call(print(MIN)),
   test_theory_pos_prob(Pos,M,Pr1,N,MI),
-  py_call(print(MI)),
   M:local_setting(random_restarts_number,NR),
-  M:local_setting(eps,EA),
-  M:local_setting(eps_f,ER),
-  M:local_setting(iter,Iter),
-  M:local_setting(regularization,Reg),
-  py_call(liftcover:random_restarts(MI,MIN,NR,Iter,EA,ER,Reg),-(ParP,LLP)),
   random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN),  %computes new parameters Par
-  format("Par ~w~nParP ~w~n",[Par,ParP]),
-  format("LL ~w~nLLP ~w~n",[LL,LLP]),
   update_theory(Program0,Par,Program1),
   maplist(remove_zero,Program1,Program2),
   append(Program2,Program),
   format3(M,"Final LL ~f~n",[-LL]).
 
+learn_param(Program0,M,Pos,Neg,Program,LL):-
+  M:local_setting(parameter_learning,em_python),!,
+  generate_clauses(Program0,M,0,[],Pr1),
+  length(Program0,N),
+  gen_initial_counts(N,MIN0),
+  test_theory_neg_prob(Neg,M,Pr1,MIN0,MIN),
+  test_theory_pos_prob(Pos,M,Pr1,N,MI),
+  M:local_setting(random_restarts_number,NR),
+  M:local_setting(eps,EA),
+  M:local_setting(eps_f,ER),
+  M:local_setting(iter,Iter),
+  M:local_setting(regularization,Reg),
+  py_call(liftcover:random_restarts(MI,MIN,NR,Iter,EA,ER,Reg),-(Par,LL)),
+  update_theory(Program0,Par,Program1),
+  maplist(remove_zero,Program1,Program2),
+  append(Program2,Program),
+  format3(M,"Final LL ~f~n",[-LL]).
+  
 
 learn_param(Program0,M,Pos,Neg,Program,LL):-
   M:local_setting(parameter_learning,gd),!,
