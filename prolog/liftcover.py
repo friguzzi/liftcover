@@ -1,7 +1,16 @@
 
 
-import numpy as xp
+import numpy as np
 import torch
+
+try:
+    import cupy as cp
+    cp.cuda.runtime.getDeviceCount()
+    print("GPU exists!")
+    xp=cp
+except:
+    xp=np
+    print("GPU does not exist.")
 
 def ll(pr, co, zero=0.000001):
     probs=xp.array(pr)
