@@ -101,6 +101,7 @@ test(induce_par_gd_muta):-
 test(induce_nba_l1):-
   set_lift(verbosity,0),
   set_lift(regularization,l1),
+  set_lift(parameter_learning,em_python),
   induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
@@ -114,6 +115,7 @@ test(induce_nba_l1):-
 
 test(induce_nba_l2):-
   set_lift(verbosity,0),
+  set_lift(parameter_learning,em_python),
   set_lift(regularization,l2),
   induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
@@ -129,6 +131,7 @@ test(induce_nba_l2):-
 test(induce_nba_bayesian):-
   set_lift(verbosity,0),
   set_lift(regularization,bayesian),
+  set_lift(parameter_learning,em_python),
   induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
@@ -147,35 +150,12 @@ test(induce_nba_bayesian):-
 :-ensure_loaded(library(examples_lift/bongard)).
 :-use_module(library(cplint_test/cplint_test)).
 
-test(in_bongard):-
-  in(P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
-writeln('Result:'),
-writeln(P),
-atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
-writeln(St),
-atomic_list_concat(['Expected:\n', 
-'\nLL =', -250.33054186204907,
-'\nAUCROC =',0.7626436781609195,
-'\nAUCPR =', 0.5615465293941269],St1),
-writeln(St1).
-
-test(induce_par_bongard):-
-  set_lift(verbosity,1),
-  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
-  writeln('Result:'),
-  writeln(P),
-  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
-  writeln(St),
-  atomic_list_concat(['Expected:\n',
-  '\nLL =',-219.68079672612654,
-  '\nAUCROC =',0.7501277139208173,
-  '\nAUCPR =', 0.5997247517658881],St1),
-  writeln(St1).
 
 test(induce_par_gd_bongard):-
   set_lift(verbosity,4),
-  set_lift(parameter_learning,gd),
+  set_lift(parameter_learning,gd_python),
   set_lift(eta,0.01),
+  set_lift(regularization, no),
   induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
@@ -189,7 +169,7 @@ test(induce_par_gd_bongard):-
 
 test(induce_gd_bongard):-
   set_lift(verbosity,1),
-  set_lift(parameter_learning,gd),
+  set_lift(parameter_learning,gd_python),
   set_lift(regularization, no),
   set_lift(eta,0.01),
   set_lift(gamma,0.1),
@@ -206,7 +186,7 @@ test(induce_gd_bongard):-
 
 test(induce_gd_l1_bongard):-
   set_lift(verbosity,1),
-  set_lift(parameter_learning,gd),
+  set_lift(parameter_learning,gd_python),
   set_lift(regularization, l1),
   set_lift(eta,0.01),
   set_lift(gamma,1),
@@ -223,7 +203,7 @@ test(induce_gd_l1_bongard):-
 
 test(induce_gd_l2_bongard):-
   set_lift(verbosity,1),
-  set_lift(parameter_learning,gd),
+  set_lift(parameter_learning,gd_python),
   set_lift(regularization, l2),
   set_lift(eta,0.01),
   set_lift(gamma,1),
@@ -241,7 +221,7 @@ test(induce_gd_l2_bongard):-
 
 test(induce_par_gd_adam_bongard):-
   set_lift(verbosity,1),
-  set_lift(parameter_learning,gd),
+  set_lift(parameter_learning,gd_python),
   set_lift(parameter_update, adam),
   set_lift(gamma,1),
   set_lift(iter,20),

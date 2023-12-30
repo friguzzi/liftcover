@@ -594,7 +594,10 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   M:local_setting(eps,Eps),
   M:local_setting(adam_params,[Eta,Beta1,Beta2,Epsilon]),
   M:local_setting(eta,LearningRate),
-  py_call(liftcover:random_restarts_gd(MI,MIP,NR,UpdateMethod,Iter,Eps,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Verb),-(Par,LL)),
+  M:local_setting(gamma,Gamma),
+  M:local_setting(regularization,Reg),
+  py_call(liftcover:random_restarts_gd(MI,MIP,NR,UpdateMethod,
+    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Verb),-(Par,LL)),
   maplist(logistic,Par,Prob),
   update_theory(Program0,Prob,Program),
   format3(M,"Final L ~f~n",[LL]).

@@ -155,10 +155,12 @@ def compute_ll(mi,min,parR,zero=0.000001):
     return ll.item()
 
 class Model:
-    def __init__(self,min,mi,parR=False,zero=0.000001):
+    def __init__(self,min,mi,parR=False,regularization="no",gamma=10,zero=0.000001):
         self.min=min
         self.mi=mi
         self.zero=zero
+        self.regularization=regularization
+        self.gamma=gamma
         if parR:
             self.parR=torch.tensor(parR,dtype=torch.float64,requires_grad=True)
         else:
@@ -173,14 +175,20 @@ class Model:
         probex=torch.maximum(one-torch.exp(prod), zero)
         ll=lln+torch.sum(torch.log(probex))
         ll=-ll
+        if self.regularization=="l1":
+            ll=ll+self.gamma*torch.sum(par)
+        elif self.regularization=="l2":
+            ll=ll+self.gamma*torch.sum(torch.square(par))
+            
         return ll
     
     def parameters(self):
         return [self.parR]
 
-def gd(min,mi,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", lr=0.01,
+def gd(min,mi,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", 
+       regularization="no", gamma=10, lr=0.01,
        lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
-    model=Model(min,mi,parR)
+    model=Model(min,mi,parR,regularization,gamma)
 
     if opt=="fixed_learning_rate":
         optimizer = torch.optim.SGD(model.parameters(), lr=lr)
@@ -207,7 +215,8 @@ def gd(min,mi,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", lr=
 
 
 def random_restarts_gd(mi,min,random_restarts_number=1, 
-                       opt="fixed_learning_rate", maxiter=100, tol=0.0001, lr=0.01,
+                       opt="fixed_learning_rate", maxiter=100, tol=0.0001, regularization="no", 
+                        gamma=10, lr=0.01,
                         lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
     min=torch.tensor(min)
     mi=torch.tensor(mi)
@@ -216,7 +225,8 @@ def random_restarts_gd(mi,min,random_restarts_number=1,
     
     for i in range(random_restarts_number):
         print3(ver,"Restart number ",i)
-        par1, ll1=gd(min,mi,maxiter=maxiter,tol=tol, opt=opt, lr=lr, lr_adam=lr_adam, 
+        par1, ll1=gd(min,mi,maxiter=maxiter,tol=tol, opt=opt, regularization=regularization,
+                     gamma=gamma, lr=lr, lr_adam=lr_adam, 
                      betas=betas, eps=eps, ver=ver)
         print3(ver,"Random_restart: Score ",ll1)
         print3(ver,"LL after GD ",ll1)
