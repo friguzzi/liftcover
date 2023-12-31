@@ -5,6 +5,7 @@ import torch
 xp=None
 
 def init():
+    global xp
     try:
         import cupy as cp
         cp.cuda.runtime.getDeviceCount()
