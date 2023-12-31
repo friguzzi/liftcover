@@ -4,16 +4,21 @@ import numpy as np
 import torch
 xp=None
 
-def init():
+def init(lib="numpy"):
     global xp
-    try:
-        import cupy as cp
-        cp.cuda.runtime.getDeviceCount()
-        print("GPU exists!")
-        xp=cp
-    except:
+    if lib=="numpy":
         xp=np
-        print("GPU does not exist.")
+    elif lib=="cupy":
+        try:
+            import cupy as cp
+            cp.cuda.runtime.getDeviceCount()
+            print("GPU exists!")
+            xp=cp
+        except:
+            xp=np
+            print("GPU does not exist.")
+    else:
+        raise ValueError("Unknown library")
 
 def ll(pr, co, zero=0.000001):
     probs=xp.array(pr)

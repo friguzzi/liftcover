@@ -106,6 +106,7 @@ default_setting_lift(max_initial_weight,0.5). % initial weights of dphil in [-0.
 default_setting_lift(parameter_update,fixed_learning_rate). % values: fixed_learning_rate,adam
 default_setting_lift(eta,1). % fixed learning rate
 default_setting_lift(adam_params,[0.001,0.9,0.999,1e-8]). % default Adam hyper-pameters
+default_setting_lift(pylib,numpy). % python library to use for em: numpy, cupy
 
 /**
  * induce_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
@@ -447,7 +448,8 @@ load_python_module(M):-
   absolute_file_name(library('liftcover.pl'), F),
   file_directory_name(F,Dir),
   py_add_lib_dir(Dir),
-  py_call(liftcover:init()).
+  M:local_setting(pylib,Lib),
+  py_call(liftcover:init(Lib)).
 
 load_python_module(_).
 
