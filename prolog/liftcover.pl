@@ -78,6 +78,7 @@ default_setting_lift(max_iter,10).
 default_setting_lift(max_var,4).
 default_setting_lift(maxdepth_var,2).
 default_setting_lift(beamsize,100).
+default_setting_lift(max_clauses,1000).
 default_setting_lift(max_body_length,100).
 default_setting_lift(neg_literals,false).
 
@@ -1086,8 +1087,9 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
   write3(M,'Score (CLL) '),write3(M,Score),write3(M,'\n\n\n'),
   (NewR=[R3]->
     M:local_setting(beamsize,BS),
+    M:local_setting(max_clauses,MC),
     insert_in_order(NB0,(R3,Score),BS,NB1),
-    insert_in_order(CL0,(R3,Score),200,CL1),
+    insert_in_order(CL0,(R3,Score),MC,CL1),
     length(CL1,LCL1),
     format2(M,"N. of target clauses ~d~n~n",[LCL1]),
     store_clause_refinement(R1,R3,M,Score),
