@@ -216,7 +216,6 @@ def gd(min,mi,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate",
         optimizer.step()
         diff=torch.abs(ll1-ll)
         ll=ll1
-        print(diff.item(),tol)
         if diff.item()<tol:
             break
         
