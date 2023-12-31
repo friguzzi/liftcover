@@ -79,6 +79,8 @@ To install it, use</p>
 </pre></div>
 </div>
 <p>Pack <cite>lbfgs</cite> is optional, if absent the versions of the algorithms that use  <cite>lbfgs</cite> do not work but the other versions work.</p>
+<p>Some algorithms use Python and require the Python packages <a class="reference external" href="https://www.numpy.org/">numpy</a>, <a class="reference external" href="https://pytorch.org/">torch</a> and <a class="reference external" href="https://cupy.dev/">cupy</a>.
+If they are not installed, the algorithms that use them do not work.</p>
 <p>You can upgrade the pack with</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ swipl
 ?- pack_upgrade(liftcover).
@@ -388,6 +390,17 @@ the input program with updated parameters.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- induce_lift_par([train],P).
 </pre></div>
 </div>
+<p>The algorithm that is used for parameter learning is specified by
+the parameter <code class="code docutils literal notranslate"><span class="pre">parameter_learning</span></code> that can be set to</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">em</span></code>, for Expectaion Maximization, in Prolog</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">em_python</span></code>, for Expectaion Maximization, in Python, using either <cite>numpy</cite> or <cite>cupy</cite> for GPU, depending on the value of the parameter <code class="code docutils literal notranslate"><span class="pre">pylib</span></code></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">gd</span></code>, for Gradient Descent, in Prolog</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">gd_python</span></code>, for Gradient Descent, in Python, using Pytorch</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">lbfgs</span></code> for Limited-memory Broyden-Fletcher-Goldfarb-Shanno, in Prolog and C</p></li>
+</ul>
+</div></blockquote>
 </section>
 <section id="structure-learning">
 <h4>Structure Learning<a class="headerlink" href="#structure-learning" title="Permalink to this headline">¶</a></h4>
@@ -446,7 +459,8 @@ test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 <li><p>hyper-parameters</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><code class="code docutils literal notranslate"><span class="pre">parameter_learning</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{em,lbfgs,gd}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">em</span></code>) parameter learning algorithm</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">parameter_learning</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{em,em_python,gd,gd_python,lbfgs}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">em</span></code>) parameter learning algorithm</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">pylib</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{numpy,cupy}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">numpy</span></code>) Python library to use for parameter learning</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">regularization</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{no,l1,l2,bayes}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">l1</span></code>) type of regularization</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">gamma</span></code> (values: real number, default value: <code class="code docutils literal notranslate"><span class="pre">10</span></code>): regularization coefficient for L1 and L2</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">ab</span></code> (values: list of two real numbers, default value: <code class="code docutils literal notranslate"><span class="pre">[0,10]</span></code>): values of a and b for bayesian regularization</p></li>
@@ -467,6 +481,7 @@ test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 <li><p><code class="code docutils literal notranslate"><span class="pre">max_var</span></code> (values: integer, default value: 4): maximum number of distinct variables in a clause</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">maxdepth_var</span></code> (values: integer, default value: 2): maximum depth of variables in clauses (as defined in <span id="id5">[<a class="reference internal" href="#id22" title="William W. Cohen. Pac-learning non-recursive prolog clauses. Artif. Intell., 79(1):1-38, 1995.">Coh95</a>]</span>).</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">max_body_length</span></code> (values: integer, default value: 100): maximum number of literals in the body of clauses</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">max_clauses</span></code> (values: integer, default value: 1000): maximum number of clauses in the theory</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">neg_literals</span></code> (values: <code class="code docutils literal notranslate"><span class="pre">{true,false}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">false</span></code>): whether to consider negative literals when building the bottom clause</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">minus_infinity</span></code>: (values: real, default value: -1.0e20) minus infinity</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">logzero</span></code> (values: negative real, default value <span class="math notranslate nohighlight">\(\log(0.000001)\)</span>): value assigned to <span class="math notranslate nohighlight">\(\log(0)\)</span>.</p></li>

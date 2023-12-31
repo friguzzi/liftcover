@@ -60,7 +60,7 @@
 
 
 \title{LIFTCOVER Documentation}
-\date{Dec 11, 2023}
+\date{Dec 31, 2023}
 \release{1.0.0}
 \author{Fabrizio Riguzzi}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -133,6 +133,10 @@ They are installed automatically when installing pack \sphinxtitleref{liftcover}
 
 \sphinxAtStartPar
 Pack \sphinxtitleref{lbfgs} is optional, if absent the versions of the algorithms that use  \sphinxtitleref{lbfgs} do not work but the other versions work.
+
+\sphinxAtStartPar
+Some algorithms use Python and require the Python packages \sphinxhref{https://www.numpy.org/}{numpy}, \sphinxhref{https://pytorch.org/}{torch} and \sphinxhref{https://cupy.dev/}{cupy}.
+If they are not installed, the algorithms that use them do not work.
 
 \sphinxAtStartPar
 You can upgrade the pack with
@@ -600,6 +604,32 @@ For example \sphinxhref{http://cplint.eu/e/lift/bongard.pl}{bongard.pl}, you can
 ?\PYGZhy{} induce\PYGZus{}lift\PYGZus{}par([train],P).
 \end{sphinxVerbatim}
 
+\sphinxAtStartPar
+The algorithm that is used for parameter learning is specified by
+the parameter \sphinxcode{\sphinxupquote{parameter\_learning}} that can be set to
+\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{em}}, for Expectaion Maximization, in Prolog
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{em\_python}}, for Expectaion Maximization, in Python, using either \sphinxtitleref{numpy} or \sphinxtitleref{cupy} for GPU, depending on the value of the parameter \sphinxcode{\sphinxupquote{pylib}}
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{gd}}, for Gradient Descent, in Prolog
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{gd\_python}}, for Gradient Descent, in Python, using Pytorch
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{lbfgs}} for Limited\sphinxhyphen{}memory Broyden\sphinxhyphen{}Fletcher\sphinxhyphen{}Goldfarb\sphinxhyphen{}Shanno, in Prolog and C
+
+\end{itemize}
+
 
 \subsection{Structure Learning}
 \label{\detokenize{index:structure-learning}}
@@ -698,7 +728,11 @@ hyper\sphinxhyphen{}parameters
 \begin{itemize}
 \item {} 
 \sphinxAtStartPar
-\sphinxcode{\sphinxupquote{parameter\_learning}}: (values: \sphinxcode{\sphinxupquote{\{em,lbfgs,gd\}}}, default value: \sphinxcode{\sphinxupquote{em}}) parameter learning algorithm
+\sphinxcode{\sphinxupquote{parameter\_learning}}: (values: \sphinxcode{\sphinxupquote{\{em,em\_python,gd,gd\_python,lbfgs\}}}, default value: \sphinxcode{\sphinxupquote{em}}) parameter learning algorithm
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{pylib}}: (values: \sphinxcode{\sphinxupquote{\{numpy,cupy\}}}, default value: \sphinxcode{\sphinxupquote{numpy}}) Python library to use for parameter learning
 
 \item {} 
 \sphinxAtStartPar
@@ -779,6 +813,10 @@ hyper\sphinxhyphen{}parameters
 \item {} 
 \sphinxAtStartPar
 \sphinxcode{\sphinxupquote{max\_body\_length}} (values: integer, default value: 100): maximum number of literals in the body of clauses
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{max\_clauses}} (values: integer, default value: 1000): maximum number of clauses in the theory
 
 \item {} 
 \sphinxAtStartPar
