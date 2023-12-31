@@ -43,7 +43,7 @@
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind</dt><dd><p><span id="id1">[<a class="reference internal" href="#id33" title="Arnaud Nguembang Fadja and Fabrizio Riguzzi. Lifted discriminative learning of probabilistic logic programs. Machine Learning, 108(7):1111–1135, 2019. doi:10.1007/s10994-018-5750-0.">NFR19</a>]</span>.</p>
+<dt>LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind</dt><dd><p><span id="id1">[<a class="reference internal" href="#id7" title="Elisabetta Gentili, Alice Bizzarri, Damiano Azzolini, Riccardo Zese, and Fabrizio Riguzzi. Regularization inâ probabilistic inductive logic programming. In Elena Bellodi, Francesca Alessandra Lisi, and Riccardo Zese, editors, Inductive Logic Programming - ILP 2023, volume 14363 of Lecture Notes in Artificial Intelligence, 16–29. Cham, 2023. Springer Nature Switzerland. doi:10.1007/978-3-031-49299-0_2.">GBA+23</a>, <a class="reference internal" href="#id34" title="Arnaud Nguembang Fadja and Fabrizio Riguzzi. Lifted discriminative learning of probabilistic logic programs. Machine Learning, 108(7):1111–1135, 2019. doi:10.1007/s10994-018-5750-0.">NFR19</a>]</span>.</p>
 </dd>
 </dl>
 </section>
@@ -109,14 +109,14 @@ $ swipl
 </section>
 <section id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<p>LIFTCOVER learns <em>liftable probabilistic logic programs</em> a restricted version of Logic programs with annotated disjunctions LPADs (<span id="id2">[<a class="reference internal" href="#id23" title="J. Vennekens and S. Verbaeten. Logic programs with annotated disjunctions. Technical Report CW386, K. U. Leuven, 2003.">VV03</a>, <a class="reference internal" href="#id7" title="J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In International Conference on Logic Programming, volume 3131 of LNCS, 195-209. Springer, 2004.">VVB04</a>]</span>). A HPLP is a set of annotated clauses whose head contain a single atom annotated with a probability. For the rest, the usual syntax of Prolog is used.</p>
+<p>LIFTCOVER learns <em>liftable probabilistic logic programs</em> a restricted version of Logic programs with annotated disjunctions LPADs (<span id="id2">[<a class="reference internal" href="#id24" title="J. Vennekens and S. Verbaeten. Logic programs with annotated disjunctions. Technical Report CW386, K. U. Leuven, 2003.">VV03</a>, <a class="reference internal" href="#id8" title="J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In International Conference on Logic Programming, volume 3131 of LNCS, 195-209. Springer, 2004.">VVB04</a>]</span>). A HPLP is a set of annotated clauses whose head contain a single atom annotated with a probability. For the rest, the usual syntax of Prolog is used.</p>
 <p>A clause in such a program has a single head with the <em>target predicate</em> (the predicate you want to learn)
 and a body composed of <em>input predicates</em> or predicates defined by deterministic clauses (typically facts).</p>
 <p>A general HPLP clause has the following form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">h</span><span class="p">:</span><span class="n">p</span><span class="p">:</span><span class="o">-</span> <span class="n">b1</span><span class="p">,</span><span class="n">b2</span><span class="o">...</span><span class="p">,</span><span class="n">bn</span><span class="o">.</span>
 </pre></div>
 </div>
-<p>The following example inspired from the UWCSE dataset used in <span id="id3">[<a class="reference internal" href="#id28" title="Stanley Kok and Pedro Domingos. Learning the structure of markov logic networks. In Proceedings of the 22nd international conference on Machine learning, 441–448. 2005.">KD05</a>]</span> is represented as (file <a class="reference external" href="http://cplint.eu/e/phil/uwcse.pl">uwcse.pl</a>)</p>
+<p>The following example inspired from the UWCSE dataset used in <span id="id3">[<a class="reference internal" href="#id29" title="Stanley Kok and Pedro Domingos. Learning the structure of markov logic networks. In Proceedings of the 22nd international conference on Machine learning, 441–448. 2005.">KD05</a>]</span> is represented as (file <a class="reference external" href="http://cplint.eu/e/phil/uwcse.pl">uwcse.pl</a>)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">advisedby</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">):</span><span class="mf">0.3</span> <span class="p">:</span><span class="o">-</span><span class="n">student</span><span class="p">(</span><span class="n">A</span><span class="p">),</span><span class="n">professor</span><span class="p">(</span><span class="n">B</span><span class="p">),</span><span class="n">project</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">C</span><span class="p">),</span><span class="n">project</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">)</span><span class="o">.</span>
 <span class="n">advisedby</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">):</span><span class="mf">0.6</span> <span class="p">:</span><span class="o">-</span><span class="n">student</span><span class="p">(</span><span class="n">A</span><span class="p">),</span><span class="n">professor</span><span class="p">(</span><span class="n">B</span><span class="p">),</span><span class="n">ta</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">A</span><span class="p">),</span><span class="n">taughtby</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">B</span><span class="p">)</span><span class="o">.</span>
 
@@ -156,7 +156,7 @@ are input predicates.</p>
 <li><p>example interpretations</p></li>
 </ul>
 <p>The preamble must come first, the order of the other parts can be changed.</p>
-<p>For example, consider the Bongard problems of <span id="id4">[<a class="reference internal" href="#id21" title="L. De Raedt and W. Van Laer. Inductive constraint logic. In Proceedings of the 6th Conference on Algorithmic Learning Theory (ALT 1995), volume 997 of LNAI, 80-94. Fukuoka, Japan, 1995. Springer.">DRVL95</a>]</span>. <a class="reference external" href="http://cplint.eu/e/lift/bongard.pl">bongard.pl</a> and <a class="reference external" href="http://cplint.eu/e/lift/bongardkeys.pl">bongardkeys.pl</a> represent a Bongard problem for LIFTCOVER.</p>
+<p>For example, consider the Bongard problems of <span id="id4">[<a class="reference internal" href="#id22" title="L. De Raedt and W. Van Laer. Inductive constraint logic. In Proceedings of the 6th Conference on Algorithmic Learning Theory (ALT 1995), volume 997 of LNAI, 80-94. Fukuoka, Japan, 1995. Springer.">DRVL95</a>]</span>. <a class="reference external" href="http://cplint.eu/e/lift/bongard.pl">bongard.pl</a> and <a class="reference external" href="http://cplint.eu/e/lift/bongardkeys.pl">bongardkeys.pl</a> represent a Bongard problem for LIFTCOVER.</p>
 <section id="preamble">
 <h4>Preamble<a class="headerlink" href="#preamble" title="Permalink to this headline">¶</a></h4>
 <p>In the preamble, the LIFTCOVER library is loaded with (<a class="reference external" href="http://cplint.eu/e/lift/bongard.pl">bongard.pl</a>):</p>
@@ -479,7 +479,7 @@ test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 <li><p><code class="code docutils literal notranslate"><span class="pre">initial_clauses_per_megaex</span></code> (values: integer, default value: 1, valid for SLEAHP): number of bottom clauses to build for each mega-example (or model or interpretation).</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">d</span></code> (values: integer, default value: 1, valid for SLEAHP): number of saturation steps when building the bottom clause.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">max_var</span></code> (values: integer, default value: 4): maximum number of distinct variables in a clause</p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">maxdepth_var</span></code> (values: integer, default value: 2): maximum depth of variables in clauses (as defined in <span id="id5">[<a class="reference internal" href="#id22" title="William W. Cohen. Pac-learning non-recursive prolog clauses. Artif. Intell., 79(1):1-38, 1995.">Coh95</a>]</span>).</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">maxdepth_var</span></code> (values: integer, default value: 2): maximum depth of variables in clauses (as defined in <span id="id5">[<a class="reference internal" href="#id23" title="William W. Cohen. Pac-learning non-recursive prolog clauses. Artif. Intell., 79(1):1-38, 1995.">Coh95</a>]</span>).</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">max_body_length</span></code> (values: integer, default value: 100): maximum number of literals in the body of clauses</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">max_clauses</span></code> (values: integer, default value: 1000): maximum number of clauses in the theory</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">neg_literals</span></code> (values: <code class="code docutils literal notranslate"><span class="pre">{true,false}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">false</span></code>): whether to consider negative literals when building the bottom clause</p></li>
@@ -508,22 +508,25 @@ The <code class="code docutils literal notranslate"><span class="pre">pack/liftc
 <p>phil follows the MIT License that you can find in phil root folder.
 The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
 <p id="id6"><dl class="citation">
-<dt class="label" id="id22"><span class="brackets"><a class="fn-backref" href="#id5">Coh95</a></span></dt>
+<dt class="label" id="id23"><span class="brackets"><a class="fn-backref" href="#id5">Coh95</a></span></dt>
 <dd><p>William W. Cohen. Pac-learning non-recursive prolog clauses. <em>Artif. Intell.</em>, 79(1):1–38, 1995.</p>
 </dd>
-<dt class="label" id="id21"><span class="brackets"><a class="fn-backref" href="#id4">DRVL95</a></span></dt>
+<dt class="label" id="id22"><span class="brackets"><a class="fn-backref" href="#id4">DRVL95</a></span></dt>
 <dd><p>L. De Raedt and W. Van Laer. Inductive constraint logic. In <em>Proceedings of the 6th Conference on Algorithmic Learning Theory (ALT 1995)</em>, volume 997 of LNAI, 80–94. Fukuoka, Japan, 1995. Springer.</p>
 </dd>
-<dt class="label" id="id28"><span class="brackets"><a class="fn-backref" href="#id3">KD05</a></span></dt>
+<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id1">GBA+23</a></span></dt>
+<dd><p>Elisabetta Gentili, Alice Bizzarri, Damiano Azzolini, Riccardo Zese, and Fabrizio Riguzzi. Regularization inâ probabilistic inductive logic programming. In Elena Bellodi, Francesca Alessandra Lisi, and Riccardo Zese, editors, <em>Inductive Logic Programming - ILP 2023</em>, volume 14363 of Lecture Notes in Artificial Intelligence, 16–29. Cham, 2023. Springer Nature Switzerland. <a class="reference external" href="https://doi.org/10.1007/978-3-031-49299-0_2">doi:10.1007/978-3-031-49299-0_2</a>.</p>
+</dd>
+<dt class="label" id="id29"><span class="brackets"><a class="fn-backref" href="#id3">KD05</a></span></dt>
 <dd><p>Stanley Kok and Pedro Domingos. Learning the structure of markov logic networks. In <em>Proceedings of the 22nd international conference on Machine learning</em>, 441–448. 2005.</p>
 </dd>
-<dt class="label" id="id33"><span class="brackets"><a class="fn-backref" href="#id1">NFR19</a></span></dt>
+<dt class="label" id="id34"><span class="brackets"><a class="fn-backref" href="#id1">NFR19</a></span></dt>
 <dd><p>Arnaud Nguembang Fadja and Fabrizio Riguzzi. Lifted discriminative learning of probabilistic logic programs. <em>Machine Learning</em>, 108(7):1111–1135, 2019. <a class="reference external" href="https://doi.org/10.1007/s10994-018-5750-0">doi:10.1007/s10994-018-5750-0</a>.</p>
 </dd>
-<dt class="label" id="id23"><span class="brackets"><a class="fn-backref" href="#id2">VV03</a></span></dt>
+<dt class="label" id="id24"><span class="brackets"><a class="fn-backref" href="#id2">VV03</a></span></dt>
 <dd><p>J. Vennekens and S. Verbaeten. Logic programs with annotated disjunctions. Technical Report CW386, K. U. Leuven, 2003.</p>
 </dd>
-<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id2">VVB04</a></span></dt>
+<dt class="label" id="id8"><span class="brackets"><a class="fn-backref" href="#id2">VVB04</a></span></dt>
 <dd><p>J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In <em>International Conference on Logic Programming</em>, volume 3131 of LNCS, 195–209. Springer, 2004.</p>
 </dd>
 </dl>

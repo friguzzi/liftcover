@@ -81,7 +81,7 @@
 \label{\detokenize{index:introduction}}\begin{description}
 \item[{LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind}] \leavevmode
 \sphinxAtStartPar
-{[}\hyperlink{cite.index:id33}{NFR19}{]}.
+{[}\hyperlink{cite.index:id7}{GBA+23}, \hyperlink{cite.index:id34}{NFR19}{]}.
 
 \end{description}
 
@@ -173,7 +173,7 @@ In this case, they need to be upgraded manually.
 \chapter{Syntax}
 \label{\detokenize{index:syntax}}
 \sphinxAtStartPar
-LIFTCOVER learns \sphinxstyleemphasis{liftable probabilistic logic programs} a restricted version of Logic programs with annotated disjunctions LPADs ({[}\hyperlink{cite.index:id23}{VV03}, \hyperlink{cite.index:id7}{VVB04}{]}). A HPLP is a set of annotated clauses whose head contain a single atom annotated with a probability. For the rest, the usual syntax of Prolog is used.
+LIFTCOVER learns \sphinxstyleemphasis{liftable probabilistic logic programs} a restricted version of Logic programs with annotated disjunctions LPADs ({[}\hyperlink{cite.index:id24}{VV03}, \hyperlink{cite.index:id8}{VVB04}{]}). A HPLP is a set of annotated clauses whose head contain a single atom annotated with a probability. For the rest, the usual syntax of Prolog is used.
 
 \sphinxAtStartPar
 A clause in such a program has a single head with the \sphinxstyleemphasis{target predicate} (the predicate you want to learn)
@@ -187,7 +187,7 @@ A general HPLP clause has the following form:
 \end{sphinxVerbatim}
 
 \sphinxAtStartPar
-The following example inspired from the UWCSE dataset used in {[}\hyperlink{cite.index:id28}{KD05}{]} is represented as (file \sphinxhref{http://cplint.eu/e/phil/uwcse.pl}{uwcse.pl})
+The following example inspired from the UWCSE dataset used in {[}\hyperlink{cite.index:id29}{KD05}{]} is represented as (file \sphinxhref{http://cplint.eu/e/phil/uwcse.pl}{uwcse.pl})
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYG{n}{advisedby}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)}\PYG{p}{:}\PYG{l+m+mf}{0.3} \PYG{p}{:}\PYG{o}{\PYGZhy{}}\PYG{n}{student}\PYG{p}{(}\PYG{n}{A}\PYG{p}{)}\PYG{p}{,}\PYG{n}{professor}\PYG{p}{(}\PYG{n}{B}\PYG{p}{)}\PYG{p}{,}\PYG{n}{project}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{C}\PYG{p}{)}\PYG{p}{,}\PYG{n}{project}\PYG{p}{(}\PYG{n}{B}\PYG{p}{,}\PYG{n}{C}\PYG{p}{)}\PYG{o}{.}
@@ -260,7 +260,7 @@ example interpretations
 The preamble must come first, the order of the other parts can be changed.
 
 \sphinxAtStartPar
-For example, consider the Bongard problems of {[}\hyperlink{cite.index:id21}{DRVL95}{]}. \sphinxhref{http://cplint.eu/e/lift/bongard.pl}{bongard.pl} and \sphinxhref{http://cplint.eu/e/lift/bongardkeys.pl}{bongardkeys.pl} represent a Bongard problem for LIFTCOVER.
+For example, consider the Bongard problems of {[}\hyperlink{cite.index:id22}{DRVL95}{]}. \sphinxhref{http://cplint.eu/e/lift/bongard.pl}{bongard.pl} and \sphinxhref{http://cplint.eu/e/lift/bongardkeys.pl}{bongardkeys.pl} represent a Bongard problem for LIFTCOVER.
 
 
 \subsection{Preamble}
@@ -808,7 +808,7 @@ hyper\sphinxhyphen{}parameters
 
 \item {} 
 \sphinxAtStartPar
-\sphinxcode{\sphinxupquote{maxdepth\_var}} (values: integer, default value: 2): maximum depth of variables in clauses (as defined in {[}\hyperlink{cite.index:id22}{Coh95}{]}).
+\sphinxcode{\sphinxupquote{maxdepth\_var}} (values: integer, default value: 2): maximum depth of variables in clauses (as defined in {[}\hyperlink{cite.index:id23}{Coh95}{]}).
 
 \item {} 
 \sphinxAtStartPar
@@ -870,22 +870,25 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.
 
 
 \begin{sphinxthebibliography}{DRVL95}
-\bibitem[Coh95]{index:id22}
+\bibitem[Coh95]{index:id23}
 \sphinxAtStartPar
 William W. Cohen. Pac\sphinxhyphen{}learning non\sphinxhyphen{}recursive prolog clauses. \sphinxstyleemphasis{Artif. Intell.}, 79(1):1\textendash{}38, 1995.
-\bibitem[DRVL95]{index:id21}
+\bibitem[DRVL95]{index:id22}
 \sphinxAtStartPar
 L. De Raedt and W. Van Laer. Inductive constraint logic. In \sphinxstyleemphasis{Proceedings of the 6th Conference on Algorithmic Learning Theory (ALT 1995)}, volume 997 of LNAI, 80\textendash{}94. Fukuoka, Japan, 1995. Springer.
-\bibitem[KD05]{index:id28}
+\bibitem[GBA+23]{index:id7}
+\sphinxAtStartPar
+Elisabetta Gentili, Alice Bizzarri, Damiano Azzolini, Riccardo Zese, and Fabrizio Riguzzi. Regularization inâ probabilistic inductive logic programming. In Elena Bellodi, Francesca Alessandra Lisi, and Riccardo Zese, editors, \sphinxstyleemphasis{Inductive Logic Programming \sphinxhyphen{} ILP 2023}, volume 14363 of Lecture Notes in Artificial Intelligence, 16\textendash{}29. Cham, 2023. Springer Nature Switzerland. \sphinxhref{https://doi.org/10.1007/978-3-031-49299-0\_2}{doi:10.1007/978\sphinxhyphen{}3\sphinxhyphen{}031\sphinxhyphen{}49299\sphinxhyphen{}0\_2}.
+\bibitem[KD05]{index:id29}
 \sphinxAtStartPar
 Stanley Kok and Pedro Domingos. Learning the structure of markov logic networks. In \sphinxstyleemphasis{Proceedings of the 22nd international conference on Machine learning}, 441\textendash{}448. 2005.
-\bibitem[NFR19]{index:id33}
+\bibitem[NFR19]{index:id34}
 \sphinxAtStartPar
 Arnaud Nguembang Fadja and Fabrizio Riguzzi. Lifted discriminative learning of probabilistic logic programs. \sphinxstyleemphasis{Machine Learning}, 108(7):1111\textendash{}1135, 2019. \sphinxhref{https://doi.org/10.1007/s10994-018-5750-0}{doi:10.1007/s10994\sphinxhyphen{}018\sphinxhyphen{}5750\sphinxhyphen{}0}.
-\bibitem[VV03]{index:id23}
+\bibitem[VV03]{index:id24}
 \sphinxAtStartPar
 J. Vennekens and S. Verbaeten. Logic programs with annotated disjunctions. Technical Report CW386, K. U. Leuven, 2003.
-\bibitem[VVB04]{index:id7}
+\bibitem[VVB04]{index:id8}
 \sphinxAtStartPar
 J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In \sphinxstyleemphasis{International Conference on Logic Programming}, volume 3131 of LNCS, 195\textendash{}209. Springer, 2004.
 \end{sphinxthebibliography}

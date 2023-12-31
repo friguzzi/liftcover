@@ -14,7 +14,7 @@ LIFTCOVER Manual
 Introduction
 ============
 LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind
- :cite:`NguRig19-ML-IJ`. 
+ :cite:`GenBizAzz23-ILP-IC,NguRig19-ML-IJ`. 
 
 Predicate Reference
 ===================
