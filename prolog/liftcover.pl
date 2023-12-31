@@ -162,7 +162,7 @@ test_prob_lift(M:P,TestFolds,NPos,NNeg,CLL,Results) :-
   ).
 
 induce_rules(M:Folds,R):-
-  load_python_modules(M),
+  load_python_module(M),
   make_dynamic(M),
   M:local_setting(seed,Seed),
   setrand(Seed),
