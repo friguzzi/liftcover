@@ -162,6 +162,7 @@ test_prob_lift(M:P,TestFolds,NPos,NNeg,CLL,Results) :-
   ).
 
 induce_rules(M:Folds,R):-
+  load_python_modules(M),
   make_dynamic(M),
   M:local_setting(seed,Seed),
   setrand(Seed),
@@ -438,6 +439,18 @@ gen_par(N0,NC,[[N0,[0.5,0.5]]|T]):-
 
 logistic(X,Sigma_X):-
   Sigma_X is 1/(1+exp(-X)).
+
+
+load_python_module(M):-
+  (M:local_setting(parameter_learning,em_python);
+    M:local_setting(parameter_learning,gd_python)),!,
+  absolute_file_name(library('liftcover.pl'), F),
+  file_directory_name(F,Dir),
+  py_add_lib_dir(Dir),
+  py_call(liftcover:init()).
+
+load_python_module(_).
+
 /**
  * induce_par_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
  *
@@ -450,6 +463,7 @@ induce_par_lift(Folds,ROut):-
   rules2terms(R,ROut).
 
 induce_parameters(M:Folds,R):-
+  load_python_module(M),
   make_dynamic(M),
   M:local_setting(seed,Seed),
   setrand(Seed),
