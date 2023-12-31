@@ -949,8 +949,8 @@ scan_pos([],_M,_Par,LL,Eta,LL,Eta).
 
 scan_pos([MIH|MIT],M,Par,LL0,Eta0,LL,Eta):-
   M:local_setting(logzero,LogZero),
-%  foldl(rule_contrib,MIH,Par,1,Prod),
-  py_call(liftcover:rule_contrib(MIH,Par),Prod),
+  foldl(rule_contrib,MIH,Par,1,Prod),
+%  py_call(liftcover:rule_contrib(MIH,Par),Prod),
 %  format('Prod ~f  ProdP ~f~n',[Prod,ProdP]),
   ProbEx is 1-Prod,
   (ProbEx=:=0.0->
@@ -958,9 +958,9 @@ scan_pos([MIH|MIT],M,Par,LL0,Eta0,LL,Eta):-
    ;
     LLCurrent is LL0+log(ProbEx)
   ),
-%  maplist(update_eta(ProbEx,M),Eta0,Par,MIH,EtaCurrentP),
+  maplist(update_eta(ProbEx,M),Eta0,Par,MIH,EtaCurrent),
 %  writeln(py_call(liftcover:update_eta(ProbEx,Eta0,Par,MIH),EtaCurrentP)),
-  py_call(liftcover:update_eta(ProbEx,Eta0,Par,MIH),EtaCurrent),
+%  py_call(liftcover:update_eta(ProbEx,Eta0,Par,MIH),EtaCurrent),
 %  format('EtaCurrent ~w  ~nEtaCurrentP ~w~n',[EtaCurrent,EtaCurrentP]),
   scan_pos(MIT,M,Par,LLCurrent,EtaCurrent,LL,Eta).
 
