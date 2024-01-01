@@ -255,7 +255,7 @@ def random_restarts_gd(mi,min,random_restarts_number=1,
         if ll1>max_ll:
             max_ll=ll1
             max_par=par1
-        par=torch.special.expit(max_par)
+    par=torch.special.expit(max_par)
     return par.tolist(), max_ll.item()
 
 def print1(ver,*arg):
