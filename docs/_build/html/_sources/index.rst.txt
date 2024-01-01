@@ -14,7 +14,7 @@ LIFTCOVER Manual
 Introduction
 ============
 LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind
- :cite:`NguRig19-ML-IJ`. 
+ :cite:`GenBizAzz23-ILP-IC,NguRig19-ML-IJ`. 
 
 Predicate Reference
 ===================
@@ -44,6 +44,9 @@ They are installed automatically when installing pack `liftcover` or can be inst
 	?- pack_install(auc).
 
 Pack `lbfgs` is optional, if absent the versions of the algorithms that use  `lbfgs` do not work but the other versions work.
+
+Some algorithms use Python and require the Python packages `numpy <https://www.numpy.org/>`_, `torch <https://pytorch.org/>`_ and `cupy <https://cupy.dev/>`_.
+If they are not installed, the algorithms that use them do not work.
 
 You can upgrade the pack with ::
 
@@ -385,6 +388,15 @@ For example `bongard.pl <http://cplint.eu/e/lift/bongard.pl>`__, you can perform
 
 	?- induce_lift_par([train],P).
 
+The algorithm that is used for parameter learning is specified by 
+the parameter :code:`parameter_learning` that can be set to 
+
+  * :code:`em`, for Expectaion Maximization, in Prolog
+  * :code:`em_python`, for Expectaion Maximization, in Python, using either `numpy` or `cupy` for GPU, depending on the value of the parameter :code:`pylib` 
+  * :code:`gd`, for Gradient Descent, in Prolog
+  * :code:`gd_python`, for Gradient Descent, in Python, using Pytorch
+  * :code:`lbfgs` for Limited-memory Broyden-Fletcher-Goldfarb-Shanno, in Prolog and C
+
 Structure Learning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To execute LIFTCOVER, prepare an input file in the editor panel as indicated above and call ::
@@ -445,7 +457,8 @@ and read with commands of the form ::
 
 * hyper-parameters
 
-    - :code:`parameter_learning`: (values: :code:`{em,lbfgs,gd}`, default value: :code:`em`) parameter learning algorithm
+    - :code:`parameter_learning`: (values: :code:`{em,em_python,gd,gd_python,lbfgs}`, default value: :code:`em`) parameter learning algorithm
+    - :code:`pylib`: (values: :code:`{numpy,cupy}`, default value: :code:`numpy`) Python library to use for parameter learning
     - :code:`regularization`: (values: :code:`{no,l1,l2,bayes}`, default value: :code:`l1`) type of regularization
     - :code:`gamma` (values: real number, default value: :code:`10`): regularization coefficient for L1 and L2
     - :code:`ab` (values: list of two real numbers, default value: :code:`[0,10]`): values of a and b for bayesian regularization 
@@ -466,6 +479,7 @@ and read with commands of the form ::
     - :code:`max_var` (values: integer, default value: 4): maximum number of distinct variables in a clause
     - :code:`maxdepth_var` (values: integer, default value: 2): maximum depth of variables in clauses (as defined in :cite:`DBLP:journals/ai/Cohen95`).
     - :code:`max_body_length` (values: integer, default value: 100): maximum number of literals in the body of clauses
+    - :code:`max_clauses` (values: integer, default value: 1000): maximum number of clauses in the theory
     - :code:`neg_literals` (values: :code:`{true,false}`, default value: :code:`false`): whether to consider negative literals when building the bottom clause
     - :code:`minus_infinity`: (values: real, default value: -1.0e20) minus infinity
     - :code:`logzero` (values: negative real, default value :math:`\log(0.000001)`): value assigned to :math:`\log(0)`.
