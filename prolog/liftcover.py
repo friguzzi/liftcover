@@ -232,7 +232,7 @@ def gd(min,mi,device,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rat
         if diff.item()<tol:
             break
         
-    return model.parR.tolist(), -ll.item()
+    return model.parR, -ll
 
 
 def random_restarts_gd(mi,min,random_restarts_number=1, 
@@ -255,7 +255,8 @@ def random_restarts_gd(mi,min,random_restarts_number=1,
         if ll1>max_ll:
             max_ll=ll1
             max_par=par1
-    return max_par, max_ll
+        par=torch.special.expit(max_par)
+    return par.tolist(), max_ll.item()
 
 def print1(ver,*arg):
     if ver>0:

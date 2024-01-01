@@ -245,7 +245,7 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   cycle_beam(Beam,Mod,Pos,Neg,[],CL,[],_BG,M),
   maplist(get_cl,CL,LC),
   write2(Mod,"Final parameter learning"),nl2(Mod),
-  learn_param(LC,Mod,Pos,Neg,R1,Score),
+  learn_param(LC,Mod,Pos,Neg,R1,Score,_MI,_MIN),
   (Mod:local_setting(regularization,no)->
     R=R1
   ;
@@ -299,7 +299,7 @@ cycle_structure([(RH,_Score)|RT],Mod,R0,S0,SP0,Pos,Neg,R,S,M):-
   format2(Mod,"Theory iteration ~d~n~n",[M]),
   format3(Mod,"Initial theory~n~n",[]),
   write_rules3(Mod,[RH|R0],user_output),
-  learn_param([RH|R0],Mod,Pos,Neg,R3,Score),
+  learn_param([RH|R0],Mod,Pos,Neg,R3,Score,_MI,_MIN),
   format3(Mod,"Score after parameter learning = ~f~n",[Score]),
   write3(Mod,'Updated Theory\n'),
   write_rules3(Mod,R3,user_output),   %definite rules without probabilities in the head are not written
@@ -484,7 +484,7 @@ induce_parameters(M:Folds,R):-
   process_clauses(R00,M,R0),
   statistics(walltime,[_,_]),
   find_ex(DB,M,Pos,Neg,_NPos,_NNeg),
-  learn_param(R0,M,Pos,Neg,R1,Score),
+  learn_param(R0,M,Pos,Neg,R1,Score,_MI,_MIN),
   (M:local_setting(regularization,no)->
     R=R1
   ;
@@ -547,63 +547,44 @@ test_theory_pos_prob([Ex|Rest],M,Th,N,[MI|LMI]):-
   test_clause_prob(Th,M,[Ex],MI0,MI),
   test_theory_pos_prob(Rest,M,Th,N,LMI).
 
-learn_param([],M,_,_,[],MInf):-!,
+learn_param([],M,_,_,[],MInf,[],[]):-!,
   M:local_setting(minus_infinity,MInf).
 
-learn_param(Program0,M,Pos,Neg,Program,LL):-
-  M:local_setting(parameter_learning,em),!,
+learn_param(Program0,M,Pos,Neg,Program,LL,MI,MIN):-
   generate_clauses(Program0,M,0,[],Pr1),
   length(Program0,N),
   gen_initial_counts(N,MIN0),
   test_theory_neg_prob(Neg,M,Pr1,MIN0,MIN),
   test_theory_pos_prob(Pos,M,Pr1,N,MI),
-  M:local_setting(random_restarts_number,NR),
-  random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN),  %computes new parameters Par
+  learn_param_int(MI,MIN,N,M,Par,LL),
   update_theory(Program0,Par,Program1),
   maplist(remove_zero,Program1,Program2),
   append(Program2,Program),
   format3(M,"Final LL ~f~n",[-LL]).
 
-learn_param(Program0,M,Pos,Neg,Program,LL):-
+learn_param_int(MI,MIN,N,M,Par,LL):-
+  M:local_setting(parameter_learning,em),!,
+  M:local_setting(random_restarts_number,NR),
+  random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN).
+
+learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(parameter_learning,em_python),!,
-  generate_clauses(Program0,M,0,[],Pr1),
-  length(Program0,N),
-  gen_initial_counts(N,MIN0),
-  test_theory_neg_prob(Neg,M,Pr1,MIN0,MIN),
-  test_theory_pos_prob(Pos,M,Pr1,N,MI),
   M:local_setting(random_restarts_number,NR),
   M:local_setting(eps,EA),
   M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
   M:local_setting(regularization,Reg),
-  py_call(liftcover:random_restarts(MI,MIN,NR,Iter,EA,ER,Reg),-(Par,LL)),
-  update_theory(Program0,Par,Program1),
-  maplist(remove_zero,Program1,Program2),
-  append(Program2,Program),
-  format3(M,"Final LL ~f~n",[-LL]).
-  
+  py_call(liftcover:random_restarts(MI,MIN,NR,Iter,EA,ER,Reg),-(Par,LL)).
 
-learn_param(Program0,M,Pos,Neg,Program,LL):-
+learn_param_int(MI,MIN,N,M,Par,LL):-
   M:local_setting(parameter_learning,gd),!,
-  generate_clauses(Program0,M,0,[],Pr1),
-  length(Program0,N),
-  gen_initial_counts(N,MIP0),
-  test_theory_neg_prob(Neg,M,Pr1,MIP0,MIP),
-  test_theory_pos_prob(Pos,M,Pr1,N,MI),
   M:local_setting(random_restarts_number,NR),
-  random_restarts_gd(NR,M,-1e20,PLL,N,initial,Par,MI,MIP),  %computes new parameters Par
-  maplist(logistic,Par,Prob),
-  update_theory(Program0,Prob,Program),
-  LL is -PLL,
-  format3(M,"Final L ~f~n",[LL]).
+  random_restarts_gd(NR,M,-1e20,PLL,N,initial,ParR,MI,MIN),  %computes new parameters Par
+  maplist(logistic,ParR,Par),
+  LL is -PLL.
 
-learn_param(Program0,M,Pos,Neg,Program,LL):-
+learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(parameter_learning,gd_python),!,
-  generate_clauses(Program0,M,0,[],Pr1),
-  length(Program0,N),
-  gen_initial_counts(N,MIP0),
-  test_theory_neg_prob(Neg,M,Pr1,MIP0,MIP),
-  test_theory_pos_prob(Pos,M,Pr1,N,MI),
   M:local_setting(random_restarts_number,NR),
   M:local_setting(verbosity,Verb),
   M:local_setting(parameter_update,UpdateMethod),
@@ -613,42 +594,28 @@ learn_param(Program0,M,Pos,Neg,Program,LL):-
   M:local_setting(eta,LearningRate),
   M:local_setting(gamma,Gamma),
   M:local_setting(regularization,Reg),
-  py_call(liftcover:random_restarts_gd(MI,MIP,NR,UpdateMethod,
-    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Verb),-(Par,LL)),
-  maplist(logistic,Par,Prob),
-  update_theory(Program0,Prob,Program),
-  format3(M,"Final L ~f~n",[LL]).
+  py_call(liftcover:random_restarts_gd(MI,MIN,NR,UpdateMethod,
+    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Verb),-(Par,LL)).
 
-learn_param(Program0,M,Pos,Neg,Program,LL):-
+learn_param_int(MI,MIN,N,M,Par,LL):-
   M:local_setting(parameter_learning,lbfgs),
-  generate_clauses(Program0,M,0,[],Pr1),
-  length(Program0,N),
-  gen_initial_counts(N,MIP0),
-  test_theory_neg_prob(Neg,M,Pr1,MIP0,MIP),
-  test_theory_pos_prob(Pos,M,Pr1,N,MI),
-%  flush_output,
-%  optimizer_set_parameter(max_step,0.001),
-% parte da modificare init
-  optimizer_initialize(N,liftcover,evaluate,progress,[M,MIP,MI],Env),
+  optimizer_initialize(N,liftcover,evaluate,progress,[M,MIN,MI],Env),
   init_par(Env,N),
-  evaluate_L(Env,M,MIP,MI,L),
+  evaluate_L(Env,M,MIN,MI,L),
 % parte da modificare fine
   IL is -L,
   format3(M,"~nInitial L ~f~n",[IL]),
   optimizer_run(Env,_LL,Status),
   format3(M,"Status ~p~n",[Status]),
-  update_theory_lbfgs(Program0,Env,M,0,Program1),
-  maplist(remove_zero,Program1,Program2),
-  append(Program2,Program),
-  evaluate_L(Env,M,MIP,MI,NewL),
+  new_pars_lbfgs(Env,M,0,N,Par),
+  evaluate_L(Env,M,MIN,MI,NewL),
   LL is -NewL,
-  format3(M,"Final L ~f~n",[LL]),
   optimizer_finalize(Env).
 
 
-update_theory_lbfgs([],_Env,_M,_N,[]):-!.
+new_pars_lbfgs(_Env,_M,N,N,[]):-!.
 
-update_theory_lbfgs([rule(Name,[H:_,_],B,L)|Rest],Env,M,N,[rule(Name,[H:P,'':PN],B,L)|Rest1]):-
+new_pars_lbfgs(Env,M,N,NMax,[P|Rest1]):-
     optimizer_get_x(Env,N,P0),
     M:local_setting(zero,Zero),
     (P0=<0.0->
@@ -660,9 +627,8 @@ update_theory_lbfgs([rule(Name,[H:_,_],B,L)|Rest],Env,M,N,[rule(Name,[H:P,'':PN]
         P=P0
       )
     ),
-    PN is 1-P,
     N1 is N+1,
-    update_theory_lbfgs(Rest,Env,M,N1,Rest1).
+    new_pars_lbfgs(Env,M,N1,NMax,Rest1).
 
 
 random_restarts(0,_M,Score,Score,_N,Par,Par,_MI,_MIN):-!.
@@ -1081,7 +1047,7 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):- 
 score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
   format3(M,'Score ref.  ~d of ~d~n',[Nrev,NRef]),
   write_rules3(M,[R1],user_output),
-  learn_param([R1],M,Pos,Neg,NewR,Score),
+  learn_param([R1],M,Pos,Neg,NewR,Score,_MI,_MIN),
   write3(M,'Updated refinement\n'),
   write_rules3(M,NewR,user_output),
   write3(M,'Score (CLL) '),write3(M,Score),write3(M,'\n\n\n'),
