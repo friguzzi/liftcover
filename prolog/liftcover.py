@@ -1,28 +1,35 @@
 
 
 import numpy as np
-import torch
 xp=None
+torch=None
 device="cpu"
-def init(processor="cpu"):
-    global xp, device
-    if processor=="cpu":
-        xp=np
-    elif processor=="gpu":
-        if torch.cuda.is_available():
+def init(algorithm="em_python", processor="cpu"):
+    global xp, device, torch
+    if algorithm=="gd_python":
+        import torch
+        if processor=="gpu":
             device = torch.device('cuda')
-        else:
+        elif processor=="cpu":
             device=torch.device('cpu')
-        try:
-            import cupy as cp
-            cp.cuda.runtime.getDeviceCount()
-            print("GPU exists!")
-            xp=cp
-        except:
+        else:
+            raise ValueError("Unknown processor")
+    elif algorithm=="em_python":
+        if processor=="cpu":
             xp=np
-            print("GPU does not exist.")
+        elif processor=="gpu":
+            try:
+                import cupy as cp
+                cp.cuda.runtime.getDeviceCount()
+                print("GPU exists!")
+                xp=cp
+            except:
+                xp=np
+                print("GPU does not exist.")
+        else:
+            raise ValueError("Unknown processor")
     else:
-        raise ValueError("Unknown library")
+        raise ValueError("Unknown algorithm")
 
 def ll(pr, co, zero=0.000001):
     probs=xp.array(pr)
