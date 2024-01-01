@@ -31,6 +31,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :-use_module(library(terms)).
 :-use_module(library(rbtrees)).
 :-use_module(library(apply)).
+:-use_module(library(clpfd), [transpose/2]).
 :-absolute_file_name(library(lbfgs),F,[solutions(all)]),atomic_concat(F,'.pl',Fpl),exists_file(Fpl),use_module(library(lbfgs));true.
 %:-use_foreign_library(foreign(bddem),install).
 :-set_prolog_flag(unknown,warning).
@@ -243,9 +244,16 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   format2(Mod,"Clause search~n~n",[]),
   Mod:local_setting(max_iter,M),
   cycle_beam(Beam,Mod,Pos,Neg,[],CL,[],_BG,M),
-  maplist(get_cl,CL,LC),
+  maplist(get_cl,CL,LC,MIC,MINC),
+  maplist(append,MIC,MIC1),
+  transpose(MIC1,MI),
+  append(MINC,MIN),
+  length(LC,NumCL),
   write2(Mod,"Final parameter learning"),nl2(Mod),
-  learn_param(LC,Mod,Pos,Neg,R1,Score,_MI,_MIN),
+  learn_param_int(MI,MIN,NumCL,Mod,Par,Score),
+  update_theory(LC,Par,Program1),
+  maplist(remove_zero,Program1,Program2),
+  append(Program2,R1),
   (Mod:local_setting(regularization,no)->
     R=R1
   ;
@@ -258,7 +266,7 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   format2(Mod,"Best target theory~n~n",[]),
   write_rules2(Mod,R,user_output).
 
-get_cl((C,_),C).
+get_cl([C,_,MI,MIN],C,MI,MIN).
 
 pick_first(0,_,[]):-!.
 
@@ -1018,7 +1026,7 @@ cycle_beam(Beam,Mod,Pos,Neg,CL0,CL,CLBG0,CLBG,M):-
 
 cycle_clauses([],_M,_Pos,_Neg,NB,NB,CL,CL,CLBG,CLBG):-!.
 
-cycle_clauses([(RH,_ScoreH)|T],M,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
+cycle_clauses([[RH,_ScoreH]|T],M,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
 %  write3('\n\nRevising clause\n'),
 %  write_rules3([RH],user_output),
 %  RH=rule(_,H,B,Lits),
@@ -1028,7 +1036,6 @@ cycle_clauses([(RH,_ScoreH)|T],M,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
   length(LR,NR),
   write3(M,'Number of revisions '),write3(M,NR),write3(M,'\n'),
   score_clause_refinements(LR,M,1,NR,Pos,Neg,NB0,NB1,CL0,CL1,CLBG0,CLBG1),
-  
   cycle_clauses(T,M,Pos,Neg,NB1,NB,CL1,CL,CLBG1,CLBG).
 
 score_clause_refinements([],_M,_N,_NR,_Pos,_Neg,NB,NB,CL,CL,CLBG,CLBG).
@@ -1040,22 +1047,22 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):- 
   write_rules3(M,[R3],user_output),
   write3(M,'Score '),write3(M,Score),write3(M,'\n\n\n'),
   M:local_setting(beamsize,BS),
-  insert_in_order(NB0,(R3,Score),BS,NB1),
+  insert_in_order(NB0,[R3,Score],BS,NB1),
   Nrev1 is Nrev+1,
   score_clause_refinements(T,M,Nrev1,NRef,Pos,Neg,NB1,NB,CL0,CL,CLBG0,CLBG).
 
 score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
   format3(M,'Score ref.  ~d of ~d~n',[Nrev,NRef]),
   write_rules3(M,[R1],user_output),
-  learn_param([R1],M,Pos,Neg,NewR,Score,_MI,_MIN),
+  learn_param([R1],M,Pos,Neg,NewR,Score,MI,MIN),
   write3(M,'Updated refinement\n'),
   write_rules3(M,NewR,user_output),
   write3(M,'Score (CLL) '),write3(M,Score),write3(M,'\n\n\n'),
   (NewR=[R3]->
     M:local_setting(beamsize,BS),
     M:local_setting(max_clauses,MC),
-    insert_in_order(NB0,(R3,Score),BS,NB1),
-    insert_in_order(CL0,(R3,Score),MC,CL1),
+    insert_in_order(NB0,[R3,Score],BS,NB1),
+    insert_in_order(CL0,[R3,Score,MI,MIN],MC,CL1),
     length(CL1,LCL1),
     format2(M,"N. of target clauses ~d~n~n",[LCL1]),
     store_clause_refinement(R1,R3,M,Score),
@@ -1138,10 +1145,10 @@ insert_in_order([],C,BeamSize,[C]):-
 
 insert_in_order(Beam,_New,0,Beam):-!.
 
-insert_in_order([(Th1,Heuristic1)|RestBeamIn],(Th,Heuristic),BeamSize,BeamOut):-
+insert_in_order([[Th1,Heuristic1|Rest1]|RestBeamIn],[Th,Heuristic|Rest],BeamSize,BeamOut):-
   Heuristic>Heuristic1,!,
   % larger heuristic, insert here
-  NewBeam=[(Th,Heuristic),(Th1,Heuristic1)|RestBeamIn],
+  NewBeam=[[Th,Heuristic|Rest],[Th1,Heuristic1|Rest1]|RestBeamIn],
   length(NewBeam,L),
   (L>BeamSize->
     nth1(L,NewBeam,_Last,BeamOut)
@@ -1149,10 +1156,10 @@ insert_in_order([(Th1,Heuristic1)|RestBeamIn],(Th,Heuristic),BeamSize,BeamOut):-
     BeamOut=NewBeam
   ).
 
-insert_in_order([(Th1,Heuristic1)|RestBeamIn],(Th,Heuristic),BeamSize,
-[(Th1,Heuristic1)|RestBeamOut]):-
+insert_in_order([[Th1,Heuristic1|Rest1]|RestBeamIn],[Th,Heuristic|Rest],BeamSize,
+[[Th1,Heuristic1|Rest1]|RestBeamOut]):-
   BeamSize1 is BeamSize -1,
-  insert_in_order(RestBeamIn,(Th,Heuristic),BeamSize1,
+  insert_in_order(RestBeamIn,[Th,Heuristic|Rest],BeamSize1,
   RestBeamOut).
 
 
@@ -1473,7 +1480,7 @@ all_plus_args([H|T]):-
 
 generate_body([],_Mod,[]):-!.
 
-generate_body([(A,H)|T],Mod,[(rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20)|CL0]):-
+generate_body([(A,H)|T],Mod,[[rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20]|CL0]):-
   functor(A,F,AA),
 %  findall((R,B),(Mod:modeb(R,B),functor(B,FB,AB),Mod:determination(F/AA,FB/AB)),BL),
   findall(FB/AB,Mod:determination(F/AA,FB/AB),Det),
