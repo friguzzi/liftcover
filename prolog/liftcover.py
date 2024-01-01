@@ -3,12 +3,16 @@
 import numpy as np
 import torch
 xp=None
-
-def init(lib="numpy"):
-    global xp
-    if lib=="numpy":
+device="cpu"
+def init(processor="cpu"):
+    global xp, device
+    if processor=="cpu":
         xp=np
-    elif lib=="cupy":
+    elif processor=="gpu":
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+        else:
+            device=torch.device('cpu')
         try:
             import cupy as cp
             cp.cuda.runtime.getDeviceCount()
@@ -236,7 +240,6 @@ def random_restarts_gd(mi,min,random_restarts_number=1,
                         gamma=10, lr=0.01,
                         lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
 
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     min=torch.tensor(min,device=device)
     mi=torch.tensor(mi,device=device)
     max_ll=-1e20
