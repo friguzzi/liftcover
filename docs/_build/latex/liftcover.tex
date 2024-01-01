@@ -60,7 +60,7 @@
 
 
 \title{LIFTCOVER Documentation}
-\date{Dec 31, 2023}
+\date{Jan 01, 2024}
 \release{1.0.0}
 \author{Fabrizio Riguzzi}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -135,8 +135,8 @@ They are installed automatically when installing pack \sphinxtitleref{liftcover}
 Pack \sphinxtitleref{lbfgs} is optional, if absent the versions of the algorithms that use  \sphinxtitleref{lbfgs} do not work but the other versions work.
 
 \sphinxAtStartPar
-Some algorithms use Python and require the Python packages \sphinxhref{https://www.numpy.org/}{numpy}, \sphinxhref{https://pytorch.org/}{torch} and \sphinxhref{https://cupy.dev/}{cupy}.
-If they are not installed, the algorithms that use them do not work.
+Parameter learning can be performed using Python and the Python packages \sphinxhref{https://www.numpy.org/}{numpy}, \sphinxhref{https://pytorch.org/}{torch} and \sphinxhref{https://cupy.dev/}{cupy}, either on CPU or GPU.
+If they are not installed, the algorithms that use them do not work, but you can still run the Prolog version of parameter learning.
 
 \sphinxAtStartPar
 You can upgrade the pack with
@@ -610,11 +610,11 @@ the parameter \sphinxcode{\sphinxupquote{parameter\_learning}} that can be set t
 \begin{itemize}
 \item {} 
 \sphinxAtStartPar
-\sphinxcode{\sphinxupquote{em}}, for Expectaion Maximization, in Prolog
+\sphinxcode{\sphinxupquote{em}}, for Expectation Maximization, in Prolog
 
 \item {} 
 \sphinxAtStartPar
-\sphinxcode{\sphinxupquote{em\_python}}, for Expectaion Maximization, in Python, using either \sphinxtitleref{numpy} or \sphinxtitleref{cupy} for GPU, depending on the value of the parameter \sphinxcode{\sphinxupquote{pylib}}
+\sphinxcode{\sphinxupquote{em\_python}}, for Expectation Maximization, in Python, using either \sphinxcode{\sphinxupquote{cpu}} or \sphinxcode{\sphinxupquote{gpu}}, depending on the value of the \sphinxcode{\sphinxupquote{processor}} parameter. In the first case, \sphinxtitleref{numpy} is used, in the latter case \sphinxtitleref{cupy} is used.
 
 \item {} 
 \sphinxAtStartPar
@@ -622,7 +622,7 @@ the parameter \sphinxcode{\sphinxupquote{parameter\_learning}} that can be set t
 
 \item {} 
 \sphinxAtStartPar
-\sphinxcode{\sphinxupquote{gd\_python}}, for Gradient Descent, in Python, using Pytorch
+\sphinxcode{\sphinxupquote{gd\_python}}, for Gradient Descent, in Python, using Pytorch, using either \sphinxcode{\sphinxupquote{cpu}} or \sphinxcode{\sphinxupquote{gpu}}, depending on the value of the \sphinxcode{\sphinxupquote{processor}} parameter. In both cases, \sphinxtitleref{torch} is used.
 
 \item {} 
 \sphinxAtStartPar
@@ -732,7 +732,7 @@ hyper\sphinxhyphen{}parameters
 
 \item {} 
 \sphinxAtStartPar
-\sphinxcode{\sphinxupquote{pylib}}: (values: \sphinxcode{\sphinxupquote{\{numpy,cupy\}}}, default value: \sphinxcode{\sphinxupquote{numpy}}) Python library to use for parameter learning
+\sphinxcode{\sphinxupquote{processor}}: (values: \sphinxcode{\sphinxupquote{\{cpu,gpu\}}}, default value: \sphinxcode{\sphinxupquote{cpu}}) which processor Python will use for parameter learning
 
 \item {} 
 \sphinxAtStartPar

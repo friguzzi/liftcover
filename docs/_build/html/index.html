@@ -79,8 +79,8 @@ To install it, use</p>
 </pre></div>
 </div>
 <p>Pack <cite>lbfgs</cite> is optional, if absent the versions of the algorithms that use  <cite>lbfgs</cite> do not work but the other versions work.</p>
-<p>Some algorithms use Python and require the Python packages <a class="reference external" href="https://www.numpy.org/">numpy</a>, <a class="reference external" href="https://pytorch.org/">torch</a> and <a class="reference external" href="https://cupy.dev/">cupy</a>.
-If they are not installed, the algorithms that use them do not work.</p>
+<p>Parameter learning can be performed using Python and the Python packages <a class="reference external" href="https://www.numpy.org/">numpy</a>, <a class="reference external" href="https://pytorch.org/">torch</a> and <a class="reference external" href="https://cupy.dev/">cupy</a>, either on CPU or GPU.
+If they are not installed, the algorithms that use them do not work, but you can still run the Prolog version of parameter learning.</p>
 <p>You can upgrade the pack with</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ swipl
 ?- pack_upgrade(liftcover).
@@ -392,15 +392,13 @@ the input program with updated parameters.</p>
 </div>
 <p>The algorithm that is used for parameter learning is specified by
 the parameter <code class="code docutils literal notranslate"><span class="pre">parameter_learning</span></code> that can be set to</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="code docutils literal notranslate"><span class="pre">em</span></code>, for Expectaion Maximization, in Prolog</p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">em_python</span></code>, for Expectaion Maximization, in Python, using either <cite>numpy</cite> or <cite>cupy</cite> for GPU, depending on the value of the parameter <code class="code docutils literal notranslate"><span class="pre">pylib</span></code></p></li>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">em</span></code>, for Expectation Maximization, in Prolog</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">em_python</span></code>, for Expectation Maximization, in Python, using either <code class="code docutils literal notranslate"><span class="pre">cpu</span></code> or <code class="code docutils literal notranslate"><span class="pre">gpu</span></code>, depending on the value of the <code class="code docutils literal notranslate"><span class="pre">processor</span></code> parameter. In the first case, <cite>numpy</cite> is used, in the latter case <cite>cupy</cite> is used.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">gd</span></code>, for Gradient Descent, in Prolog</p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">gd_python</span></code>, for Gradient Descent, in Python, using Pytorch</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">gd_python</span></code>, for Gradient Descent, in Python, using Pytorch, using either <code class="code docutils literal notranslate"><span class="pre">cpu</span></code> or <code class="code docutils literal notranslate"><span class="pre">gpu</span></code>, depending on the value of the <code class="code docutils literal notranslate"><span class="pre">processor</span></code> parameter. In both cases, <cite>torch</cite> is used.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">lbfgs</span></code> for Limited-memory Broyden-Fletcher-Goldfarb-Shanno, in Prolog and C</p></li>
 </ul>
-</div></blockquote>
 </section>
 <section id="structure-learning">
 <h4>Structure Learning<a class="headerlink" href="#structure-learning" title="Permalink to this headline">¶</a></h4>
@@ -460,7 +458,7 @@ test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 <blockquote>
 <div><ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">parameter_learning</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{em,em_python,gd,gd_python,lbfgs}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">em</span></code>) parameter learning algorithm</p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">pylib</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{numpy,cupy}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">numpy</span></code>) Python library to use for parameter learning</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">processor</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{cpu,gpu}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">cpu</span></code>) which processor Python will use for parameter learning</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">regularization</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{no,l1,l2,bayes}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">l1</span></code>) type of regularization</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">gamma</span></code> (values: real number, default value: <code class="code docutils literal notranslate"><span class="pre">10</span></code>): regularization coefficient for L1 and L2</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">ab</span></code> (values: list of two real numbers, default value: <code class="code docutils literal notranslate"><span class="pre">[0,10]</span></code>): values of a and b for bayesian regularization</p></li>

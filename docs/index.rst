@@ -45,8 +45,8 @@ They are installed automatically when installing pack `liftcover` or can be inst
 
 Pack `lbfgs` is optional, if absent the versions of the algorithms that use  `lbfgs` do not work but the other versions work.
 
-Some algorithms use Python and require the Python packages `numpy <https://www.numpy.org/>`_, `torch <https://pytorch.org/>`_ and `cupy <https://cupy.dev/>`_.
-If they are not installed, the algorithms that use them do not work.
+Parameter learning can be performed using Python and the Python packages `numpy <https://www.numpy.org/>`_, `torch <https://pytorch.org/>`_ and `cupy <https://cupy.dev/>`_, either on CPU or GPU.
+If they are not installed, the algorithms that use them do not work, but you can still run the Prolog version of parameter learning.
 
 You can upgrade the pack with ::
 
@@ -391,11 +391,11 @@ For example `bongard.pl <http://cplint.eu/e/lift/bongard.pl>`__, you can perform
 The algorithm that is used for parameter learning is specified by 
 the parameter :code:`parameter_learning` that can be set to 
 
-  * :code:`em`, for Expectaion Maximization, in Prolog
-  * :code:`em_python`, for Expectaion Maximization, in Python, using either `numpy` or `cupy` for GPU, depending on the value of the parameter :code:`pylib` 
-  * :code:`gd`, for Gradient Descent, in Prolog
-  * :code:`gd_python`, for Gradient Descent, in Python, using Pytorch
-  * :code:`lbfgs` for Limited-memory Broyden-Fletcher-Goldfarb-Shanno, in Prolog and C
+* :code:`em`, for Expectation Maximization, in Prolog
+* :code:`em_python`, for Expectation Maximization, in Python, using either :code:`cpu` or :code:`gpu`, depending on the value of the :code:`processor` parameter. In the first case, `numpy` is used, in the latter case `cupy` is used.
+* :code:`gd`, for Gradient Descent, in Prolog
+* :code:`gd_python`, for Gradient Descent, in Python, using Pytorch, using either :code:`cpu` or :code:`gpu`, depending on the value of the :code:`processor` parameter. In both cases, `torch` is used.
+* :code:`lbfgs` for Limited-memory Broyden-Fletcher-Goldfarb-Shanno, in Prolog and C
 
 Structure Learning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -458,7 +458,7 @@ and read with commands of the form ::
 * hyper-parameters
 
     - :code:`parameter_learning`: (values: :code:`{em,em_python,gd,gd_python,lbfgs}`, default value: :code:`em`) parameter learning algorithm
-    - :code:`pylib`: (values: :code:`{numpy,cupy}`, default value: :code:`numpy`) Python library to use for parameter learning
+    - :code:`processor`: (values: :code:`{cpu,gpu}`, default value: :code:`cpu`) which processor Python will use for parameter learning
     - :code:`regularization`: (values: :code:`{no,l1,l2,bayes}`, default value: :code:`l1`) type of regularization
     - :code:`gamma` (values: real number, default value: :code:`10`): regularization coefficient for L1 and L2
     - :code:`ab` (values: list of two real numbers, default value: :code:`[0,10]`): values of a and b for bayesian regularization 
