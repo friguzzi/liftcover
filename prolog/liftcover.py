@@ -140,12 +140,12 @@ def random_restarts(mi0,min0,random_restarts_number=1, maxiter=100, tol=0.0001, 
         if ll1>max_ll:
             max_ll=ll1
             max_par=par1
-    return list(max_par), max_ll
+    return max_par.tolist(), max_ll.item()
 
 
-def lltorch(probs, counts, zero=0.000001):
-    one=torch.tensor(1.0)
-    zero=torch.tensor(zero)
+def lltorch(probs, counts, device, zero=0.000001):
+    one=torch.tensor(1.0,device=device)
+    zero=torch.tensor(zero,device=device)
     nprobs=one-probs
     nprobs=nprobs.maximum(zero)
     return torch.sum(counts * nprobs.log())
@@ -172,22 +172,23 @@ def compute_ll(mi,min,parR,zero=0.000001):
     return ll.item()
 
 class Model:
-    def __init__(self,min,mi,parR=False,regularization="no",gamma=10,zero=0.000001):
+    def __init__(self,min,mi,device,parR=False,regularization="no",gamma=10,zero=0.000001):
         self.min=min
         self.mi=mi
         self.zero=zero
         self.regularization=regularization
         self.gamma=gamma
+        self.device=device
         if parR:
-            self.parR=torch.tensor(parR,dtype=torch.float64,requires_grad=True)
+            self.parR=torch.tensor(parR,dtype=torch.float64,requires_grad=Truei,device=device)
         else:
-            self.parR=torch.randn_like(self.min,dtype=torch.float64,requires_grad=True)
+            self.parR=torch.randn_like(self.min,dtype=torch.float64,requires_grad=True,device=device)
 
     def forward(self,parR):
         par=torch.special.expit(parR)
-        lln=lltorch(par,self.min)
-        one=torch.tensor(1.0)
-        zero=torch.tensor(self.zero)
+        lln=lltorch(par,self.min,self.device)
+        one=torch.tensor(1.0,device=self.device)
+        zero=torch.tensor(self.zero,device=self.device)
         prod=torch.sum(torch.log(one-par)*self.mi,axis=1)
         probex=torch.maximum(one-torch.exp(prod), zero)
         ll=lln+torch.sum(torch.log(probex))
@@ -202,10 +203,10 @@ class Model:
     def parameters(self):
         return [self.parR]
 
-def gd(min,mi,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", 
+def gd(min,mi,device,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", 
        regularization="no", gamma=10, lr=0.01,
        lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
-    model=Model(min,mi,parR,regularization,gamma)
+    model=Model(min,mi,device,parR,regularization,gamma)
 
     if opt=="fixed_learning_rate":
         optimizer = torch.optim.SGD(model.parameters(), lr=lr)
@@ -234,14 +235,16 @@ def random_restarts_gd(mi,min,random_restarts_number=1,
                        opt="fixed_learning_rate", maxiter=100, tol=0.0001, regularization="no", 
                         gamma=10, lr=0.01,
                         lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
-    min=torch.tensor(min)
-    mi=torch.tensor(mi)
+
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    min=torch.tensor(min,device=device)
+    mi=torch.tensor(mi,device=device)
     max_ll=-1e20
     max_par=[]
     
     for i in range(random_restarts_number):
         print3(ver,"Restart number ",i)
-        par1, ll1=gd(min,mi,maxiter=maxiter,tol=tol, opt=opt, regularization=regularization,
+        par1, ll1=gd(min,mi,device,maxiter=maxiter,tol=tol, opt=opt, regularization=regularization,
                      gamma=gamma, lr=lr, lr_adam=lr_adam, 
                      betas=betas, eps=eps, ver=ver)
         print3(ver,"Random_restart: Score ",ll1)
