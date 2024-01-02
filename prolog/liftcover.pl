@@ -582,7 +582,8 @@ learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
   M:local_setting(regularization,Reg),
-  py_call(liftcover:random_restarts(MI,MIN,NR,Iter,EA,ER,Reg),-(Par,LL)).
+  M:local_setting(processor,Device),
+  py_call(liftcover:random_restarts(MI,MIN,Device,NR,Iter,EA,ER,Reg),-(Par,LL)).
 
 learn_param_int(MI,MIN,N,M,Par,LL):-
   M:local_setting(parameter_learning,gd),!,
@@ -602,7 +603,8 @@ learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(eta,LearningRate),
   M:local_setting(gamma,Gamma),
   M:local_setting(regularization,Reg),
-  py_call(liftcover:random_restarts_gd(MI,MIN,NR,UpdateMethod,
+  M:local_setting(processor,Device),
+  py_call(liftcover:random_restarts_gd(MI,MIN,Device,NR,UpdateMethod,
     Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Verb),-(Par,LL)).
 
 learn_param_int(MI,MIN,N,M,Par,LL):-

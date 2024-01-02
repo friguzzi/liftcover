@@ -1,33 +1,17 @@
 
 
 import numpy as np
-xp=None
-torch=None
-device="cpu"
 def init(algorithm="em_python", processor="cpu"):
-    global xp, device, torch
     if algorithm=="gd_python":
         import torch
-        if processor=="gpu":
-            device = torch.device('cuda')
-        elif processor=="cpu":
-            device=torch.device('cpu')
-        else:
-            raise ValueError("Unknown processor")
     elif algorithm=="em_python":
-        if processor=="cpu":
-            xp=np
-        elif processor=="gpu":
+        if processor=="gpu":
             try:
                 import cupy as cp
                 cp.cuda.runtime.getDeviceCount()
-                print("GPU exists!")
-                xp=cp
+                print2("GPU exists!")
             except:
-                xp=np
-                print("GPU does not exist.")
-        else:
-            raise ValueError("Unknown processor")
+                print2("GPU does not exist.")
     else:
         raise ValueError("Unknown algorithm")
 
@@ -59,7 +43,7 @@ def eta0(min0):
     return list((xp.stack([min,xp.zeros_like(min)],1)))
 
 
-def lli(probs, counts, zero=0.000001):
+def lli(probs, counts, xp=np, zero=0.000001):
     nprobs=xp.maximum(1.0-probs, zero)
     return xp.sum(counts * xp.log(nprobs))
 
@@ -73,12 +57,12 @@ def update_etai(probex, eta, par, mi, zero=0.000001):
     eta1= eta+xp.stack([eta10,eta11],1)
     return eta1
 
-def eta0i(min):
+def eta0i(min,xp=np):
     return xp.stack([min,xp.zeros_like(min)],1)
 
-def expectation(par,mi,min, zero=0.000001):
-    lln=lli(par,min)
-    eta=eta0i(min)
+def expectation(par,mi,min, xp=np, zero=0.000001):
+    lln=lli(par,min,xp,zero)
+    eta=eta0i(min,xp)
     prod=xp.multiply.reduce((1-par)**mi,axis=1)
     #probex=xp.where(probex==0.0,zero,probex)
     probex=xp.maximum(1.0-prod, zero)
@@ -90,31 +74,31 @@ def expectation(par,mi,min, zero=0.000001):
     eta1= eta+xp.stack([eta10,eta11],1)
     return eta1, ll
 
-def maximization(eta, regularization="no", zero=0.000001, gamma=10, a=0,b=10):
+def maximization(eta, regularization="no", xp=np, zero=0.000001, gamma=10, a=0,b=10):
     if regularization=="no":
-        return maximization_no(eta, zero)
+        return maximization_no(eta, xp, zero)
     elif regularization=="l1":
-        return maximization_l1(eta, zero, gamma)
+        return maximization_l1(eta, xp, zero, gamma)
     elif regularization=="l2":
-        return maximization_l2(eta, zero, gamma)
+        return maximization_l2(eta, xp, zero, gamma)
     elif regularization=="bayesian":
-        return maximization_bayesian(eta, a, b)
+        return maximization_bayesian(eta, xp, a, b)
     else:
         raise ValueError("Unknown regularization type")
     
-def maximization_no(eta, zero=0.000001):
+def maximization_no(eta, xp=np, zero=0.000001):
     sum=xp.sum(eta,axis=1)
     eta1=eta[:,1]
     par=xp.divide(eta1,sum,where=sum!=0.0)
     return par
 
-def maximization_l1(eta, zero=0.000001, gamma=10):
+def maximization_l1(eta, xp=np, zero=0.000001, gamma=10):
     eta0=eta[:,0]
     eta1=eta[:,1]
     par=4*eta1/(2*(gamma+eta0+eta1+xp.sqrt((eta0+eta1)**2+gamma**2+2*gamma*(eta0-eta1))))
     return par
 
-def maximization_l2(eta, zero=0.000001, gamma=10):
+def maximization_l2(eta, xp=np, zero=0.000001, gamma=10):
     sum=3*xp.sum(eta,axis=1)+gamma
     eta0=eta[:,0]
     eta1=eta[:,1]
@@ -122,17 +106,17 @@ def maximization_l2(eta, zero=0.000001, gamma=10):
     par=2*xp.sqrt(sum/gamma)*xp.cos(arccos/3-2*xp.pi/3)/3+1/3
     return par
 
-def maximization_bayesian(eta, a=0,b=10):
+def maximization_bayesian(eta, xp=np, a=0,b=10):
     sum=xp.sum(eta,axis=1)
     eta1=eta[:,1]
     par=xp.divide(eta1+a,sum+a+b)
     return par
 
-def em(par, mi, min, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no", zero=0.000001, gamma=10, a=0,b=10):
+def em(par, mi, min, xp=np, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no", zero=0.000001, gamma=10, a=0,b=10):
     ll=-1e20
     for i in range(maxiter):
-        eta, ll1=expectation(par,mi,min,zero)
-        par1=maximization(eta,regularization,zero,gamma,a,b)
+        eta, ll1=expectation(par,mi,min,xp,zero)
+        par1=maximization(eta,regularization,xp,zero,gamma,a,b)
         diff=xp.abs(ll1-ll)
         par=par1
         ll=ll1
@@ -140,21 +124,25 @@ def em(par, mi, min, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no",
             break
     return par, ll
 
-def random_restarts(mi0,min0,random_restarts_number=1, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no", zero=0.000001, gamma=10, a=0,b=10):
+def random_restarts(mi0,min0,device="cpu",random_restarts_number=1, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no", zero=0.000001, gamma=10, a=0,b=10):
+    if device=="gpu":
+        import cupy as xp
+    else:
+        xp=np
     mi= xp.array(mi0)
     min=xp.array(min0)
     max_ll=-1e20
     max_par=[]
     for i in range(random_restarts_number):
         par0= xp.random.uniform(0.0,1.0,len(min))
-        par1, ll1=em(par0,mi,min,maxiter,tol,tolr,regularization,zero,gamma,a,b)
+        par1, ll1=em(par0,mi,min,xp,maxiter,tol,tolr,regularization,zero,gamma,a,b)
         if ll1>max_ll:
             max_ll=ll1
             max_par=par1
     return max_par.tolist(), max_ll.item()
 
 
-def lltorch(probs, counts, device, zero=0.000001):
+def lltorch(probs, counts, device, torch, zero=0.000001):
     one=torch.tensor(1.0,device=device)
     zero=torch.tensor(zero,device=device)
     nprobs=one-probs
@@ -183,41 +171,42 @@ def compute_ll(mi,min,parR,zero=0.000001):
     return ll.item()
 
 class Model:
-    def __init__(self,min,mi,device,parR=False,regularization="no",gamma=10,zero=0.000001):
+    def __init__(self,min,mi,device,torch,parR=False,regularization="no",gamma=10,zero=0.000001):
         self.min=min
         self.mi=mi
         self.zero=zero
         self.regularization=regularization
         self.gamma=gamma
         self.device=device
+        self.torch=torch
         if parR:
             self.parR=torch.tensor(parR,dtype=torch.float64,requires_grad=Truei,device=device)
         else:
             self.parR=torch.randn_like(self.min,dtype=torch.float64,requires_grad=True,device=device)
 
     def forward(self,parR):
-        par=torch.special.expit(parR)
-        lln=lltorch(par,self.min,self.device)
-        one=torch.tensor(1.0,device=self.device)
-        zero=torch.tensor(self.zero,device=self.device)
-        prod=torch.sum(torch.log(one-par)*self.mi,axis=1)
-        probex=torch.maximum(one-torch.exp(prod), zero)
-        ll=lln+torch.sum(torch.log(probex))
+        par=self.torch.special.expit(parR)
+        lln=lltorch(par,self.min,self.device,self.torch)
+        one=self.torch.tensor(1.0,device=self.device)
+        zero=self.torch.tensor(self.zero,device=self.device)
+        prod=self.torch.sum(self.torch.log(one-par)*self.mi,axis=1)
+        probex=self.torch.maximum(one-self.torch.exp(prod), zero)
+        ll=lln+self.torch.sum(self.torch.log(probex))
         ll=-ll
         if self.regularization=="l1":
-            ll=ll+self.gamma*torch.sum(par)
+            ll=ll+self.gamma*self.torch.sum(par)
         elif self.regularization=="l2":
-            ll=ll+self.gamma*torch.sum(torch.square(par))
+            ll=ll+self.gamma*self.torch.sum(self.torch.square(par))
             
         return ll
     
     def parameters(self):
         return [self.parR]
 
-def gd(min,mi,device,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", 
+def gd(min,mi,device,torch,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", 
        regularization="no", gamma=10, lr=0.01,
        lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
-    model=Model(min,mi,device,parR,regularization,gamma)
+    model=Model(min,mi,device,torch,parR,regularization,gamma)
 
     if opt=="fixed_learning_rate":
         optimizer = torch.optim.SGD(model.parameters(), lr=lr)
@@ -242,10 +231,17 @@ def gd(min,mi,device,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rat
     return model.parR, -ll
 
 
-def random_restarts_gd(mi,min,random_restarts_number=1, 
+def random_restarts_gd(mi,min,processor="cpu",random_restarts_number=1, 
                        opt="fixed_learning_rate", maxiter=100, tol=0.0001, regularization="no", 
                         gamma=10, lr=0.01,
                         lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
+    import torch
+    if processor=="gpu":
+        device = torch.device('cuda')
+    elif processor=="cpu":
+        device=torch.device('cpu')
+    else:
+        raise ValueError("Unknown processor")
 
     min=torch.tensor(min,device=device)
     mi=torch.tensor(mi,device=device)
@@ -254,7 +250,7 @@ def random_restarts_gd(mi,min,random_restarts_number=1,
     
     for i in range(random_restarts_number):
         print3(ver,"Restart number ",i)
-        par1, ll1=gd(min,mi,device,maxiter=maxiter,tol=tol, opt=opt, regularization=regularization,
+        par1, ll1=gd(min,mi,device,torch,maxiter=maxiter,tol=tol, opt=opt, regularization=regularization,
                      gamma=gamma, lr=lr, lr_adam=lr_adam, 
                      betas=betas, eps=eps, ver=ver)
         print3(ver,"Random_restart: Score ",ll1)
@@ -266,8 +262,7 @@ def random_restarts_gd(mi,min,random_restarts_number=1,
     return par.tolist(), max_ll.item()
 
 def print1(ver,*arg):
-    if ver>0:
-        print(*arg)
+    print(*arg)
 
 def print2(ver,*arg):
     if ver>1:
@@ -276,3 +271,8 @@ def print2(ver,*arg):
 def print3(ver,*arg):
     if ver>2:
         print(*arg)
+
+def print4(ver,*arg):
+    if ver>3:
+        print(*arg)
+
