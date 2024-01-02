@@ -494,19 +494,21 @@ induce_parameters(M:Folds,R):-
   find_ex(DB,M,Pos,Neg,_NPos,_NNeg),
   learn_param(R0,M,Pos,Neg,R1,Score,_MI,_MIN),
   (M:local_setting(regularization,no)->
-    R=R1
+    R2=R1
   ;
     M:local_setting(min_probability,Min_prob),
-    remove_clauses(R1,Min_prob,R,Num),
+    remove_clauses(R1,Min_prob,R2,Num),
     length(R1,NumBR),
     NumRem is NumBR-Num,
-    rules2terms(R1,ROut1),
+    sort_rules(R1,ROr),
+    rules2terms(ROr,ROut1),
     M:test_prob_lift(ROut1,Folds,_,_,LL1,_),
     format2(M,"Rules: ~d~nLL ~f~n",[NumBR,LL1]),
-    rules2terms(R,ROut),
+    rules2terms(R2,ROut),
     M:test_prob_lift(ROut,Folds,_,_,LL,_),
     format2(M,"After removing rules with small parameters ~d~nLL ~f~n",[NumRem,LL])
   ),
+  sort_rules(R2,R),
   statistics(walltime,[_,CT]),
   CTS is CT/1000,
   format2(M,'/* Final score ~f~n',[Score]),
