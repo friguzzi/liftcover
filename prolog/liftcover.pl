@@ -436,7 +436,7 @@ compute_likelihood_pos([HMIP|TMIP],Env,M,I,LP0,LP):-
   compute_likelihood_pos(TMIP,Env,M,I1,LP1,LP).
 
 progress(_Env,FX,X_Norm,G_Norm,Step,_N,Iteration,Ls,0,[M|_]) :-
-  format3(M,'~d. Iteration :  f(X)=~4f  |X|=~4f
+  format4(M,'~d. Iteration :  f(X)=~4f  |X|=~4f
                 |g(X)|=~4f  Step=~4f  Ls=~4f~n',
                 [Iteration,FX,X_Norm,G_Norm,Step,Ls]).
 
@@ -612,9 +612,9 @@ learn_param_int(MI,MIN,N,M,Par,LL):-
   evaluate_L(Env,M,MIN,MI,L),
 % parte da modificare fine
   IL is -L,
-  format3(M,"~nInitial L ~f~n",[IL]),
+  format4(M,"~nInitial L ~f~n",[IL]),
   optimizer_run(Env,_LL,Status),
-  format3(M,"Status ~p~n",[Status]),
+  format4(M,"Status ~p~n",[Status]),
   new_pars_lbfgs(Env,M,0,N,Par),
   evaluate_L(Env,M,MIN,MI,NewL),
   LL is -NewL,
@@ -652,7 +652,7 @@ random_restarts(N,M,Score0,Score,NR,Par0,Par,MI,MIN):-
   M:local_setting(iter,Iter),
   %M:local_setting(regularization,Reg),
   %py_call(liftcover:em(Par1,MI,MIN,Iter,EA,ER,Reg),-(ParRP,ScoreRP)),
-  em_quick(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
+  em_quick(EA,ER,0,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
   %format("ParRP ~w~nParR ~w~n",[ParRP,ParR]),
   %format("ScoreRP ~w~nScoreR ~w~n",[ScoreRP,ScoreR]),
   format3(M,"Random_restart: Score ~f~n",[ScoreR]),
@@ -683,7 +683,7 @@ random_restarts_gd(N,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
     gd_adam(EA,ER,0,Iter,M,NR,Par1,M0,M1,-1e20,MI,MIN,ParR,ScoreR)
   ;
 %    py_call(liftcover:gd(MIN,MI,Par1),-(ParRP,ScoreRP)),
-    gd(EA,ER,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR)
+    gd(EA,ER,0,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR)
 %    format("ParRP ~w~nParR ~w~n",[ParRP,ParR]),
 %    format("ScoreRP ~w~nScoreR ~w~n",[ScoreRP,ScoreR])
   ),
@@ -692,12 +692,13 @@ random_restarts_gd(N,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
   random_restarts_gd(N1,M,ScoreR,Score,NR,ParR,Par,MI,MIN).
 
 
-gd(_EA,_ER,0,_M,_NR,Par,Score,_MI,_MIP,Par,Score):-!.
+gd(_EA,_ER,MaxIter,MaxIter,_M,_NR,Par,Score,_MI,_MIP,Par,Score):-!.
 
-gd(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIP,Par,Score):-
+gd(EA,ER,Iter0,MaxIter,M,NR,Par0,Score0,MI,MIP,Par,Score):-
   compute_gradient_gd(MIP,MI,M,Par0,G,LL),
   Score1 is -LL,
-  Iter is Iter0-1,
+  format4(M,"Iteration ~d LL ~f~n",[Iter0,Score1]),
+  Iter is Iter0+1,
   Diff is Score1-Score0,
   Fract is -Score1*ER,
   (( Diff<EA;Diff<Fract)->
@@ -716,7 +717,7 @@ gd(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIP,Par,Score):-
       )
     ),
     maplist(update_par(Eta,Gamma),Par0,Reg,G,Par1),
-    gd(EA,ER,Iter,M,NR,Par1,Score1,MI,MIP,Par,Score)
+    gd(EA,ER,Iter,MaxIter,M,NR,Par1,Score1,MI,MIP,Par,Score)
   ).
 
 gd_adam(_EA,_ER,Iter,Iter,_M,_NR,Par,_M0,_M1,Score,_MI,_MIP,Par,Score):-!.
@@ -724,6 +725,7 @@ gd_adam(_EA,_ER,Iter,Iter,_M,_NR,Par,_M0,_M1,Score,_MI,_MIP,Par,Score):-!.
 gd_adam(EA,ER,Iter0,MaxIter,M,NR,Par0,M00,M10,Score0,MI,MIP,Par,Score):-
   compute_gradient_gd(MIP,MI,M,Par0,G,LL),
   Score1 is -LL,
+  format4(M,"Iteration ~d LL ~f~n",[Iter0,Score1]),
   Iter is Iter0+1,
   Diff is Score1-Score0,
   Fract is -Score1*ER,
@@ -850,12 +852,13 @@ compute_sum_neg_gd([HMI|TMI],M,[HLN|TLN],I,S0,S):-
   compute_sum_neg_gd(TMI,M,TLN,I,S1,S).
 
 
-em_quick(_EA,_ER,0,_M,_NR,Par,Score,_MI,_MIN,Par,Score):-!.
+em_quick(_EA,_ER,MaxIter,MaxIter,_M,_NR,Par,Score,_MI,_MIN,Par,Score):-!.
 
-em_quick(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIN,Par,Score):-
+em_quick(EA,ER,Iter0,MaxIter,M,NR,Par0,Score0,MI,MIN,Par,Score):-
   length(Eta0,NR),
 %  format("Par0 ~w~n",[Par0]),
   expectation_quick(Par0,M,MI,MIN,Eta0,Eta,Score1),
+  format4(M,"Iteration ~d LL ~f~n",[Iter0,Score1]),
   %py_call(liftcover:expectation(Par0,MI,MIN,0.000001),-(EtaP,ScoreP)),
   %format('Score1 ~f  ScoreP ~f~n',[Score1,ScoreP]),
   %format('Eta ~w  ~nEtaP ~w~n',[Eta,EtaP]),
@@ -863,7 +866,7 @@ em_quick(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIN,Par,Score):-
   %M:local_setting(regularization,Reg),
   %py_call(liftcover:maximization(Eta,Reg),Par1P),
   %format('Par1 ~w  ~nPar1P ~w~n',[Par1,Par1P]),
-  Iter is Iter0-1,
+  Iter is Iter0+1,
   Diff is Score1-Score0,
   Fract is -Score1*ER,
 %  writeln(Score1),
@@ -871,7 +874,7 @@ em_quick(EA,ER,Iter0,M,NR,Par0,Score0,MI,MIN,Par,Score):-
     Score=Score1,
     Par=Par1
   ;
-    em_quick(EA,ER,Iter,M,NR,Par1,Score1,MI,MIN,Par,Score)
+    em_quick(EA,ER,Iter,MaxIter,M,NR,Par1,Score1,MI,MIN,Par,Score)
   ).
 
 expectation_quick(Par,M,MI,MIN,Eta0,Eta,Score):-
