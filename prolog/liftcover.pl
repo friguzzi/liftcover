@@ -657,11 +657,7 @@ random_restarts(N,M,Score0,Score,NR,Par0,Par,MI,MIN):-
   M:local_setting(eps,EA),
   M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
-  %M:local_setting(regularization,Reg),
-  %py_call(liftcover:em(Par1,MI,MIN,Iter,EA,ER,Reg),-(ParRP,ScoreRP)),
   em_quick(EA,ER,0,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
-  %format("ParRP ~w~nParR ~w~n",[ParRP,ParR]),
-  %format("ScoreRP ~w~nScoreR ~w~n",[ScoreRP,ScoreR]),
   format3(M,"Random_restart: Score ~f~n",[ScoreR]),
   N1 is N-1,
   (ScoreR>Score0->
@@ -689,10 +685,7 @@ random_restarts_gd(N,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
     findall(0,between(1,NR,_),M1),
     gd_adam(EA,ER,0,Iter,M,NR,Par1,M0,M1,-1e20,MI,MIN,ParR,ScoreR)
   ;
-%    py_call(liftcover:gd(MIN,MI,Par1),-(ParRP,ScoreRP)),
     gd(EA,ER,0,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR)
-%    format("ParRP ~w~nParR ~w~n",[ParRP,ParR]),
-%    format("ScoreRP ~w~nScoreR ~w~n",[ScoreRP,ScoreR])
   ),
   format3(M,"GD Random_restart: Score ~f~n",[ScoreR]),
   N1 is N-1,
@@ -799,14 +792,8 @@ evaluate_L_gd(M,MIP,MI,Par,L):-
 compute_gradient_gd(MIP,MI,M,Par,G,L):-
   maplist(logistic,Par,Prob),
   compute_likelihood_pos_gd(MIP,Prob,M,0,LP),
-%  write(lpos),nl,
   compute_likelihood_neg_gd(MI,Prob,M,LN),
-%  write(lneg),nl,
   compute_likelihood_gd(LN,M,LP,L),
-%  py_call(liftcover:compute_ll(MI,MIP,Par),LLP),
-%  NL is -L,
-%  format('LL ~f  LLP ~f~n',[L,LLP]),
-  write4(M,'LL '),write4(M,-L),nl4(M),
   compute_grad_gd(MIP,Prob,M,0,MI,LN,G).
 %  write(grad),nl.
 
@@ -863,20 +850,12 @@ em_quick(_EA,_ER,MaxIter,MaxIter,_M,_NR,Par,Score,_MI,_MIN,Par,Score):-!.
 
 em_quick(EA,ER,Iter0,MaxIter,M,NR,Par0,Score0,MI,MIN,Par,Score):-
   length(Eta0,NR),
-%  format("Par0 ~w~n",[Par0]),
   expectation_quick(Par0,M,MI,MIN,Eta0,Eta,Score1),
   format4(M,"Iteration ~d LL ~f~n",[Iter0,Score1]),
-  %py_call(liftcover:expectation(Par0,MI,MIN,0.000001),-(EtaP,ScoreP)),
-  %format('Score1 ~f  ScoreP ~f~n',[Score1,ScoreP]),
-  %format('Eta ~w  ~nEtaP ~w~n',[Eta,EtaP]),
   maximization_quick(Eta,M,Par1),
-  %M:local_setting(regularization,Reg),
-  %py_call(liftcover:maximization(Eta,Reg),Par1P),
-  %format('Par1 ~w  ~nPar1P ~w~n',[Par1,Par1P]),
   Iter is Iter0+1,
   Diff is Score1-Score0,
   Fract is -Score1*ER,
-%  writeln(Score1),
   (( Diff<EA;Diff<Fract)->
     Score=Score1,
     Par=Par1
@@ -888,14 +867,9 @@ expectation_quick(Par,M,MI,MIN,Eta0,Eta,Score):-
  /* LLO is the negative examples contribution in the LL*/
   M:local_setting(logzero,LogZero),
   foldl(llm(LogZero),Par,MIN,0,LL0),
-  %py_call(liftcover:ll(Par,MIN),LLP),
-  %format('LL0 ~f  LLP ~f~n',[LL0,LLP]),
   maplist(eta0,MIN,Eta0),
-  %py_call(liftcover:eta0(MIN),Eta0P),
-  %format('Eta0 ~w  Eta0P ~w~n',[Eta0,Eta0P]),
   /* positive examples contibution in LL*/
   scan_pos(MI,M,Par,LL0,Eta0,Score,Eta).
-%  format("Eta0 ~w  Eta ~w~n",[Eta0,Eta]).
 
 maximization_quick(Eta,M,Par):-
   (M:local_setting(regularization,l1)->
@@ -951,8 +925,6 @@ scan_pos([],_M,_Par,LL,Eta,LL,Eta).
 scan_pos([MIH|MIT],M,Par,LL0,Eta0,LL,Eta):-
   M:local_setting(logzero,LogZero),
   foldl(rule_contrib,MIH,Par,1,Prod),
-%  py_call(liftcover:rule_contrib(MIH,Par),Prod),
-%  format('Prod ~f  ProdP ~f~n',[Prod,ProdP]),
   ProbEx is 1-Prod,
   (ProbEx=:=0.0->
     LLCurrent is LL0+LogZero
@@ -960,12 +932,8 @@ scan_pos([MIH|MIT],M,Par,LL0,Eta0,LL,Eta):-
     LLCurrent is LL0+log(ProbEx)
   ),
   maplist(update_eta(ProbEx,M),Eta0,Par,MIH,EtaCurrent),
-%  writeln(py_call(liftcover:update_eta(ProbEx,Eta0,Par,MIH),EtaCurrentP)),
-%  py_call(liftcover:update_eta(ProbEx,Eta0,Par,MIH),EtaCurrent),
-%  format('EtaCurrent ~w  ~nEtaCurrentP ~w~n',[EtaCurrent,EtaCurrentP]),
   scan_pos(MIT,M,Par,LLCurrent,EtaCurrent,LL,Eta).
 
-/*scan_pos(MI,Par,LL0,Eta0,Eta):-foldl(scan_pos_loop,Mi,EtaO,Eta)*/
 
 update_eta(ProbEx,M,[Etai00,Etai10],Pi,MIR,[Etai0,Etai1]):-
   M:local_setting(zero,Zero),

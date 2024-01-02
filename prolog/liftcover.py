@@ -15,47 +15,9 @@ def init(algorithm="em_python", processor="cpu"):
     else:
         raise ValueError("Unknown algorithm")
 
-def ll(pr, co, zero=0.000001):
-    probs=xp.array(pr)
-    counts=xp.array(co)
-    nprobs=xp.maximum(1.0-probs, zero)
-    return xp.sum(counts * xp.log(nprobs))
-
-def rule_contrib(co, pr):
-    probs=xp.array(pr)
-    counts=xp.array(co)
-    return xp.multiply.reduce((1-probs)**counts)
-
-def update_eta(probex, eta0, par0, mi0, zero=0.000001):
-    eta= xp.array(eta0)
-    par= xp.array(par0)
-    mi= xp.array(mi0)
-    probex= max(probex, zero)
-    condp = par/probex
-    ocondp = 1-condp
-    eta10=xp.multiply(ocondp,mi)
-    eta11=xp.multiply(condp,mi)
-    eta1= eta+xp.stack([eta10,eta11],1)
-    return list(eta1)
-
-def eta0(min0):
-    min=xp.array(min0,dtype=xp.float64)
-    return list((xp.stack([min,xp.zeros_like(min)],1)))
-
-
 def lli(probs, counts, xp=np, zero=0.000001):
     nprobs=xp.maximum(1.0-probs, zero)
     return xp.sum(counts * xp.log(nprobs))
-
-
-def update_etai(probex, eta, par, mi, zero=0.000001):
-    probex= max(probex, zero)
-    condp = par/probex
-    ocondp = 1-condp
-    eta10=xp.multiply(ocondp,mi)
-    eta11=xp.multiply(condp,mi)
-    eta1= eta+xp.stack([eta10,eta11],1)
-    return eta1
 
 def eta0i(min,xp=np):
     return xp.stack([min,xp.zeros_like(min)],1)
@@ -151,27 +113,6 @@ def lltorch(probs, counts, device, torch, zero=0.000001):
     nprobs=one-probs
     nprobs=nprobs.maximum(zero)
     return torch.sum(counts * nprobs.log())
-
-def compute_ll(mi,min,parR,zero=0.000001):
-    parR=torch.tensor(parR,requires_grad=True)
-    mi= torch.tensor(mi)
-    min=torch.tensor(min)
-    par=torch.special.expit(parR)
-    print("parR ",parR)
-    print("par ",par)
-    lln=lltorch(par,min)
-    print("lln ",lln)
-    #print("mi ",mi,"min ",min,"par ",par)
-    one=torch.tensor(1.0)
-    zero=torch.tensor(zero)
-    prod=torch.sum(torch.log(one-par)*mi,axis=1)
-    print("prod ",prod)
-    probex=torch.maximum(one-torch.exp(prod), zero)
-    ll=lln+torch.sum(torch.log(probex))
-    print("ll ",ll)
-    ll.backward()
-    print("par.grad ",parR.grad)
-    return ll.item()
 
 class Model:
     def __init__(self,min,mi,device,torch,parR=False,regularization="no",gamma=10,zero=0.000001):
