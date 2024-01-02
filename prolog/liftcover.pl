@@ -452,13 +452,14 @@ logistic(X,Sigma_X):-
 
 
 load_python_module(M):-
-M:local_setting(parameter_learning,PL),
+  M:local_setting(parameter_learning,PL),
   (PL=em_python;PL=gd_python),!,
   absolute_file_name(library('liftcover.pl'), F),
   file_directory_name(F,Dir),
   py_add_lib_dir(Dir),
   M:local_setting(processor,Proc),
-  py_call(liftcover:init(PL,Proc)).
+  M:local_setting(verbosity,Verb),
+  py_call(liftcover:init(PL,Proc,Verb)).
 
 load_python_module(_).
 

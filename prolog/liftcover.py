@@ -1,7 +1,7 @@
 
 
 import numpy as np
-def init(algorithm="em_python", processor="cpu"):
+def init(algorithm="em_python", processor="cpu", verb=1):
     if algorithm=="gd_python":
         import torch
     elif algorithm=="em_python":
@@ -9,9 +9,9 @@ def init(algorithm="em_python", processor="cpu"):
             try:
                 import cupy as cp
                 cp.cuda.runtime.getDeviceCount()
-                print2("GPU exists!")
+                print2(verb,"GPU exists!")
             except:
-                print2("GPU does not exist.")
+                print2(verb,"GPU does not exist.")
     else:
         raise ValueError("Unknown algorithm")
 
