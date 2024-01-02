@@ -112,10 +112,11 @@ def maximization_bayesian(eta, xp=np, a=0,b=10):
     par=xp.divide(eta1+a,sum+a+b)
     return par
 
-def em(par, mi, min, xp=np, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no", zero=0.000001, gamma=10, a=0,b=10):
+def em(par, mi, min, xp=np, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no", zero=0.000001, gamma=10, a=0,b=10, ver=1):
     ll=-1e20
     for i in range(maxiter):
         eta, ll1=expectation(par,mi,min,xp,zero)
+        print4(ver,"Iteration ",i, " LL ",ll1.item())
         par1=maximization(eta,regularization,xp,zero,gamma,a,b)
         diff=xp.abs(ll1-ll)
         par=par1
@@ -124,7 +125,7 @@ def em(par, mi, min, xp=np, maxiter=100, tol=0.0001, tolr=0.00001, regularizatio
             break
     return par, ll
 
-def random_restarts(mi0,min0,device="cpu",random_restarts_number=1, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no", zero=0.000001, gamma=10, a=0,b=10):
+def random_restarts(mi0,min0,device="cpu",random_restarts_number=1, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no", zero=0.000001, gamma=10, a=0,b=10, ver=1):
     if device=="gpu":
         import cupy as xp
     else:
@@ -134,8 +135,10 @@ def random_restarts(mi0,min0,device="cpu",random_restarts_number=1, maxiter=100,
     max_ll=-1e20
     max_par=[]
     for i in range(random_restarts_number):
+        print3(ver,"Restart number ",i)
         par0= xp.random.uniform(0.0,1.0,len(min))
-        par1, ll1=em(par0,mi,min,xp,maxiter,tol,tolr,regularization,zero,gamma,a,b)
+        par1, ll1=em(par0,mi,min,xp,maxiter,tol,tolr,regularization,zero,gamma,a,b,ver)
+        print3(ver,"Random_restart: Score ",ll1.item())
         if ll1>max_ll:
             max_ll=ll1
             max_par=par1
@@ -186,7 +189,7 @@ class Model:
 
     def forward(self,parR):
         par=self.torch.special.expit(parR)
-        lln=lltorch(par,self.min,self.device,self.torch)
+        lln=lltorch(par,self.min,self.device,self.torch,self.zero)
         one=self.torch.tensor(1.0,device=self.device)
         zero=self.torch.tensor(self.zero,device=self.device)
         prod=self.torch.sum(self.torch.log(one-par)*self.mi,axis=1)
@@ -205,8 +208,8 @@ class Model:
 
 def gd(min,mi,device,torch,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", 
        regularization="no", gamma=10, lr=0.01,
-       lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
-    model=Model(min,mi,device,torch,parR,regularization,gamma)
+       lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, zero=0.000001, ver=0):
+    model=Model(min,mi,device,torch,parR,regularization,gamma,zero)
 
     if opt=="fixed_learning_rate":
         optimizer = torch.optim.SGD(model.parameters(), lr=lr)
@@ -217,10 +220,9 @@ def gd(min,mi,device,torch,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learni
     
     ll=1e20
     for i in range(maxiter):
-        print3(ver,"GD step i ",i)
         optimizer.zero_grad()
         ll1=model.forward(model.parR)
-        print3(ver,"Current LL ",ll1.item())
+        print4(ver,"GD iteration ",i, " LL ",ll1.item())
         ll1.backward()
         optimizer.step()
         diff=torch.abs(ll1-ll)
@@ -234,7 +236,7 @@ def gd(min,mi,device,torch,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learni
 def random_restarts_gd(mi,min,processor="cpu",random_restarts_number=1, 
                        opt="fixed_learning_rate", maxiter=100, tol=0.0001, regularization="no", 
                         gamma=10, lr=0.01,
-                        lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, ver=0):
+                        lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, zero=0.000001, ver=0):
     import torch
     if processor=="gpu":
         device = torch.device('cuda')
@@ -249,19 +251,18 @@ def random_restarts_gd(mi,min,processor="cpu",random_restarts_number=1,
     max_par=[]
     
     for i in range(random_restarts_number):
-        print3(ver,"Restart number ",i)
+        print3(ver,"GD Restart number ",i)
         par1, ll1=gd(min,mi,device,torch,maxiter=maxiter,tol=tol, opt=opt, regularization=regularization,
                      gamma=gamma, lr=lr, lr_adam=lr_adam, 
-                     betas=betas, eps=eps, ver=ver)
-        print3(ver,"Random_restart: Score ",ll1)
-        print3(ver,"LL after GD ",ll1)
+                     betas=betas, eps=eps, zero=zero, ver=ver)
+        print3(ver,"GD Random_restart: Score ",ll1.item())
         if ll1>max_ll:
             max_ll=ll1
             max_par=par1
     par=torch.special.expit(max_par)
     return par.tolist(), max_ll.item()
 
-def print1(ver,*arg):
+def print1(_,*arg):
     print(*arg)
 
 def print2(ver,*arg):

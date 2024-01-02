@@ -568,7 +568,7 @@ learn_param(Program0,M,Pos,Neg,Program,LL,MI,MIN):-
   update_theory(Program0,Par,Program1),
   maplist(remove_zero,Program1,Program2),
   append(Program2,Program),
-  format3(M,"Final LL ~f~n",[-LL]).
+  format3(M,"Final LL ~f~n",[LL]).
 
 learn_param_int(MI,MIN,N,M,Par,LL):-
   M:local_setting(parameter_learning,em),!,
@@ -582,8 +582,12 @@ learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
   M:local_setting(regularization,Reg),
+  M:local_setting(gamma,Gamma),
+  M:local_setting(zero,Zero),
+  M:local_setting(ab,[A,B]),
+  M:local_setting(verbosity,Verb),
   M:local_setting(processor,Device),
-  py_call(liftcover:random_restarts(MI,MIN,Device,NR,Iter,EA,ER,Reg),-(Par,LL)).
+  py_call(liftcover:random_restarts(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL)).
 
 learn_param_int(MI,MIN,N,M,Par,LL):-
   M:local_setting(parameter_learning,gd),!,
@@ -603,9 +607,10 @@ learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(eta,LearningRate),
   M:local_setting(gamma,Gamma),
   M:local_setting(regularization,Reg),
+  M:local_setting(zero,Zero),
   M:local_setting(processor,Device),
   py_call(liftcover:random_restarts_gd(MI,MIN,Device,NR,UpdateMethod,
-    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Verb),-(Par,LL)).
+    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Zero,Verb),-(Par,LL)).
 
 learn_param_int(MI,MIN,N,M,Par,LL):-
   M:local_setting(parameter_learning,lbfgs),
@@ -699,7 +704,7 @@ gd(_EA,_ER,MaxIter,MaxIter,_M,_NR,Par,Score,_MI,_MIP,Par,Score):-!.
 gd(EA,ER,Iter0,MaxIter,M,NR,Par0,Score0,MI,MIP,Par,Score):-
   compute_gradient_gd(MIP,MI,M,Par0,G,LL),
   Score1 is -LL,
-  format4(M,"Iteration ~d LL ~f~n",[Iter0,Score1]),
+  format4(M,"GD Iteration ~d LL ~f~n",[Iter0,Score1]),
   Iter is Iter0+1,
   Diff is Score1-Score0,
   Fract is -Score1*ER,
