@@ -462,7 +462,7 @@ test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 <li><p><code class="code docutils literal notranslate"><span class="pre">regularization</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{no,l1,l2,bayes}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">l1</span></code>) type of regularization</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">gamma</span></code> (values: real number, default value: <code class="code docutils literal notranslate"><span class="pre">10</span></code>): regularization coefficient for L1 and L2</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">ab</span></code> (values: list of two real numbers, default value: <code class="code docutils literal notranslate"><span class="pre">[0,10]</span></code>): values of a and b for bayesian regularization</p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">eta</span></code> (values: real number, default value: <code class="code docutils literal notranslate"><span class="pre">1</span></code>): eta parameter in gradient descent (the parameters are updated as par=par+eta*gradient)</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">eta</span></code> (values: real number, default value: <code class="code docutils literal notranslate"><span class="pre">0.01</span></code>): eta parameter in gradient descent (the parameters are updated as par=par+eta*gradient)</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">max_initial_weight</span></code> (values: real number , default value: 0.5): weights in lbfgs and gd are randomly initialized with values in the interval [-max_initial_weight, max_initial_weight].</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">min_probability</span></code> (values: real number in <code class="code docutils literal notranslate"><span class="pre">[0,1]</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">1e-5</span></code>):  probability threshold under which a clause is dropped out.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">eps</span></code> (values: real, default value: 0.0001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than <code class="code docutils literal notranslate"><span class="pre">eps</span></code>, then parameter learning stops.</p></li>
@@ -506,7 +506,8 @@ The <code class="code docutils literal notranslate"><span class="pre">pack/liftc
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>phil follows the MIT License that you can find in phil root folder.
 The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
-<p id="id6"><dl class="citation">
+<div class="docutils container" id="id6">
+<dl class="citation">
 <dt class="label" id="id23"><span class="brackets"><a class="fn-backref" href="#id5">Coh95</a></span></dt>
 <dd><p>William W. Cohen. Pac-learning non-recursive prolog clauses. <em>Artif. Intell.</em>, 79(1):1–38, 1995.</p>
 </dd>
@@ -529,7 +530,7 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
 <dd><p>J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In <em>International Conference on Logic Programming</em>, volume 3131 of LNCS, 195–209. Springer, 2004.</p>
 </dd>
 </dl>
-</p>
+</div>
 </section>
 </section>
 
@@ -593,7 +594,7 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2023, Riguzzi Fabrizio, Arnaud Nguembang Fadja.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>

@@ -462,7 +462,7 @@ and read with commands of the form ::
     - :code:`regularization`: (values: :code:`{no,l1,l2,bayes}`, default value: :code:`l1`) type of regularization
     - :code:`gamma` (values: real number, default value: :code:`10`): regularization coefficient for L1 and L2
     - :code:`ab` (values: list of two real numbers, default value: :code:`[0,10]`): values of a and b for bayesian regularization 
-    - :code:`eta` (values: real number, default value: :code:`1`): eta parameter in gradient descent (the parameters are updated as par=par+eta*gradient)
+    - :code:`eta` (values: real number, default value: :code:`0.01`): eta parameter in gradient descent (the parameters are updated as par=par+eta*gradient)
     - :code:`max_initial_weight` (values: real number , default value: 0.5): weights in lbfgs and gd are randomly initialized with values in the interval [-max_initial_weight, max_initial_weight].
     - :code:`min_probability` (values: real number in :code:`[0,1]`, default value: :code:`1e-5`):  probability threshold under which a clause is dropped out.
     - :code:`eps` (values: real, default value: 0.0001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than :code:`eps`, then parameter learning stops.
