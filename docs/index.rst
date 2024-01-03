@@ -468,6 +468,7 @@ and read with commands of the form ::
     - :code:`eps` (values: real, default value: 0.0001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than :code:`eps`, then parameter learning stops.
     - :code:`eps_f` (values: real, default value: 0.00001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than :code:`eps_f*(-current log likelihood)`, then LIFTCOVER stops.
     - :code:`random_restarts_number` (values: integer, default value: 1): number of random restarts of parameter learning algorithms 
+    - :code:`random_restarts_number_str_learn` (values: integer, default value: 1): number of random restarts during structure learning for learning the parameter of single clauses
     - :code:`iter` (values: integer, default value: -1): maximum number of parameter learning iterations (-1 means not limits)
     - :code:`max_iter` (values: integer, default value: :code:`10`): iterations of clause search.
     - :code:`beamsize` (values: integer, default value: 100): size of the beam in the search for clauses
