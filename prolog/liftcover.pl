@@ -67,8 +67,8 @@ default_setting_lift(eps,0.0001).
 default_setting_lift(eps_f,0.00001).
 
 
-/* number of random restarts of em */
-default_setting_lift(random_restarts_number,1).
+default_setting_lift(random_restarts_number,1). % number of random restarts of parameter learning
+default_setting_lift(random_restarts_number_str_learn,1). % number of random restarts during structure learning of parameter learning for single clauses
 default_setting_lift(iter,100).
 default_setting_lift(d,1).
 default_setting_lift(verbosity,1).
@@ -250,7 +250,8 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   append(MINC,MIN),
   length(LC,NumCL),
   write2(Mod,"Final parameter learning"),nl2(Mod),
-  learn_param_int(MI,MIN,NumCL,Mod,Par,Score),
+  Mod:local_setting(random_restarts_number,RR),
+  learn_param_int(MI,MIN,NumCL,Mod,RR,Par,Score),
   update_theory(LC,Par,Program1),
   maplist(remove_zero,Program1,Program2),
   append(Program2,R1),
@@ -307,7 +308,8 @@ cycle_structure([(RH,_Score)|RT],Mod,R0,S0,SP0,Pos,Neg,R,S,M):-
   format2(Mod,"Theory iteration ~d~n~n",[M]),
   format3(Mod,"Initial theory~n~n",[]),
   write_rules3(Mod,[RH|R0],user_output),
-  learn_param([RH|R0],Mod,Pos,Neg,R3,Score,_MI,_MIN),
+  Mod:local_setting(random_restarts_number_str_learn,RR),
+  learn_param([RH|R0],Mod,Pos,Neg,RR,R3,Score,_MI,_MIN),
   format3(Mod,"Score after parameter learning = ~f~n",[Score]),
   write3(Mod,'Updated Theory\n'),
   write_rules3(Mod,R3,user_output),   %definite rules without probabilities in the head are not written
@@ -452,13 +454,14 @@ logistic(X,Sigma_X):-
 
 
 load_python_module(M):-
-M:local_setting(parameter_learning,PL),
+  M:local_setting(parameter_learning,PL),
   (PL=em_python;PL=gd_python),!,
   absolute_file_name(library('liftcover.pl'), F),
   file_directory_name(F,Dir),
   py_add_lib_dir(Dir),
   M:local_setting(processor,Proc),
-  py_call(liftcover:init(PL,Proc)).
+  M:local_setting(verbosity,Verb),
+  py_call(liftcover:init(PL,Proc,Verb)).
 
 load_python_module(_).
 
@@ -492,21 +495,24 @@ induce_parameters(M:Folds,R):-
   process_clauses(R00,M,R0),
   statistics(walltime,[_,_]),
   find_ex(DB,M,Pos,Neg,_NPos,_NNeg),
-  learn_param(R0,M,Pos,Neg,R1,Score,_MI,_MIN),
+  M:local_setting(random_restarts_number_str_learn,RR),
+  learn_param(R0,M,Pos,Neg,RR,R1,Score,_MI,_MIN),
   (M:local_setting(regularization,no)->
-    R=R1
+    R2=R1
   ;
     M:local_setting(min_probability,Min_prob),
-    remove_clauses(R1,Min_prob,R,Num),
+    remove_clauses(R1,Min_prob,R2,Num),
     length(R1,NumBR),
     NumRem is NumBR-Num,
-    rules2terms(R1,ROut1),
+    sort_rules(R1,ROr),
+    rules2terms(ROr,ROut1),
     M:test_prob_lift(ROut1,Folds,_,_,LL1,_),
     format2(M,"Rules: ~d~nLL ~f~n",[NumBR,LL1]),
-    rules2terms(R,ROut),
+    rules2terms(R2,ROut),
     M:test_prob_lift(ROut,Folds,_,_,LL,_),
     format2(M,"After removing rules with small parameters ~d~nLL ~f~n",[NumRem,LL])
   ),
+  sort_rules(R2,R),
   statistics(walltime,[_,CT]),
   CTS is CT/1000,
   format2(M,'/* Final score ~f~n',[Score]),
@@ -555,29 +561,27 @@ test_theory_pos_prob([Ex|Rest],M,Th,N,[MI|LMI]):-
   test_clause_prob(Th,M,[Ex],MI0,MI),
   test_theory_pos_prob(Rest,M,Th,N,LMI).
 
-learn_param([],M,_,_,[],MInf,[],[]):-!,
+learn_param([],M,_,_,_,[],MInf,[],[]):-!,
   M:local_setting(minus_infinity,MInf).
 
-learn_param(Program0,M,Pos,Neg,Program,LL,MI,MIN):-
+learn_param(Program0,M,Pos,Neg,RR,Program,LL,MI,MIN):-
   generate_clauses(Program0,M,0,[],Pr1),
   length(Program0,N),
   gen_initial_counts(N,MIN0),
   test_theory_neg_prob(Neg,M,Pr1,MIN0,MIN),
   test_theory_pos_prob(Pos,M,Pr1,N,MI),
-  learn_param_int(MI,MIN,N,M,Par,LL),
+  learn_param_int(MI,MIN,N,M,RR,Par,LL),
   update_theory(Program0,Par,Program1),
   maplist(remove_zero,Program1,Program2),
-  append(Program2,Program),
+  append(Program2,Program).
+
+learn_param_int(MI,MIN,N,M,NR,Par,LL):-
+  M:local_setting(parameter_learning,em),!,
+  random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN),
   format3(M,"Final LL ~f~n",[LL]).
 
-learn_param_int(MI,MIN,N,M,Par,LL):-
-  M:local_setting(parameter_learning,em),!,
-  M:local_setting(random_restarts_number,NR),
-  random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN).
-
-learn_param_int(MI,MIN,_N,M,Par,LL):-
+learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,em_python),!,
-  M:local_setting(random_restarts_number,NR),
   M:local_setting(eps,EA),
   M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
@@ -587,18 +591,19 @@ learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(ab,[A,B]),
   M:local_setting(verbosity,Verb),
   M:local_setting(processor,Device),
-  py_call(liftcover:random_restarts(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL)).
+  py_call(liftcover:random_restarts(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL)),
+  format3(M,"Final LL ~f~n",[LL]).
 
-learn_param_int(MI,MIN,N,M,Par,LL):-
+learn_param_int(MI,MIN,N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,gd),!,
-  M:local_setting(random_restarts_number,NR),
   random_restarts_gd(NR,M,-1e20,PLL,N,initial,ParR,MI,MIN),  %computes new parameters Par
   maplist(logistic,ParR,Par),
-  LL is -PLL.
+  LL is -PLL,
+  format3(M,"Final LL ~f~n",[LL]).
 
-learn_param_int(MI,MIN,_N,M,Par,LL):-
+
+learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,gd_python),!,
-  M:local_setting(random_restarts_number,NR),
   M:local_setting(verbosity,Verb),
   M:local_setting(parameter_update,UpdateMethod),
   M:local_setting(iter,Iter),
@@ -610,9 +615,11 @@ learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(zero,Zero),
   M:local_setting(processor,Device),
   py_call(liftcover:random_restarts_gd(MI,MIN,Device,NR,UpdateMethod,
-    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Zero,Verb),-(Par,LL)).
+    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Zero,Verb),-(Par,LL)),
+  format3(M,"Final LL ~f~n",[LL]).
 
-learn_param_int(MI,MIN,N,M,Par,LL):-
+
+learn_param_int(MI,MIN,N,M,_,Par,LL):-
   M:local_setting(parameter_learning,lbfgs),
   optimizer_initialize(N,liftcover,evaluate,progress,[M,MIN,MI],Env),
   init_par(Env,N),
@@ -1032,7 +1039,8 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):- 
 score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
   format3(M,'Score ref.  ~d of ~d~n',[Nrev,NRef]),
   write_rules3(M,[R1],user_output),
-  learn_param([R1],M,Pos,Neg,NewR,Score,MI,MIN),
+  M:local_setting(random_restarts_number_str_learn,NR),
+  learn_param([R1],M,Pos,Neg,NR,NewR,Score,MI,MIN),
   write3(M,'Updated refinement\n'),
   write_rules3(M,NewR,user_output),
   write3(M,'Score (CLL) '),write3(M,Score),write3(M,'\n\n\n'),
