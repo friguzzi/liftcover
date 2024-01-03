@@ -1481,6 +1481,7 @@ generate_body([(A,H)|T],Mod,Out):-
   cycle_modeb(ArgsTypes,Args,[],[],Mod,BL,a,[],BLout0,D,M),
   variabilize(([(H,A)]:-BLout0),CLV),  %+(Head):-Bodylist;  -CLV:(Head):-Bodylist with variables _num in place of constants
   CLV=([Head1]:-BodyList1),
+  format2(Mod,"Bottom clause: example ~q~n",[H]),
   (range_restricted(rule(_,Head1,BodyList1,_))->
     remove_int_atom(Head1,Head),
     remove_int_atom_list(BodyList1,BodyList2),
@@ -1488,7 +1489,7 @@ generate_body([(A,H)|T],Mod,Out):-
     get_next_rule_number(Mod,R),
     copy_term((Head,BodyList),(HeadV,BodyListV)),
     numbervars((HeadV,BodyListV),0,_V),
-    format2(Mod,"Bottom clause: example ~q~nClause~n~q:0.5 :-~n",[H,HeadV]),
+    format2(Mod,"Clause~n~q:0.5 :-~n",[HeadV]),
     write_body2(Mod,user_output,BodyListV),
     Out=[[rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20]|CL0]
   ;
