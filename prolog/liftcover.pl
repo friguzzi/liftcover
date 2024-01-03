@@ -1493,6 +1493,7 @@ generate_body([(A,H)|T],Mod,Out):-
     write_body2(Mod,user_output,BodyListV),
     Out=[[rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20]|CL0]
   ;
+    format2(Mod,"No range restricted bottom clause~n",[]),
     Out=CL0
   ),
   generate_body(T,Mod,CL0).
