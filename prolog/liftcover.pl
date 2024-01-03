@@ -1481,7 +1481,6 @@ generate_body([(A,H)|T],Mod,Out):-
   cycle_modeb(ArgsTypes,Args,[],[],Mod,BL,a,[],BLout0,D,M),
   variabilize(([(H,A)]:-BLout0),CLV),  %+(Head):-Bodylist;  -CLV:(Head):-Bodylist with variables _num in place of constants
   CLV=([Head1]:-BodyList1),
-  writeln(bc),
   (range_restricted(rule(_,Head1,BodyList1,_))->
     remove_int_atom(Head1,Head),
     remove_int_atom_list(BodyList1,BodyList2),
