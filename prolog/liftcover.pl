@@ -261,7 +261,7 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
     remove_clauses(R1,Min_prob,R,Num),
     length(R1,NumBR),
     NumRem is NumBR-Num,
-    format2(Mod,"Rules: ~d~nAfter removing rules with small parameters ~d~n ",[NumBR,NumRem])
+    format2(Mod,"Rules: ~d~nAfter removing rules with small parameters ~d~n",[NumBR,NumRem])
   ),
   format2(Mod,"Best target theory~n~n",[]),
   write_rules2(Mod,R,user_output).
@@ -1040,7 +1040,11 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
     M:local_setting(beamsize,BS),
     M:local_setting(max_clauses,MC),
     insert_in_order(NB0,[R3,Score],BS,NB1),
-    insert_in_order(CL0,[R3,Score,MI,MIN],MC,CL1),
+    (range_restricted(R3)->
+      insert_in_order(CL0,[R3,Score,MI,MIN],MC,CL1)
+    ;
+      CL1=CL0
+    ),
     length(CL1,LCL1),
     format2(M,"N. of target clauses ~d~n~n",[LCL1]),
     store_clause_refinement(R1,R3,M,Score),
@@ -1458,7 +1462,7 @@ all_plus_args([H|T]):-
 
 generate_body([],_Mod,[]):-!.
 
-generate_body([(A,H)|T],Mod,[[rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20]|CL0]):-
+generate_body([(A,H)|T],Mod,Out):-
   functor(A,F,AA),
 %  findall((R,B),(Mod:modeb(R,B),functor(B,FB,AB),Mod:determination(F/AA,FB/AB)),BL),
   findall(FB/AB,Mod:determination(F/AA,FB/AB),Det),
@@ -1469,14 +1473,20 @@ generate_body([(A,H)|T],Mod,[[rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20]|CL0])
   cycle_modeb(ArgsTypes,Args,[],[],Mod,BL,a,[],BLout0,D,M),
   variabilize(([(H,A)]:-BLout0),CLV),  %+(Head):-Bodylist;  -CLV:(Head):-Bodylist with variables _num in place of constants
   CLV=([Head1]:-BodyList1),
-  remove_int_atom(Head1,Head),
-  remove_int_atom_list(BodyList1,BodyList2),
-  remove_duplicates(BodyList2,BodyList),
-  get_next_rule_number(Mod,R),
-  copy_term((Head,BodyList),(HeadV,BodyListV)),
-  numbervars((HeadV,BodyListV),0,_V),
-  format2(Mod,"Bottom clause: example ~q~nClause~n~q:0.5 :-~n",[H,HeadV]),
-  write_body2(Mod,user_output,BodyListV),
+  writeln(bc),
+  (range_restricted(rule(_,Head1,BodyList1,_))->
+    remove_int_atom(Head1,Head),
+    remove_int_atom_list(BodyList1,BodyList2),
+    remove_duplicates(BodyList2,BodyList),
+    get_next_rule_number(Mod,R),
+    copy_term((Head,BodyList),(HeadV,BodyListV)),
+    numbervars((HeadV,BodyListV),0,_V),
+    format2(Mod,"Bottom clause: example ~q~nClause~n~q:0.5 :-~n",[H,HeadV]),
+    write_body2(Mod,user_output,BodyListV),
+    Out=[[rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20]|CL0]
+  ;
+    Out=CL0
+  ),
   generate_body(T,Mod,CL0).
 
 
@@ -1760,8 +1770,25 @@ specialize_rule(Rule,M,_SpecRule,_Lit):-
   L=ML,!,
   fail.
 
-%used by cycle_clauses in slipcover.pl
 specialize_rule(Rule,M,SpecRule,Lit):-
+  M:local_setting(max_body_length,ML),
+  Rule = rule(_ID,_LH,BL,_Lits),
+  length(BL,L),
+  (L=ML->
+    !,
+    fail
+  ;
+    specialize_rule_int(Rule,M,SpecRule,Lit),
+    (L=:=ML-1->
+      range_restricted(SpecRule)
+    ;
+      true
+    )
+  ).
+    
+
+%used by cycle_clauses in slipcover.pl
+specialize_rule_int(Rule,M,SpecRule,Lit):-
   M:local_setting(specialization,bottom),
   Rule = rule(ID,LH,BL,Lits),
   delete_one(Lits,RLits,Lit),
@@ -1783,7 +1810,7 @@ specialize_rule(Rule,M,SpecRule,Lit):-
   \+ banned_clause(LH2,BL1),
   SpecRule=rule(ID,LH,BL1,RLits).
 
-specialize_rule(Rule,M,SpecRule,Lit):-
+specialize_rule_int(Rule,M,SpecRule,Lit):-
   M:local_setting(specialization,bottom),
   Rule = rule(ID,LH,BL,Lits),
   delete_one(Lits,RLits,Lit),
@@ -1807,7 +1834,7 @@ specialize_rule(Rule,M,SpecRule,Lit):-
   \+ banned_clause(LH2,BL1),
   SpecRule=rule(ID,LH,BL1,RLits1).
 
-specialize_rule(Rule,M,SpecRule,Lit):-
+specialize_rule_int(Rule,M,SpecRule,Lit):-
   M:local_setting(specialization,bottom),
   Rule = rule(ID,LH,BL,Lits),
   delete_one(Lits,RLits,Lit),
@@ -1829,7 +1856,7 @@ specialize_rule(Rule,M,SpecRule,Lit):-
   \+ banned_clause(LH2,BL1),
   SpecRule=rule(ID,LH,BL1,[]).
 
-specialize_rule(Rule,M,SpecRule,Lit):-
+specialize_rule_int(Rule,M,SpecRule,Lit):-
   M:local_setting(specialization,mode),%!,
   findall(BL , M:modeb(_,BL), BLS),
   specialize_rule(BLS,Rule,M,SpecRule,Lit).
@@ -1944,17 +1971,18 @@ remove_eq(X,[Y|R],R):-
 remove_eq(X,[_|R],R1):-
   remove_eq(X,R,R1).
 
+linked_clause(BodyLits,M,[Head]):-
+  input_head_variables(Head,M,InputHeadVars),
+  linked_clause_int(BodyLits,M,InputHeadVars).
 
-linked_clause(X):-
-  linked_clause(X,[]).
+linked_clause_int([],_M,_).
 
-linked_clause([],_M,_).
-
-linked_clause([L|R],M,PrevLits):-
-  term_variables(PrevLits,PrevVars),
+linked_clause_int([L|R],M,PrevVars):-
   input_variables(L,M,InputVars),
   linked(InputVars,PrevVars),!,
-  linked_clause(R,M,[L|PrevLits]).
+  term_variables(L,LVars),
+  append(LVars,PrevVars,PrevVars1),
+  linked_clause_int(R,M,PrevVars1).
 
 
 linked([],_).
@@ -1986,7 +2014,7 @@ input_variables(LitM,M,InputVars):-
   M:modeb(_,Lit1),
   input_vars(LitM,Lit1,InputVars).
 
-input_variables(LitM,M,InputVars):-
+input_head_variables(LitM,M,InputVars):-
   LitM=..[P|Args],
   length(Args,LA),
   length(Args1,LA),
