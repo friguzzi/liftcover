@@ -570,13 +570,13 @@ learn_param(Program0,M,Pos,Neg,Program,LL,MI,MIN):-
   learn_param_int(MI,MIN,N,M,Par,LL),
   update_theory(Program0,Par,Program1),
   maplist(remove_zero,Program1,Program2),
-  append(Program2,Program),
-  format3(M,"Final LL ~f~n",[LL]).
+  append(Program2,Program).
 
 learn_param_int(MI,MIN,N,M,Par,LL):-
   M:local_setting(parameter_learning,em),!,
   M:local_setting(random_restarts_number,NR),
-  random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN).
+  random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN),
+  format3(M,"Final LL ~f~n",[LL]).
 
 learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(parameter_learning,em_python),!,
@@ -590,14 +590,17 @@ learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(ab,[A,B]),
   M:local_setting(verbosity,Verb),
   M:local_setting(processor,Device),
-  py_call(liftcover:random_restarts(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL)).
+  py_call(liftcover:random_restarts(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL)),
+  format3(M,"Final LL ~f~n",[LL]).
 
 learn_param_int(MI,MIN,N,M,Par,LL):-
   M:local_setting(parameter_learning,gd),!,
   M:local_setting(random_restarts_number,NR),
   random_restarts_gd(NR,M,-1e20,PLL,N,initial,ParR,MI,MIN),  %computes new parameters Par
   maplist(logistic,ParR,Par),
-  LL is -PLL.
+  LL is -PLL,
+  format3(M,"Final LL ~f~n",[LL]).
+
 
 learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(parameter_learning,gd_python),!,
@@ -613,7 +616,9 @@ learn_param_int(MI,MIN,_N,M,Par,LL):-
   M:local_setting(zero,Zero),
   M:local_setting(processor,Device),
   py_call(liftcover:random_restarts_gd(MI,MIN,Device,NR,UpdateMethod,
-    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Zero,Verb),-(Par,LL)).
+    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Zero,Verb),-(Par,LL)),
+  format3(M,"Final LL ~f~n",[LL]).
+
 
 learn_param_int(MI,MIN,N,M,Par,LL):-
   M:local_setting(parameter_learning,lbfgs),
