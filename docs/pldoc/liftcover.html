@@ -27,9 +27,14 @@ tests <var>P</var> on the folds indicated in <var>TestFolds</var> and returns
 the number of positive examples in <var>NPos</var>, the number of negative examples
 in <var>NNeg</var>, the log likelihood in <var>LL</var>
 and in <var>Results</var> a list containing the probabilistic result for each query contained in <var>TestFolds</var>.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="sort_rules/2"><b class="pred">sort_rules</b><var class="arglist">(+RulesIn:list_of_rules, -RulesOut:list_of_rules)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate sorts <var>RulesIn</var> according to the probability of the rules</dd>
 <dt class="pubdef"><span style="float:right">&nbsp;</span><a name="induce_par_lift/2"><b class="pred">induce_par_lift</b><var class="arglist">(+TrainFolds:list_of_atoms, -P:probabilistic_program)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate learns the parameters of the program stored in the <a class="extmanual" href="http://www.swi-prolog.org/pldoc/man?predicate=in/1">in/1</a> fact
 of the input file using the folds indicated in <var>TrainFolds</var> for training.
 It returns in <var>P</var> the input program with the updated parameters.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="filter_rules/2"><b class="pred">filter_rules</b><var class="arglist">(+RulesIn:list_of_rules, -RulesOut:list_of_rules)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate removes from <var>RulesIn</var> the rules with a probability
+below the min_prob parmeter</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="filter_rules/3"><b class="pred">filter_rules</b><var class="arglist">(+RulesIn:list_of_rules, -RulesOut:list_of_rules, +Min_prob)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate removes from <var>RulesIn</var> the rules with a probability
+below <var>Min_prob</var></dd>
 <dt class="pubdef"><span style="float:right">&nbsp;</span><a name="set_lift/2"><b class="pred">set_lift</b><var class="arglist">(+Parameter:atom, +Value:term)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate sets the value of a parameter
 For a list of parameters see
 <a href="https://github.com/friguzzi/cplint/blob/master/doc/manual.pdf">https://github.com/friguzzi/cplint/blob/master/doc/manual.pdf</a> or
