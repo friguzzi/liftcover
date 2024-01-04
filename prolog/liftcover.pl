@@ -568,8 +568,10 @@ learn_param(Program0,M,Pos,Neg,RR,Program,LL,MI,MIN):-
   generate_clauses(Program0,M,0,[],Pr1),
   length(Program0,N),
   gen_initial_counts(N,MIN0),
+  format4(M,'Computing clause statistics~n',[]),
   test_theory_neg_prob(Neg,M,Pr1,MIN0,MIN),
   test_theory_pos_prob(Pos,M,Pr1,N,MI),
+  format4(M,'Updating parameters~n',[]),
   learn_param_int(MI,MIN,N,M,RR,Par,LL),
   update_theory(Program0,Par,Program1),
   maplist(remove_zero,Program1,Program2),
@@ -1493,7 +1495,7 @@ generate_body([(A,H)|T],Mod,Out):-
     write_body2(Mod,user_output,BodyListV),
     Out=[[rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20]|CL0]
   ;
-    format2(Mod,"No range restricted bottom clause~n",[]),
+    format2(Mod,"No range restricted bottom clause~n~n",[]),
     Out=CL0
   ),
   generate_body(T,Mod,CL0).
