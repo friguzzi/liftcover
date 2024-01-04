@@ -221,9 +221,9 @@ induce_rules(M:Folds,R):-
  */
 
 sort_rules(R0,R):-
-  rules2terms(R0,P0),
+  rules2terms(P0,R0),
   sort_rules_int(P0,P),
-  rules2terms(R,P).
+  rules2terms(P,R).
 
 sort_rules_int(P0,P):-
   maplist(to_pair,P0,P1),
@@ -532,9 +532,9 @@ filter_rules(M:R0,R):-
  */
 
 filter_rules(R0,R,Min_prob):-
-  rules2terms(R0,R0At),
+  rules2terms(R0At,R0),
   remove_clauses(R0At,Min_prob,RAt,_Num),
-  rules2terms(R,RAt).
+  rules2terms(RAt,R).
  
 remove_clauses(Rules,Prob,RulesOut,Num):-
   remove_clauses_loop(Rules,Prob,0,Num,[],RulesOut).
@@ -1232,7 +1232,7 @@ update_head([H:_P|T],[PU|TP],N,[H:P|T1]):-
 rules2terms(R,T):-
   maplist(rule2term,R,T).
 
-rule2term(rule(_N,HL,BL,_Lit),(H:-B)):-
+rule2term(rule(_N,HL,BL,_Lit),(H:-B)):-!,
   list2or(HL,H),
   list2and(BL,B).
 

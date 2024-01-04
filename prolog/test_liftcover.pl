@@ -47,6 +47,15 @@ atomic_list_concat(['Expected:\n',
 '\nAUCPR =', 0.4962773673721876],St1),
 writeln(St1).
 
+test(sort_carc):-
+  in(P),sort_rules(P,P1),
+  subset(P,P1),
+  subset(P1,P).
+
+test(filter_carc):-
+  in(P),filter_rules(P,P1),
+  subset(P,P1).
+
 test(induce_par_carc):-
   set_lift(verbosity,0),
   induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
