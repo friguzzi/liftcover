@@ -17,4 +17,4 @@ It can be installed with `pack_install/1`
 Further documentation
 ---------------------
 
-[PlDoc](https://www.swi-prolog.org/pack/file_details/liftcover/prolog/liftcover.pl) 
+[PlDoc](https://friguzzi.github.io/liftcover/pldoc/liftcover.html) 
