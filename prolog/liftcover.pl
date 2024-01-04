@@ -22,6 +22,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 */
 :-module(liftcover,[set_lift/2,setting_lift/2,
   induce_lift/2,induce_par_lift/2,test_lift/7,
+  filter_rules/2,filter_rules/3,sort_rules/2,
   op(500,fx,#),op(500,fx,'-#'),
   test_prob_lift/6]).
 :-use_module(library(auc)).
@@ -55,6 +56,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate test_prob_lift(:,+,-,-,-,-).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
+:- meta_predicate filter_rules(:,-).
 
 
 
@@ -197,7 +199,7 @@ induce_rules(M:Folds,R):-
     generate_top_cl(O,M,R1)
   ),
   learn_struct(Pos,Neg,M,R1,R2,Score),
-  sort_rules(R2,R),
+  sort_rules_int(R2,R),
   statistics(walltime,[_,WT]),
   WTS is WT/1000,
   write2(M,'\n\n'),
@@ -212,7 +214,18 @@ induce_rules(M:Folds,R):-
   retractall(M:ref_clause(_)),
   retractall(M:ref(_)).
 
-sort_rules(P0,P):-
+/**
+ * sort_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
+ *
+ * The predicate sorts RulesIn according to the probability of the rules
+ */
+
+sort_rules(R0,R):-
+  rules2terms(R0,P0),
+  sort_rules_int(P0,P),
+  rules2terms(R,P).
+
+sort_rules_int(P0,P):-
   maplist(to_pair,P0,P1),
   sort(1,@>=,P1,P2),
   maplist(to_pair,P,P2).
@@ -254,16 +267,7 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   learn_param_int(MI,MIN,NumCL,Mod,RR,Par,Score),
   update_theory(LC,Par,Program1),
   maplist(remove_zero,Program1,Program2),
-  append(Program2,R1),
-  (Mod:local_setting(regularization,no)->
-    R=R1
-  ;
-    Mod:local_setting(min_probability,Min_prob),
-    remove_clauses(R1,Min_prob,R,Num),
-    length(R1,NumBR),
-    NumRem is NumBR-Num,
-    format2(Mod,"Rules: ~d~nAfter removing rules with small parameters ~d~n",[NumBR,NumRem])
-  ),
+  append(Program2,R),
   format2(Mod,"Best target theory~n~n",[]),
   write_rules2(Mod,R,user_output).
 
@@ -497,23 +501,10 @@ induce_parameters(M:Folds,R):-
   find_ex(DB,M,Pos,Neg,_NPos,_NNeg),
   M:local_setting(random_restarts_number_str_learn,RR),
   learn_param(R0,M,Pos,Neg,RR,R1,Score,_MI,_MIN),
-  (M:local_setting(regularization,no)->
-    R2=R1,
-    LL=Score
-  ;
-    M:local_setting(min_probability,Min_prob),
-    remove_clauses(R1,Min_prob,R2,Num),
-    length(R1,NumBR),
-    NumRem is NumBR-Num,
-    format2(M,"Rules: ~d~n",[NumBR]),
-    rules2terms(R2,ROut),
-    M:test_prob_lift(ROut,Folds,_,_,LL,_),
-    format2(M,"After removing rules with small parameters ~d~n",[NumRem])
-  ),
-  sort_rules(R2,R),
+  sort_rules_int(R1,R),
   statistics(walltime,[_,CT]),
   CTS is CT/1000,
-  format2(M,'/* Final score ~f~n',[LL]),
+  format2(M,'/* Final score ~f~n',[Score]),
   format2(M,'Wall time ~f */~n',[CTS]),
   write_rules2(M,R,user_output),
   (M:bg(RBG0)->
@@ -522,6 +513,29 @@ induce_parameters(M:Folds,R):-
     true
   ).
 
+/**
+ * filter_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
+ *
+ * The predicate removes from RulesIn the rules with a probability
+ * below the min_prob parmeter
+ */
+filter_rules(M:R0,R):-
+  M:local_setting(min_probability,Min_prob),
+  filter_rules(R0,R,Min_prob).
+
+
+/**
+ * filter_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules,+Min_prob) is det
+ *
+ * The predicate removes from RulesIn the rules with a probability
+ * below Min_prob
+ */
+
+filter_rules(R0,R,Min_prob):-
+  rules2terms(R0,R0At),
+  remove_clauses(R0At,Min_prob,RAt,_Num),
+  rules2terms(R,RAt).
+ 
 remove_clauses(Rules,Prob,RulesOut,Num):-
   remove_clauses_loop(Rules,Prob,0,Num,[],RulesOut).
 
@@ -3302,14 +3316,19 @@ lift_expansion(At, A) :-
     )
   ).
 
-  :- multifile sandbox:safe_meta/2.
+:- multifile sandbox:safe_meta/2.
 
-  sandbox:safe_meta(liftcover:induce_par_lift(_,_) ,[]).
-  sandbox:safe_meta(liftcover:induce_lift(_,_), []).
-  sandbox:safe_meta(liftcover:test_prob_lift(_,_,_,_,_,_), []).
-  sandbox:safe_meta(liftcover:test_lift(_,_,_,_,_,_,_), []).
-  sandbox:safe_meta(liftcover:set_lift(_,_), []).
-  sandbox:safe_meta(liftcover:setting_lift(_,_), []).
+sandbox:safe_meta(liftcover:induce_par_lift(_,_) ,[]).
+sandbox:safe_meta(liftcover:induce_lift(_,_), []).
+sandbox:safe_meta(liftcover:test_prob_lift(_,_,_,_,_,_), []).
+sandbox:safe_meta(liftcover:test_lift(_,_,_,_,_,_,_), []).
+sandbox:safe_meta(liftcover:set_lift(_,_), []).
+sandbox:safe_meta(liftcover:setting_lift(_,_), []).
+sandbox:safe_meta(liftcover:filter_rules(_,_), []).
+
+:- multifile sandbox:safe_primitive/1.
+sandbox:safe_primitive(liftcover:filter_rules(_,_,_), []).
+sandbox:safe_primitive(liftcover:sort_rules(_,_,_), []).
 
 
 
