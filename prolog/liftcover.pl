@@ -498,24 +498,22 @@ induce_parameters(M:Folds,R):-
   M:local_setting(random_restarts_number_str_learn,RR),
   learn_param(R0,M,Pos,Neg,RR,R1,Score,_MI,_MIN),
   (M:local_setting(regularization,no)->
-    R2=R1
+    R2=R1,
+    LL=Score
   ;
     M:local_setting(min_probability,Min_prob),
     remove_clauses(R1,Min_prob,R2,Num),
     length(R1,NumBR),
     NumRem is NumBR-Num,
-    sort_rules(R1,ROr),
-    rules2terms(ROr,ROut1),
-    M:test_prob_lift(ROut1,Folds,_,_,LL1,_),
-    format2(M,"Rules: ~d~nLL ~f~n",[NumBR,LL1]),
+    format2(M,"Rules: ~d~n",[NumBR]),
     rules2terms(R2,ROut),
     M:test_prob_lift(ROut,Folds,_,_,LL,_),
-    format2(M,"After removing rules with small parameters ~d~nLL ~f~n",[NumRem,LL])
+    format2(M,"After removing rules with small parameters ~d~n",[NumRem])
   ),
   sort_rules(R2,R),
   statistics(walltime,[_,CT]),
   CTS is CT/1000,
-  format2(M,'/* Final score ~f~n',[Score]),
+  format2(M,'/* Final score ~f~n',[LL]),
   format2(M,'Wall time ~f */~n',[CTS]),
   write_rules2(M,R,user_output),
   (M:bg(RBG0)->
