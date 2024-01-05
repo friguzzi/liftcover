@@ -2563,8 +2563,7 @@ or_list1([H|T],Env,B0,B1):-
  *
  * The predicate sets the value of a parameter
  * For a list of parameters see
- * https://github.com/friguzzi/cplint/blob/master/doc/manual.pdf or
- * http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html
+ * https://friguzzi.github.io/liftcover/
  */
 set_lift(M:Parameter,Value):-
   retract(M:local_setting(Parameter,_)),
@@ -2575,8 +2574,7 @@ set_lift(M:Parameter,Value):-
  *
  * The predicate returns the value of a parameter
  * For a list of parameters see
- * https://github.com/friguzzi/cplint/blob/master/doc/manual.pdf or
- * http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html
+ * https://friguzzi.github.io/liftcover/
  */
 setting_lift(M:P,V):-
   M:local_setting(P,V).
