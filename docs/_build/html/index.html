@@ -49,11 +49,9 @@
 </section>
 <section id="predicate-reference">
 <h2>Predicate Reference<a class="headerlink" href="#predicate-reference" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><ul class="simple">
+<ul class="simple">
 <li><p><a class="reference external" href="https://friguzzi.github.io/liftcover/pldoc/liftcover.html">liftcover</a></p></li>
 </ul>
-</div></blockquote>
 </section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
@@ -66,12 +64,10 @@ To install it, use</p>
 <section id="requirements">
 <h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
 <p>It uses the packs</p>
-<blockquote>
-<div><ul class="simple">
+<ul class="simple">
 <li><p><a class="reference external" href="https://github.com/friguzzi/lbfgs">lbfgs</a></p></li>
 <li><p><a class="reference external" href="https://github.com/friguzzi/auc">auc</a></p></li>
 </ul>
-</div></blockquote>
 <p>They are installed automatically when installing pack <cite>liftcover</cite> or can be installed manually as follows</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ swipl
 ?- pack_install(lbfgs).
@@ -413,6 +409,25 @@ the parameter <code class="code docutils literal notranslate"><span class="pre">
 </div>
 <p>A program can also be tested on a test set with <code class="code docutils literal notranslate"><span class="pre">test_lift/7</span></code>  as described below.</p>
 </section>
+<section id="helper-predicates">
+<h4>Helper Predicates<a class="headerlink" href="#helper-predicates" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sort_rules</span><span class="p">(</span><span class="o">+</span><span class="n">RulesIn</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">-</span><span class="n">RulesOut</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">)</span> <span class="ow">is</span> <span class="n">det</span>
+</pre></div>
+</div>
+<p>The predicate sorts <code class="code docutils literal notranslate"><span class="pre">RulesIn</span></code> according to the probability of the rules.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">filter_rules</span><span class="p">(</span><span class="o">+</span><span class="n">RulesIn</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">-</span><span class="n">RulesOut</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">+</span><span class="n">Min_prob</span><span class="p">)</span> <span class="ow">is</span> <span class="n">det</span>
+</pre></div>
+</div>
+<p>The predicate removes the rules with a probability below or equal to <code class="code docutils literal notranslate"><span class="pre">Min_prob</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">filter_rules</span><span class="p">(:</span><span class="n">RulesIn</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">-</span><span class="n">RulesOut</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">)</span> <span class="ow">is</span> <span class="n">det</span>
+</pre></div>
+</div>
+<p>The predicate removes the rules with a probability below or equal to the <code class="code docutils literal notranslate"><span class="pre">min_prob</span></code> parmeter.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">remove_zero</span><span class="p">(</span><span class="o">+</span><span class="n">RulesIn</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">-</span><span class="n">RulesOut</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">)</span> <span class="ow">is</span> <span class="n">det</span>
+</pre></div>
+</div>
+<p>The predicate removes the rules with a probability of 0.0.</p>
+</section>
 <section id="testing">
 <h4>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h4>
 <p>A program can also be tested on a test set in LIFTCOVER with</p>
@@ -453,10 +468,10 @@ test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="o">-</span> <span class="n">setting_lift</span><span class="p">(</span><span class="o">&lt;</span><span class="n">parameter</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="p">)</span><span class="o">.</span>
 </pre></div>
 </div>
-<ul>
-<li><p>hyper-parameters</p>
-<blockquote>
-<div><ul class="simple">
+<ul class="simple">
+<li><p>hyper-parameters</p></li>
+</ul>
+<ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">parameter_learning</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{em,em_python,gd,gd_python,lbfgs}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">em</span></code>) parameter learning algorithm</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">processor</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{cpu,gpu}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">cpu</span></code>) which processor Python will use for parameter learning</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">regularization</span></code>: (values: <code class="code docutils literal notranslate"><span class="pre">{no,l1,l2,bayes}</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">l1</span></code>) type of regularization</p></li>
@@ -488,9 +503,6 @@ test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 <li><p><code class="code docutils literal notranslate"><span class="pre">seed</span></code> (values: seed(integer) or seed(random), default value <code class="code docutils literal notranslate"><span class="pre">seed(3032)</span></code>): seed for the Prolog random functions, see <a class="reference external" href="http://www.swi-prolog.org/pldoc/man?predicate=set_random/1">SWI-Prolog manual</a> .</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">verbosity</span></code> (values: integer in <code class="code docutils literal notranslate"><span class="pre">[1,4]</span></code>, default value: <code class="code docutils literal notranslate"><span class="pre">1</span></code>): level of verbosity of the algorithms.</p></li>
 </ul>
-</div></blockquote>
-</li>
-</ul>
 </section>
 </section>
 <section id="example-files">
@@ -506,8 +518,7 @@ The <code class="code docutils literal notranslate"><span class="pre">pack/liftc
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>phil follows the MIT License that you can find in phil root folder.
 The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
-<div class="docutils container" id="id6">
-<dl class="citation">
+<p id="id6"><dl class="citation">
 <dt class="label" id="id23"><span class="brackets"><a class="fn-backref" href="#id5">Coh95</a></span></dt>
 <dd><p>William W. Cohen. Pac-learning non-recursive prolog clauses. <em>Artif. Intell.</em>, 79(1):1–38, 1995.</p>
 </dd>
@@ -530,7 +541,7 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
 <dd><p>J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In <em>International Conference on Logic Programming</em>, volume 3131 of LNCS, 195–209. Springer, 2004.</p>
 </dd>
 </dl>
-</div>
+</p>
 </section>
 </section>
 
@@ -565,6 +576,7 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
 <li><a class="reference internal" href="#commands">Commands</a><ul>
 <li><a class="reference internal" href="#parameter-learning">Parameter Learning</a></li>
 <li><a class="reference internal" href="#structure-learning">Structure Learning</a></li>
+<li><a class="reference internal" href="#helper-predicates">Helper Predicates</a></li>
 <li><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
 </li>
@@ -594,7 +606,7 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2023, Riguzzi Fabrizio, Arnaud Nguembang Fadja.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

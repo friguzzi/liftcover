@@ -56,6 +56,15 @@ test(filter_carc):-
   in(P),filter_rules(P,P1),
   subset(P,P1).
 
+test(filter_rules_carc):-
+  filter_rules([rule(_Name,[_H:0.0,_],_B,_L)],[]).
+
+test(remove_zero_rule):-
+  remove_zero([rule(_Name,[_H:0.0,_],_B,_L)],[]).
+
+test(remove_zero):-
+  remove_zero([(_H:0.0 :- _)],[]).
+
 test(induce_par_carc):-
   set_lift(verbosity,0),
   induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),

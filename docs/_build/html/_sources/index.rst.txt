@@ -19,7 +19,7 @@ LIFTCOVER is a system for learning simple probabilistic logic programs with scal
 Predicate Reference
 ===================
 
- * `liftcover <https://friguzzi.github.io/liftcover/pldoc/liftcover.html>`_
+* `liftcover <https://friguzzi.github.io/liftcover/pldoc/liftcover.html>`_
 
 Installation
 ============
@@ -34,8 +34,8 @@ Requirements
 -------------
 It uses the packs
 
- * `lbfgs <https://github.com/friguzzi/lbfgs>`_
- * `auc <https://github.com/friguzzi/auc>`_
+* `lbfgs <https://github.com/friguzzi/lbfgs>`_
+* `auc <https://github.com/friguzzi/auc>`_
  
 They are installed automatically when installing pack `liftcover` or can be installed manually as follows ::
 
@@ -411,6 +411,29 @@ For example `bongard.pl <http://cplint.eu/e/lift/bongard.pl>`__, you can perform
 
 A program can also be tested on a test set with :code:`test_lift/7`  as described below.
 
+Helper Predicates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+::
+
+  sort_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
+
+The predicate sorts :code:`RulesIn` according to the probability of the rules. ::
+  
+	filter_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules,+Min_prob) is det
+
+The predicate removes the rules with a probability below or equal to :code:`Min_prob`. ::
+
+  filter_rules(:RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
+
+The predicate removes the rules with a probability below or equal to the :code:`min_prob` parmeter. ::
+
+  remove_zero(+RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
+
+The predicate removes the rules with a probability of 0.0.
+
+
+
+
 
 Testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -457,36 +480,36 @@ and read with commands of the form ::
 
 * hyper-parameters
 
-    - :code:`parameter_learning`: (values: :code:`{em,em_python,gd,gd_python,lbfgs}`, default value: :code:`em`) parameter learning algorithm
-    - :code:`processor`: (values: :code:`{cpu,gpu}`, default value: :code:`cpu`) which processor Python will use for parameter learning
-    - :code:`regularization`: (values: :code:`{no,l1,l2,bayes}`, default value: :code:`l1`) type of regularization
-    - :code:`gamma` (values: real number, default value: :code:`10`): regularization coefficient for L1 and L2
-    - :code:`ab` (values: list of two real numbers, default value: :code:`[0,10]`): values of a and b for bayesian regularization 
-    - :code:`eta` (values: real number, default value: :code:`0.01`): eta parameter in gradient descent (the parameters are updated as par=par+eta*gradient)
-    - :code:`max_initial_weight` (values: real number , default value: 0.5): weights in lbfgs and gd are randomly initialized with values in the interval [-max_initial_weight, max_initial_weight].
-    - :code:`min_probability` (values: real number in :code:`[0,1]`, default value: :code:`1e-5`):  probability threshold under which a clause is dropped out.
-    - :code:`eps` (values: real, default value: 0.0001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than :code:`eps`, then parameter learning stops.
-    - :code:`eps_f` (values: real, default value: 0.00001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than :code:`eps_f*(-current log likelihood)`, then LIFTCOVER stops.
-    - :code:`random_restarts_number` (values: integer, default value: 1): number of random restarts of parameter learning algorithms 
-    - :code:`random_restarts_number_str_learn` (values: integer, default value: 1): number of random restarts during structure learning for learning the parameter of single clauses
-    - :code:`iter` (values: integer, default value: -1): maximum number of parameter learning iterations (-1 means not limits)
-    - :code:`max_iter` (values: integer, default value: :code:`10`): iterations of clause search.
-    - :code:`beamsize` (values: integer, default value: 100): size of the beam in the search for clauses
-    - :code:`neg_ex` (values: :code:`given`, :code:`cw`, default value: :code:`cw`): if set to :code:`given`, the negative examples in training and testing are taken from the test folds interpretations, i.e., those examples :code:`ex` stored as :code:`neg(ex)`; if set to :code:`cw`, the negative examples in training and testing are generated according to the closed world assumption, i.e., all atoms for target predicates that are not positive examples. The set of all atoms is obtained by collecting the set of constants for each type of the arguments of the target predicate, so the target predicates must have at least one fact for :code:`modeh/2` or :code:`modeb/2` also for parameter learning.
-    - :code:`specialization`: (values: :code:`{bottom,mode}`, default value: :code:`bottom`) specialization mode.
-    - :code:`megaex_bottom` (values: integer, default value: 1, valid for SLEAHP): number of mega-examples on which to build the bottom clauses.
-    - :code:`initial_clauses_per_megaex` (values: integer, default value: 1, valid for SLEAHP): number of bottom clauses to build for each mega-example (or model or interpretation).
-    - :code:`d` (values: integer, default value: 1, valid for SLEAHP): number of saturation steps when building the bottom clause.
-    - :code:`max_var` (values: integer, default value: 4): maximum number of distinct variables in a clause
-    - :code:`maxdepth_var` (values: integer, default value: 2): maximum depth of variables in clauses (as defined in :cite:`DBLP:journals/ai/Cohen95`).
-    - :code:`max_body_length` (values: integer, default value: 100): maximum number of literals in the body of clauses
-    - :code:`max_clauses` (values: integer, default value: 1000): maximum number of clauses in the theory
-    - :code:`neg_literals` (values: :code:`{true,false}`, default value: :code:`false`): whether to consider negative literals when building the bottom clause
-    - :code:`minus_infinity`: (values: real, default value: -1.0e20) minus infinity
-    - :code:`logzero` (values: negative real, default value :math:`\log(0.000001)`): value assigned to :math:`\log(0)`.
-    - :code:`zero` (values: real, default value :math:`0.000001`): value assigned to :math:`0`.
-    - :code:`seed` (values: seed(integer) or seed(random), default value :code:`seed(3032)`): seed for the Prolog random functions, see `SWI-Prolog manual <http://www.swi-prolog.org/pldoc/man?predicate=set_random/1>`__ .
-    - :code:`verbosity` (values: integer in :code:`[1,4]`, default value: :code:`1`): level of verbosity of the algorithms.
+- :code:`parameter_learning`: (values: :code:`{em,em_python,gd,gd_python,lbfgs}`, default value: :code:`em`) parameter learning algorithm
+- :code:`processor`: (values: :code:`{cpu,gpu}`, default value: :code:`cpu`) which processor Python will use for parameter learning
+- :code:`regularization`: (values: :code:`{no,l1,l2,bayes}`, default value: :code:`l1`) type of regularization
+- :code:`gamma` (values: real number, default value: :code:`10`): regularization coefficient for L1 and L2
+- :code:`ab` (values: list of two real numbers, default value: :code:`[0,10]`): values of a and b for bayesian regularization 
+- :code:`eta` (values: real number, default value: :code:`0.01`): eta parameter in gradient descent (the parameters are updated as par=par+eta*gradient)
+- :code:`max_initial_weight` (values: real number , default value: 0.5): weights in lbfgs and gd are randomly initialized with values in the interval [-max_initial_weight, max_initial_weight].
+- :code:`min_probability` (values: real number in :code:`[0,1]`, default value: :code:`1e-5`):  probability threshold under which a clause is dropped out.
+- :code:`eps` (values: real, default value: 0.0001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than :code:`eps`, then parameter learning stops.
+- :code:`eps_f` (values: real, default value: 0.00001): if the difference in the log likelihood in two successive parameter learning iterations is smaller than :code:`eps_f*(-current log likelihood)`, then LIFTCOVER stops.
+- :code:`random_restarts_number` (values: integer, default value: 1): number of random restarts of parameter learning algorithms 
+- :code:`random_restarts_number_str_learn` (values: integer, default value: 1): number of random restarts during structure learning for learning the parameter of single clauses
+- :code:`iter` (values: integer, default value: -1): maximum number of parameter learning iterations (-1 means not limits)
+- :code:`max_iter` (values: integer, default value: :code:`10`): iterations of clause search.
+- :code:`beamsize` (values: integer, default value: 100): size of the beam in the search for clauses
+- :code:`neg_ex` (values: :code:`given`, :code:`cw`, default value: :code:`cw`): if set to :code:`given`, the negative examples in training and testing are taken from the test folds interpretations, i.e., those examples :code:`ex` stored as :code:`neg(ex)`; if set to :code:`cw`, the negative examples in training and testing are generated according to the closed world assumption, i.e., all atoms for target predicates that are not positive examples. The set of all atoms is obtained by collecting the set of constants for each type of the arguments of the target predicate, so the target predicates must have at least one fact for :code:`modeh/2` or :code:`modeb/2` also for parameter learning.
+- :code:`specialization`: (values: :code:`{bottom,mode}`, default value: :code:`bottom`) specialization mode.
+- :code:`megaex_bottom` (values: integer, default value: 1, valid for SLEAHP): number of mega-examples on which to build the bottom clauses.
+- :code:`initial_clauses_per_megaex` (values: integer, default value: 1, valid for SLEAHP): number of bottom clauses to build for each mega-example (or model or interpretation).
+- :code:`d` (values: integer, default value: 1, valid for SLEAHP): number of saturation steps when building the bottom clause.
+- :code:`max_var` (values: integer, default value: 4): maximum number of distinct variables in a clause
+- :code:`maxdepth_var` (values: integer, default value: 2): maximum depth of variables in clauses (as defined in :cite:`DBLP:journals/ai/Cohen95`).
+- :code:`max_body_length` (values: integer, default value: 100): maximum number of literals in the body of clauses
+- :code:`max_clauses` (values: integer, default value: 1000): maximum number of clauses in the theory
+- :code:`neg_literals` (values: :code:`{true,false}`, default value: :code:`false`): whether to consider negative literals when building the bottom clause
+- :code:`minus_infinity`: (values: real, default value: -1.0e20) minus infinity
+- :code:`logzero` (values: negative real, default value :math:`\log(0.000001)`): value assigned to :math:`\log(0)`.
+- :code:`zero` (values: real, default value :math:`0.000001`): value assigned to :math:`0`.
+- :code:`seed` (values: seed(integer) or seed(random), default value :code:`seed(3032)`): seed for the Prolog random functions, see `SWI-Prolog manual <http://www.swi-prolog.org/pldoc/man?predicate=set_random/1>`__ .
+- :code:`verbosity` (values: integer in :code:`[1,4]`, default value: :code:`1`): level of verbosity of the algorithms.
 
 
 

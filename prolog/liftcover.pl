@@ -23,6 +23,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :-module(liftcover,[set_lift/2,setting_lift/2,
   induce_lift/2,induce_par_lift/2,test_lift/7,
   filter_rules/2,filter_rules/3,sort_rules/2,
+  remove_zero/2,
   op(500,fx,#),op(500,fx,'-#'),
   test_prob_lift/6]).
 :-use_module(library(auc)).
@@ -219,7 +220,6 @@ induce_rules(M:Folds,R):-
  *
  * The predicate sorts RulesIn according to the probability of the rules
  */
-
 sort_rules(R0,R):-
   rules2terms(P0,R0),
   sort_rules_int(P0,P),
@@ -266,8 +266,7 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   Mod:local_setting(random_restarts_number,RR),
   learn_param_int(MI,MIN,NumCL,Mod,RR,Par,Score),
   update_theory(LC,Par,Program1),
-  maplist(remove_zero,Program1,Program2),
-  append(Program2,R),
+  remove_zero(Program1,R),
   format2(Mod,"Best target theory~n~n",[]),
   write_rules2(Mod,R,user_output).
 
@@ -514,10 +513,9 @@ induce_parameters(M:Folds,R):-
   ).
 
 /**
- * filter_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
+ * filter_rules(:RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
  *
- * The predicate removes from RulesIn the rules with a probability
- * below the min_prob parmeter
+ * The predicate removes the rules with a probability below or equal to the =min_prob= parmeter.
  */
 filter_rules(M:R0,R):-
   M:local_setting(min_probability,Min_prob),
@@ -527,22 +525,33 @@ filter_rules(M:R0,R):-
 /**
  * filter_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules,+Min_prob) is det
  *
- * The predicate removes from RulesIn the rules with a probability
- * below Min_prob
+ * The predicate removes from the rules with a probability below or equal to =Min_prob=.
  */
-
 filter_rules(R0,R,Min_prob):-
-  rules2terms(R0At,R0),
-  remove_clauses(R0At,Min_prob,RAt,_Num),
-  rules2terms(RAt,R).
- 
+  (R0=[(_ :- -)|_]->
+    rules2terms(R0At,R0),
+    remove_clauses(R0At,Min_prob,RAt,_Num),
+    rules2terms(RAt,R)
+  ;
+    remove_clauses(R0,Min_prob,R,_Num)  
+  ).
+
+/**
+ * remove_zero(+RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
+ *
+ * The predicate removes the rules with a probability of 0.0.
+ */
+remove_zero(R0,R1):-
+  filter_rules(R0,R1,0.0).
+
+
 remove_clauses(Rules,Prob,RulesOut,Num):-
   remove_clauses_loop(Rules,Prob,0,Num,[],RulesOut).
 
-remove_clauses_loop([],_,Num,Num,Rules,Rules):-!.
+remove_clauses_loop([],_,Num,Num,Rules,Rules).
 remove_clauses_loop([Rule|Rest],Prob,NumCur,Num,RulesCur,RulesOut):-
   Rule=rule(_N,[_Head:Par|_],_,_),
-  Par < Prob,!,
+  Par =< Prob,!,
   NumCur1 is NumCur+1,
   remove_clauses_loop(Rest, Prob, NumCur1,Num,RulesCur, RulesOut).
 
@@ -586,8 +595,7 @@ learn_param(Program0,M,Pos,Neg,RR,Program,LL,MI,MIN):-
   format4(M,'Updating parameters~n',[]),
   learn_param_int(MI,MIN,N,M,RR,Par,LL),
   update_theory(Program0,Par,Program1),
-  maplist(remove_zero,Program1,Program2),
-  append(Program2,Program).
+  remove_zero(Program1,Program).
 
 learn_param_int(MI,MIN,N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,em),!,
@@ -993,13 +1001,6 @@ llm(LogZero,Pi,MI,LL0,LL):-
   ).
 
 eta0(MIN,[MIN,0]).
-
-
-remove_zero(rule(_Name,[_H:P,_],_B,_L),[]):-
-    local_setting(zero,Zero),
-    P=:=Zero,!.
-
-remove_zero(R,[R]).
 
 
 update_theory([],_N,[]):-!.
@@ -3329,6 +3330,7 @@ sandbox:safe_meta(liftcover:filter_rules(_,_), []).
 :- multifile sandbox:safe_primitive/1.
 sandbox:safe_primitive(liftcover:filter_rules(_,_,_), []).
 sandbox:safe_primitive(liftcover:sort_rules(_,_,_), []).
+sandbox:safe_primitive(liftcover:remove_zero(_,_), []).
 
 
 

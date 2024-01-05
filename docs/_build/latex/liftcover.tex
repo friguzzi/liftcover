@@ -60,7 +60,7 @@
 
 
 \title{LIFTCOVER Documentation}
-\date{Jan 03, 2024}
+\date{Jan 05, 2024}
 \release{1.0.0}
 \author{Fabrizio Riguzzi}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -654,6 +654,37 @@ For example \sphinxhref{http://cplint.eu/e/lift/bongard.pl}{bongard.pl}, you can
 A program can also be tested on a test set with \sphinxcode{\sphinxupquote{test\_lift/7}}  as described below.
 
 
+\subsection{Helper Predicates}
+\label{\detokenize{index:helper-predicates}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{sort\PYGZus{}rules}\PYG{p}{(}\PYG{o}{+}\PYG{n}{RulesIn}\PYG{p}{:}\PYG{n}{list\PYGZus{}of\PYGZus{}rules}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{RulesOut}\PYG{p}{:}\PYG{n}{list\PYGZus{}of\PYGZus{}rules}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{det}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+The predicate sorts \sphinxcode{\sphinxupquote{RulesIn}} according to the probability of the rules.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{filter\PYGZus{}rules}\PYG{p}{(}\PYG{o}{+}\PYG{n}{RulesIn}\PYG{p}{:}\PYG{n}{list\PYGZus{}of\PYGZus{}rules}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{RulesOut}\PYG{p}{:}\PYG{n}{list\PYGZus{}of\PYGZus{}rules}\PYG{p}{,}\PYG{o}{+}\PYG{n}{Min\PYGZus{}prob}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{det}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+The predicate removes the rules with a probability below or equal to \sphinxcode{\sphinxupquote{Min\_prob}}.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{filter\PYGZus{}rules}\PYG{p}{(}\PYG{p}{:}\PYG{n}{RulesIn}\PYG{p}{:}\PYG{n}{list\PYGZus{}of\PYGZus{}rules}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{RulesOut}\PYG{p}{:}\PYG{n}{list\PYGZus{}of\PYGZus{}rules}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{det}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+The predicate removes the rules with a probability below or equal to the \sphinxcode{\sphinxupquote{min\_prob}} parmeter.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{remove\PYGZus{}zero}\PYG{p}{(}\PYG{o}{+}\PYG{n}{RulesIn}\PYG{p}{:}\PYG{n}{list\PYGZus{}of\PYGZus{}rules}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{RulesOut}\PYG{p}{:}\PYG{n}{list\PYGZus{}of\PYGZus{}rules}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{det}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+The predicate removes the rules with a probability of 0.0.
+
+
 \subsection{Testing}
 \label{\detokenize{index:testing}}
 \sphinxAtStartPar
@@ -725,6 +756,8 @@ and read with commands of the form
 \item {} 
 \sphinxAtStartPar
 hyper\sphinxhyphen{}parameters
+
+\end{itemize}
 \begin{itemize}
 \item {} 
 \sphinxAtStartPar
@@ -848,8 +881,6 @@ hyper\sphinxhyphen{}parameters
 
 \end{itemize}
 
-\end{itemize}
-
 
 \chapter{Example Files}
 \label{\detokenize{index:example-files}}
@@ -869,6 +900,9 @@ A PDF version of the manual is available at \sphinxurl{https://friguzzi.github.i
 \sphinxAtStartPar
 phil follows the MIT License that you can find in phil root folder.
 The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.
+
+\sphinxAtStartPar
+
 
 \begin{sphinxthebibliography}{DRVL95}
 \bibitem[Coh95]{index:id23}
