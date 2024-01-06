@@ -112,6 +112,7 @@ default_setting_lift(parameter_update,fixed_learning_rate). % values: fixed_lear
 default_setting_lift(eta,0.01). % fixed learning rate
 default_setting_lift(adam_params,[0.001,0.9,0.999,1e-8]). % default Adam hyper-pameters
 default_setting_lift(processor,cpu). % where to run em_python and gd_python: cpu or gpu
+default_setting_lift(threads,1). % number of threads to use in parameter learning
 
 /**
  * induce_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
@@ -588,14 +589,54 @@ learn_param([],M,_,_,_,[],MInf,[],[]):-!,
 learn_param(Program0,M,Pos,Neg,RR,Program,LL,MI,MIN):-
   generate_clauses(Program0,M,0,[],Pr1),
   length(Program0,N),
-  gen_initial_counts(N,MIN0),
   format4(M,'Computing clause statistics~n',[]),
-  test_theory_neg_prob(Neg,M,Pr1,MIN0,MIN),
-  test_theory_pos_prob(Pos,M,Pr1,N,MI),
+  gen_initial_counts(N,MIN0),
+  clauses_statistics(Pr1,N,M,Pos,Neg,MIN0,MI,MIN),
   format4(M,'Updating parameters~n',[]),
   learn_param_int(MI,MIN,N,M,RR,Par,LL),
   update_theory(Program0,Par,Program1),
   remove_zero(Program1,Program).
+
+
+clauses_statistics(Pr,N,M,Pos,Neg,MIN0,MI,MIN):-
+  M:local_setting(threads,Th),
+  (Th=1->
+    test_theory_neg_prob(Neg,M,Pr,MIN0,MIN),
+    test_theory_pos_prob(Pos,M,Pr,N,MI)
+  ;
+    (Th=cpu ->
+      current_prolog_flag(cpu_count,Chunks)
+    ;
+      Chunks is Th
+    ),
+    chunks(Pos,Chunks,PosC),
+    chunks(Neg,Chunks,NegC),
+    concurrent_maplist(test_theory_neg_prob_conc(Pr,M,MIN0),NegC,MINC),
+    concurrent_maplist(test_theory_pos_prob_conc(Pr,M,N),PosC,MIC),
+    append(MIC,MI),
+    transpose(MINC,MINT),
+    maplist(sum_list,MINT,MIN)
+  ).
+
+test_theory_neg_prob_conc(Pr,M,MIN0,Neg,MIN):-
+  test_theory_neg_prob(Neg,M,Pr,MIN0,MIN).
+
+test_theory_pos_prob_conc(Pr,M,N,Pos,MI):-
+  test_theory_pos_prob(Pos,M,Pr,N,MI).
+
+chunks(L,N,Chunks):-
+  length(L,Len),
+  LenChunks is ceiling(Len/N),
+  split_list(L,N,LenChunks,Chunks).
+
+split_list(L,1,_,[L]):-!.
+
+split_list(L0,N,NL,[H|L]):-
+  N>1,
+  N1 is N-1,
+  length(H,NL),
+  append(H,T,L0),
+  split_list(T,N1,NL,L).
 
 learn_param_int(MI,MIN,N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,em),!,

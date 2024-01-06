@@ -254,6 +254,20 @@ test(induce_par_bongard):-
   '\nAUCPR =', 0.5997247517658881],St1),
   writeln(St1).
 
+test(induce_conc_par_bongard):-
+  set_lift(verbosity,1),
+  set_lift(threads,2),
+  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-219.68079672612654,
+  '\nAUCROC =',0.7501277139208173,
+  '\nAUCPR =', 0.5997247517658881],St1),
+  writeln(St1).
+
 test(induce_par_lbfgs_bongard):-
   set_lift(verbosity,4),
   set_lift(parameter_learning,lbfgs),

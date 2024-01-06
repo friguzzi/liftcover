@@ -60,7 +60,7 @@
 
 
 \title{LIFTCOVER Documentation}
-\date{Jan 05, 2024}
+\date{Jan 06, 2024}
 \release{1.0.0}
 \author{Fabrizio Riguzzi}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -878,6 +878,10 @@ hyper\sphinxhyphen{}parameters
 \item {} 
 \sphinxAtStartPar
 \sphinxcode{\sphinxupquote{verbosity}} (values: integer in \sphinxcode{\sphinxupquote{{[}1,4{]}}}, default value: \sphinxcode{\sphinxupquote{1}}): level of verbosity of the algorithms.
+
+\item {} 
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{threads}} (values: integer or \sphinxcode{\sphinxupquote{cpu}}, default value: \sphinxcode{\sphinxupquote{1}}): number of threads to use for computing clause statistics in parameter learning. If \sphinxcode{\sphinxupquote{cpu}}, the number of threads is equal to the number of cores of the machine.
 
 \end{itemize}
 
