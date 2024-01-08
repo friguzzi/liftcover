@@ -287,52 +287,6 @@ remove_score([],[]).
 remove_score([(H,_S)|T],[H|T1]):-
   remove_score(T,T1).
 
-cycle_structure([],_Mod,R,S,_SP,_Pos,_Neg,R,S,_I):-!.  %empty beam
-
-cycle_structure(_CL,_Mod,R,S,_SP,_Pos,_Neg,R,S,0):-!.  %0 iterations
-
-cycle_structure([(RH,_CLL)|RT],Mod,R0,S0,SP0,Pos,Neg,R,S,M):-
-  already_scored([RH|R0],R3,Mod,Score),!,
-  format2(Mod,"Theory iteration ~d~n~n",[M]),
-  write3(Mod,'Already scored, updated refinement\n'),
-  write_rules3(Mod,R3,user_output),
-  write3(Mod,'Score '),write3(Mod,Score),write3(Mod,'\n\n\n'),
-  (Score>S0->
-    R4=R3,
-    S4=Score,
-    SP1=S0
-  ;
-    R4=R0,
-    S4=S0,
-    SP1=SP0
-  ),
-  M1 is M-1,
-  cycle_structure(RT,Mod,R4,S4,SP1,Pos,Neg,R,S,M1).
-
-cycle_structure([(RH,_Score)|RT],Mod,R0,S0,SP0,Pos,Neg,R,S,M):-
-  format2(Mod,"Theory iteration ~d~n~n",[M]),
-  format3(Mod,"Initial theory~n~n",[]),
-  write_rules3(Mod,[RH|R0],user_output),
-  Mod:local_setting(random_restarts_number_str_learn,RR),
-  learn_param([RH|R0],Mod,Pos,Neg,RR,R3,Score,_MI,_MIN),
-  format3(Mod,"Score after parameter learning = ~f~n",[Score]),
-  write3(Mod,'Updated Theory\n'),
-  write_rules3(Mod,R3,user_output),   %definite rules without probabilities in the head are not written
-  (Score>S0->
-    R4=R3,
-    S4=Score,
-    SP1=S0,
-    write3(Mod,'New best score\n')
-  ;
-    R4=R0,
-    S4=S0,
-    SP1=SP0
-  ),
-  store_refinement([RH|R0],R3,Mod,Score),
-  M1 is M-1,
-  cycle_structure(RT,Mod,R4,S4,SP1,Pos,Neg,R,S,M1).
-
-
 init_gd_par(0,_Max,[]):-!.
 
 init_gd_par(I,Max,[W|TW]):-
@@ -501,7 +455,8 @@ induce_parameters(M:Folds,R):-
   statistics(walltime,[_,_]),
   find_ex(DB,M,Pos,Neg,_NPos,_NNeg),
   M:local_setting(random_restarts_number_str_learn,RR),
-  learn_param(R0,M,Pos,Neg,RR,R1,Score,_MI,_MIN),
+  M:local_setting(threads,Th),
+  learn_param(R0,M,Pos,Neg,RR,Th,R1,Score,_MI,_MIN),
   sort_rules_int(R1,R),
   statistics(walltime,[_,CT]),
   CTS is CT/1000,
@@ -584,23 +539,22 @@ test_theory_pos_prob([Ex|Rest],M,Th,N,[MI|LMI]):-
   test_clause_prob(Th,M,[Ex],MI0,MI),
   test_theory_pos_prob(Rest,M,Th,N,LMI).
 
-learn_param([],M,_,_,_,[],MInf,[],[]):-!,
+learn_param([],M,_,_,_,_,[],MInf,[],[]):-!,
   M:local_setting(minus_infinity,MInf).
 
-learn_param(Program0,M,Pos,Neg,RR,Program,LL,MI,MIN):-
+learn_param(Program0,M,Pos,Neg,RR,Th,Program,LL,MI,MIN):-
   generate_clauses(Program0,M,0,[],Pr1),
   length(Program0,N),
   format4(M,'Computing clause statistics~n',[]),
   gen_initial_counts(N,MIN0),
-  clauses_statistics(Pr1,N,M,Pos,Neg,MIN0,MI,MIN),
+  clauses_statistics(Pr1,N,M,Pos,Neg,MIN0,MI,MIN,Th),
   format4(M,'Updating parameters~n',[]),
   learn_param_int(MI,MIN,N,M,RR,Par,LL),
   update_theory(Program0,Par,Program1),
   remove_zero(Program1,Program).
 
 
-clauses_statistics(Pr,N,M,Pos,Neg,MIN0,MI,MIN):-
-  M:local_setting(threads,Th),
+clauses_statistics(Pr,N,M,Pos,Neg,MIN0,MI,MIN,Th):-
   (Th=1->
     test_theory_neg_prob(Neg,M,Pr,MIN0,MIN),
     test_theory_pos_prob(Pos,M,Pr,N,MI)
@@ -1106,7 +1060,7 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL):-
   format3(M,'Score ref.  ~d of ~d~n',[Nrev,NRef]),
   write_rules3(M,[R1],user_output),
   M:local_setting(random_restarts_number_str_learn,NR),
-  learn_param([R1],M,Pos,Neg,NR,NewR,Score,MI,MIN),
+  learn_param([R1],M,Pos,Neg,NR,1,NewR,Score,MI,MIN),
   write3(M,'Updated refinement\n'),
   write_rules3(M,NewR,user_output),
   write3(M,'Score (CLL) '),write3(M,Score),write3(M,'\n\n\n'),
