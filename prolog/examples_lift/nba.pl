@@ -33,7 +33,7 @@ fold(f4,[19,20,21,22,23,24]).
 fold(f5,[27,28,29,30,25,26]).
 
 
-output(game/5).    % game(GameId,Team1Id,Team2Id,ResultOfTeam1,URL,Date).
+output(game/3).    % game(GameId,Team1Id,Team2Id,ResultOfTeam1,URL,Date).
 input(actions/21). % actions(GameId,TeamId,PlayerId,...
 input(player/2).   % player(PlayerId,PlayerName).
 input(team/2).     % team(TeamId,TeamName).
@@ -41,7 +41,8 @@ input(team/2).     % team(TeamId,TeamName).
 %modeh(1,win1).
 
 
-modeh(1,game(+teamId,+teamId,-#resulteam1,+url,+date)).
+modeh(1,game(+teamId,+teamId,-#resulteam1)).
+%modeh(1,game(+teamId,+teamId,-#resulteam1,+url,+date)).
 
 %------- nessun istanziato --------%
 %modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
@@ -188,9 +189,9 @@ modeb(3,player(+playerId,-#pname)).
 modeb(3,team(+teamId,-#tname)).
 
 
-determination(game/5,actions/21).
-determination(game/5,player/2).
-determination(game/5,team/2).
+determination(game/3,actions/21).
+determination(game/3,player/2).
+determination(game/3,team/2).
 
 
 
@@ -237,7 +238,12 @@ determination(game/5,team/2).
 % Game information
 %%
 % predicate: game(GameId,Team1Id,Team2Id,ResultOfTeam1,URL,Date).
+game(M,T1,T2,Res):-
+  game(M,T1,T2,Res,_,_).
 
+neg(game(M,T1,T2,Res)):-
+    neg(game(M,T1,T2,Res,_,_)).
+  
 game(1,7,8,1,"http://www.nba.com/games/20140331/NYKUTA/gameinfo.html","2014-03-31 00:00:00").
 game(2,9,10,1,"http://www.nba.com/games/20140331/MEMDEN/gameinfo.html","2014-03-31 00:00:00").
 game(3,11,12,1,"http://www.nba.com/games/20140331/SACNOP/gameinfo.html","2014-03-31 00:00:00").
