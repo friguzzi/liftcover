@@ -112,7 +112,7 @@ default_setting_lift(parameter_update,fixed_learning_rate). % values: fixed_lear
 default_setting_lift(eta,0.01). % fixed learning rate
 default_setting_lift(adam_params,[0.001,0.9,0.999,1e-8]). % default Adam hyper-pameters
 default_setting_lift(processor,cpu). % where to run em_python and gd_python: cpu or gpu
-default_setting_lift(threads,1). % number of threads to use in parameter learning
+default_setting_lift(threads,1). % number of threads to use in scoring clause refinements and parameter learning
 
 /**
  * induce_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
@@ -581,7 +581,7 @@ test_theory_pos_prob_conc(Pr,M,N,Pos,MI):-
 
 chunks(L,N,Chunks):-
   length(L,Len),
-  LenChunks is ceiling(Len/N),
+  LenChunks is floor(Len/N),
   split_list(L,N,LenChunks,Chunks).
 
 split_list(L,1,_,[L]):-!.
@@ -1041,23 +1041,51 @@ cycle_clauses([c(_ScoreH,RH,_)|T],M,Pos,Neg,NB0,NB,CL0,CL):-
   findall(RS,specialize_rule(RH,M,RS,_L),LR),!,   %-LR:list of lists, each one correponding to a different revised theory; specialize_rule defined in revise.pl
   length(LR,NR),
   write3(M,'Number of revisions '),write3(M,NR),write3(M,'\n'),
-  score_clause_refinements(LR,M,1,NR,Pos,Neg,NB0,NB1,CL0,CL1),
+  score_clause_refinements(LR,M,Pos,Neg,NB0,NB1,CL0,CL1),
   cycle_clauses(T,M,Pos,Neg,NB1,NB,CL1,CL).
 
-score_clause_refinements([],_M,_N,_NR,_Pos,_Neg,NB,NB,CL,CL).
 
-score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL):-  %scans the list of revised theories
+score_clause_refinements(LR,M,Pos,Neg,NB0,NB,CL0,CL):-  %scans the list of revised theories
+  M:local_setting(threads,Th),
+  (Th=1->
+     score_clause_refinements_int(M,1,Pos,Neg,LR,NB1,CL1),
+     list_to_ord_set(NB1,NB1OS),
+     ord_union(NB1OS,NB0,NB),
+     list_to_ord_set(CL1,CL1OS),
+     ord_union(CL1OS,CL0,CL)
+  ;
+    (Th=cpu ->
+      current_prolog_flag(cpu_count,Chunks)
+    ;
+      Chunks is Th
+    ),
+    chunks(LR,Chunks,LRC),
+    concurrent_maplist(score_clause_refinements_int(M,1,Pos,Neg),LRC,NBs,CLs),
+    merge_ordsets(NBs,NB0,NB),
+    merge_ordsets(CLs,CL0,CL)
+  ).
+
+merge_ordsets([],OS,OS).
+
+merge_ordsets([H|T],OS0,OS):-
+  list_to_ord_set(H,HOS),
+  ord_union(HOS,OS0,OS1),
+  merge_ordsets(T,OS1,OS).
+
+
+score_clause_refinements_int(_M,_N,_Pos,_Neg,[],[],[]):-!.
+
+score_clause_refinements_int(M,Nrev,Pos,Neg,[R1|T],[c(Score,R3,_)|NB],CL):-  %scans the list of revised theories
   already_scored_clause(R1,R3,M,Score),!,
-  format3(M,'Score ref.  ~d of ~d~n',[Nrev,NRef]),
+  format3(M,'Score ref.  ~d~n',[Nrev]),
   write3(M,'Already scored, updated refinement\n'),
   write_rules3(M,[R3],user_output),
   write3(M,'Score '),write3(M,Score),write3(M,'\n\n\n'),
-  ord_add_element(NB0,c(Score,R3,_), NB1),
   Nrev1 is Nrev+1,
-  score_clause_refinements(T,M,Nrev1,NRef,Pos,Neg,NB1,NB,CL0,CL).
+  score_clause_refinements_int(M,Nrev1,Pos,Neg,T,NB,CL).
 
-score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL):-
-  format3(M,'Score ref.  ~d of ~d~n',[Nrev,NRef]),
+score_clause_refinements_int(M,Nrev,Pos,Neg,[R1|T],NB,CL):-
+  format3(M,'Score ref.  ~d~n',[Nrev]),
   write_rules3(M,[R1],user_output),
   M:local_setting(random_restarts_number_str_learn,NR),
   learn_param([R1],M,Pos,Neg,NR,1,NewR,Score,MI,MIN),
@@ -1065,21 +1093,21 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL):-
   write_rules3(M,NewR,user_output),
   write3(M,'Score (CLL) '),write3(M,Score),write3(M,'\n\n\n'),
   (NewR=[R3]->
-    ord_add_element(NB0,c(Score,R3,_), NB1),
+    NB=[c(Score,R3,_)|NB0],
     (range_restricted(R3)->
-      ord_add_element(CL0,c(Score,R3,[MI,MIN]), CL1)
+      CL=[c(Score,R3,[MI,MIN])|CL0]
     ;
-      CL1=CL0
+      CL=CL0
     ),
     format2(M,"Added a target clauses~n",[]),
     store_clause_refinement(R1,R3,M,Score),
     Nrev1 is Nrev+1
   ;
-    NB1=NB0,
-    CL1=CL0,
+    NB=NB0,
+    CL=CL0,
     Nrev1=Nrev+1
   ),
-  score_clause_refinements(T,M,Nrev1,NRef,Pos,Neg,NB1,NB,CL1,CL).
+  score_clause_refinements_int(M,Nrev1,Pos,Neg,T,NB0,CL0).
 
 range_restricted(rule(_N,HL,BL,_Lit)):-
   term_variables(HL,VH),

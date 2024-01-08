@@ -112,6 +112,20 @@ test(induce_mondial):-
   '\nAUCPR =', 0.8568357523414214],St1),
   writeln(St1).
 
+test(induce_conc_mondial):-
+  set_lift(verbosity,0),
+  set_lift(threads,2),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n', 
+  '\nLL =', -27.553592935066412,
+  '\nAUCROC =',0.7250000000000001,
+  '\nAUCPR =', 0.8568357523414214],St1),
+  writeln(St1).
+
 :- end_tests(mondial).
 
 :- begin_tests(muta, []).

@@ -510,7 +510,7 @@ and read with commands of the form ::
 - :code:`zero` (values: real, default value :math:`0.000001`): value assigned to :math:`0`.
 - :code:`seed` (values: seed(integer) or seed(random), default value :code:`seed(3032)`): seed for the Prolog random functions, see `SWI-Prolog manual <http://www.swi-prolog.org/pldoc/man?predicate=set_random/1>`__ .
 - :code:`verbosity` (values: integer in :code:`[1,4]`, default value: :code:`1`): level of verbosity of the algorithms.
-- :code:`threads` (values: integer or :code:`cpu`, default value: :code:`1`): number of threads to use for computing clause statistics in parameter learning. If :code:`cpu`, the number of threads is equal to the number of cores of the machine.
+- :code:`threads` (values: integer or :code:`cpu`, default value: :code:`1`): number of threads to use for computing clause statistics in scoring clause refinements and parameter learning. If :code:`cpu`, the number of threads is equal to the number of cores of the machine.
 
 
 
