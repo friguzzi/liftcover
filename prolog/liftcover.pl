@@ -31,7 +31,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :-use_module(library(random)).
 :-use_module(library(system)).
 :-use_module(library(terms)).
-:-use_module(library(rbtrees)).
+:-use_module(library(ordsets)).
 :-use_module(library(apply)).
 :-use_module(library(clpfd), [transpose/2]).
 :-absolute_file_name(library(lbfgs),F,[solutions(all)]),atomic_concat(F,'.pl',Fpl),exists_file(Fpl),use_module(library(lbfgs));true.
@@ -194,7 +194,6 @@ induce_rules(M:Folds,R):-
   (M:local_setting(specialization,bottom)->
     M:local_setting(megaex_bottom,MB),
     deduct(MB,M,DB,[],InitialTheory),
-    length(InitialTheory,_LI),
     remove_duplicates(InitialTheory,R1)
   ;
     get_head_atoms(O,M),
@@ -257,7 +256,9 @@ to_dyn(M,P/A):-
 learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rule(NR,[h],[b]],...], -R:final theory of the same form, -CLL
   format2(Mod,"Clause search~n~n",[]),
   Mod:local_setting(max_iter,M),
-  cycle_beam(Beam,Mod,Pos,Neg,[],CL,[],_BG,M),
+  Mod:local_setting(beamsize,BS),
+  Mod:local_setting(max_clauses,MC),
+  cycle_beam(Beam,Mod,Pos,Neg,[],CL,0,M,BS,MC),
   maplist(get_cl,CL,LC,MIC,MINC),
   maplist(append,MIC,MIC1),
   transpose(MIC1,MI),
@@ -271,7 +272,7 @@ learn_struct(Pos,Neg,Mod,Beam,R,Score):-  %+Beam:initial theory of the form [rul
   format2(Mod,"Best target theory~n~n",[]),
   write_rules2(Mod,R,user_output).
 
-get_cl([C,_,MI,MIN],C,MI,MIN).
+get_cl(c(_,C,[MI,MIN]),C,MI,MIN).
 
 pick_first(0,_,[]):-!.
 
@@ -640,7 +641,7 @@ split_list(L0,N,NL,[H|L]):-
 
 learn_param_int(MI,MIN,N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,em),!,
-  random_restarts(NR,M,-1e20,LL,N,initial,Par,MI,MIN),
+  random_restarts(0,NR,M,-1e20,LL,N,initial,Par,MI,MIN),
   format3(M,"Final LL ~f~n",[LL]).
 
 learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
@@ -659,7 +660,7 @@ learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
 
 learn_param_int(MI,MIN,N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,gd),!,
-  random_restarts_gd(NR,M,-1e20,PLL,N,initial,ParR,MI,MIN),  %computes new parameters Par
+  random_restarts_gd(0,NR,M,-1e20,PLL,N,initial,ParR,MI,MIN),  %computes new parameters Par
   maplist(logistic,ParR,Par),
   LL is -PLL,
   format3(M,"Final LL ~f~n",[LL]).
@@ -716,32 +717,29 @@ new_pars_lbfgs(Env,M,N,NMax,[P|Rest1]):-
     new_pars_lbfgs(Env,M,N1,NMax,Rest1).
 
 
-random_restarts(0,_M,Score,Score,_N,Par,Par,_MI,_MIN):-!.
+random_restarts(N,N,_M,Score,Score,_N,Par,Par,_MI,_MIN):-!.
 
-random_restarts(N,M,Score0,Score,NR,Par0,Par,MI,MIN):-
-  M:local_setting(random_restarts_number,NMax),
-  Num is NMax-N+1,
-  format3(M,"Restart number ~d~n~n",[Num]),
+random_restarts(N,NMax,M,Score0,Score,NR,Par0,Par,MI,MIN):-
+  N1 is N+1,
+  format3(M,"Restart number ~d~n~n",[N1]),
   length(Par1,NR),
   maplist(random,Par1),
   M:local_setting(eps,EA),
   M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
-  em_quick(EA,ER,0,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
+  em(EA,ER,0,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR),
   format3(M,"Random_restart: Score ~f~n",[ScoreR]),
-  N1 is N-1,
   (ScoreR>Score0->
-    random_restarts(N1,M,ScoreR,Score,NR,ParR,Par,MI,MIN)
+    random_restarts(N1,NMax,M,ScoreR,Score,NR,ParR,Par,MI,MIN)
   ;
-    random_restarts(N1,M,Score0,Score,NR,Par0,Par,MI,MIN)
+    random_restarts(N1,NMax,M,Score0,Score,NR,Par0,Par,MI,MIN)
   ).
 
-random_restarts_gd(0,_M,Score,Score,_N,Par,Par,_MI,_MIN):-!.
+random_restarts_gd(N,N,_M,Score,Score,_N,Par,Par,_MI,_MIN):-!.
 
-random_restarts_gd(N,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
-  M:local_setting(random_restarts_number,NMax),
-  Num is NMax-N+1,
-  format3(M,"Restart number ~d~n~n",[Num]),
+random_restarts_gd(N,NMax,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
+  N1 is N+1,
+  format3(M,"Restart number ~d~n~n",[N1]),
   M:local_setting(max_initial_weight,Max),
   init_gd_par(NR,Max,Par1),
   evaluate_L_gd(M,MIN,MI,Par1,L),
@@ -758,8 +756,7 @@ random_restarts_gd(N,M,_Score0,Score,NR,_Par0,Par,MI,MIN):-
     gd(EA,ER,0,Iter,M,NR,Par1,-1e20,MI,MIN,ParR,ScoreR)
   ),
   format3(M,"GD Random_restart: Score ~f~n",[ScoreR]),
-  N1 is N-1,
-  random_restarts_gd(N1,M,ScoreR,Score,NR,ParR,Par,MI,MIN).
+  random_restarts_gd(N1,NMax,M,ScoreR,Score,NR,ParR,Par,MI,MIN).
 
 
 gd(_EA,_ER,MaxIter,MaxIter,_M,_NR,Par,Score,_MI,_MIP,Par,Score):-!.
@@ -767,8 +764,8 @@ gd(_EA,_ER,MaxIter,MaxIter,_M,_NR,Par,Score,_MI,_MIP,Par,Score):-!.
 gd(EA,ER,Iter0,MaxIter,M,NR,Par0,Score0,MI,MIP,Par,Score):-
   compute_gradient_gd(MIP,MI,M,Par0,G,LL),
   Score1 is -LL,
-  format4(M,"GD Iteration ~d LL ~f~n",[Iter0,Score1]),
   Iter is Iter0+1,
+  format4(M,"GD Iteration ~d LL ~f~n",[Iter,Score1]),
   Diff is Score1-Score0,
   Fract is -Score1*ER,
   (( Diff<EA;Diff<Fract)->
@@ -795,8 +792,8 @@ gd_adam(_EA,_ER,Iter,Iter,_M,_NR,Par,_M0,_M1,Score,_MI,_MIP,Par,Score):-!.
 gd_adam(EA,ER,Iter0,MaxIter,M,NR,Par0,M00,M10,Score0,MI,MIP,Par,Score):-
   compute_gradient_gd(MIP,MI,M,Par0,G,LL),
   Score1 is -LL,
-  format4(M,"Iteration ~d LL ~f~n",[Iter0,Score1]),
   Iter is Iter0+1,
+  format4(M,"Iteration ~d LL ~f~n",[Iter,Score1]),
   Diff is Score1-Score0,
   Fract is -Score1*ER,
   (( Diff<EA;Diff<Fract)->
@@ -916,21 +913,21 @@ compute_sum_neg_gd([HMI|TMI],M,[HLN|TLN],I,S0,S):-
   compute_sum_neg_gd(TMI,M,TLN,I,S1,S).
 
 
-em_quick(_EA,_ER,MaxIter,MaxIter,_M,_NR,Par,Score,_MI,_MIN,Par,Score):-!.
+em(_EA,_ER,MaxIter,MaxIter,_M,_NR,Par,Score,_MI,_MIN,Par,Score):-!.
 
-em_quick(EA,ER,Iter0,MaxIter,M,NR,Par0,Score0,MI,MIN,Par,Score):-
+em(EA,ER,Iter0,MaxIter,M,NR,Par0,Score0,MI,MIN,Par,Score):-
   length(Eta0,NR),
   expectation_quick(Par0,M,MI,MIN,Eta0,Eta,Score1),
-  format4(M,"Iteration ~d LL ~f~n",[Iter0,Score1]),
-  maximization_quick(Eta,M,Par1),
   Iter is Iter0+1,
+  format4(M,"Iteration ~d LL ~f~n",[Iter,Score1]),
+  maximization_quick(Eta,M,Par1),
   Diff is Score1-Score0,
   Fract is -Score1*ER,
   (( Diff<EA;Diff<Fract)->
     Score=Score1,
     Par=Par1
   ;
-    em_quick(EA,ER,Iter,MaxIter,M,NR,Par1,Score1,MI,MIN,Par,Score)
+    em(EA,ER,Iter,MaxIter,M,NR,Par1,Score1,MI,MIN,Par,Score)
   ).
 
 expectation_quick(Par,M,MI,MIN,Eta0,Eta,Score):-
@@ -1052,22 +1049,36 @@ update_theory([rule(Name,[H:_,_],B,L)|Rest],[P|T],[rule(Name,[H:P,'':PN],B,L)|Re
 
 
 
-cycle_beam([],_Mod,_Pos,_Neg,CL,CL,CLBG,CLBG,_M):-!.
+cycle_beam([],_Mod,_Pos,_Neg,CL,CL,_M0,_M,_BS,_MC):-!.
 
-cycle_beam(_Beam,_Mod,_Pos,_Neg,CL,CL,CLBG,CLBG,0):-!.
+cycle_beam(_Beam,_Mod,_Pos,_Neg,CL,CL,M,M,_BS,_MC):-!.
 
-cycle_beam(Beam,Mod,Pos,Neg,CL0,CL,CLBG0,CLBG,M):-
-  format2(Mod,"Clause iteration ~d~n~n",[M]),
+cycle_beam(Beam,Mod,Pos,Neg,CL0,CL,M0,M,BS,MC):-
+  M1 is M0+1,%decreases the number of max_iter M
+  format2(Mod,"Clause iteration ~d~n~n",[M1]),
   /*write('\n\ncurrent beam\n\n'),
   write(Beam),
   write('\n\n'),*/
-  cycle_clauses(Beam,Mod,Pos,Neg,[],NB,CL0,CL1,CLBG0,CLBG1),
-  M1 is M-1,%decreases the number of max_iter M
-  cycle_beam(NB,Mod,Pos,Neg,CL1,CL,CLBG1,CLBG,M1).
+  cycle_clauses(Beam,Mod,Pos,Neg,[],NB0,CL0,CL1),
+  (length(NB,BS),append(NB,_,NB0)->
+    true
+  ;
+   NB=NB0 
+  ),
+  (MC=:= inf ->
+    CL2=CL1
+  ;
+    (length(CL2,MC),append(CL2,_,CL1)->
+      true
+    ;
+      CL2=CL1
+    )
+  ),
+  cycle_beam(NB,Mod,Pos,Neg,CL2,CL,M1,M,BS,MC).
 
-cycle_clauses([],_M,_Pos,_Neg,NB,NB,CL,CL,CLBG,CLBG):-!.
+cycle_clauses([],_M,_Pos,_Neg,NB,NB,CL,CL):-!.
 
-cycle_clauses([[RH,_ScoreH]|T],M,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
+cycle_clauses([c(_ScoreH,RH,_)|T],M,Pos,Neg,NB0,NB,CL0,CL):-
 %  write3('\n\nRevising clause\n'),
 %  write_rules3([RH],user_output),
 %  RH=rule(_,H,B,Lits),
@@ -1076,23 +1087,22 @@ cycle_clauses([[RH,_ScoreH]|T],M,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
   findall(RS,specialize_rule(RH,M,RS,_L),LR),!,   %-LR:list of lists, each one correponding to a different revised theory; specialize_rule defined in revise.pl
   length(LR,NR),
   write3(M,'Number of revisions '),write3(M,NR),write3(M,'\n'),
-  score_clause_refinements(LR,M,1,NR,Pos,Neg,NB0,NB1,CL0,CL1,CLBG0,CLBG1),
-  cycle_clauses(T,M,Pos,Neg,NB1,NB,CL1,CL,CLBG1,CLBG).
+  score_clause_refinements(LR,M,1,NR,Pos,Neg,NB0,NB1,CL0,CL1),
+  cycle_clauses(T,M,Pos,Neg,NB1,NB,CL1,CL).
 
-score_clause_refinements([],_M,_N,_NR,_Pos,_Neg,NB,NB,CL,CL,CLBG,CLBG).
+score_clause_refinements([],_M,_N,_NR,_Pos,_Neg,NB,NB,CL,CL).
 
-score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-  %scans the list of revised theories
+score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL):-  %scans the list of revised theories
   already_scored_clause(R1,R3,M,Score),!,
   format3(M,'Score ref.  ~d of ~d~n',[Nrev,NRef]),
   write3(M,'Already scored, updated refinement\n'),
   write_rules3(M,[R3],user_output),
   write3(M,'Score '),write3(M,Score),write3(M,'\n\n\n'),
-  M:local_setting(beamsize,BS),
-  insert_in_order(NB0,[R3,Score],BS,NB1),
+  ord_add_element(NB0,c(Score,R3,_), NB1),
   Nrev1 is Nrev+1,
-  score_clause_refinements(T,M,Nrev1,NRef,Pos,Neg,NB1,NB,CL0,CL,CLBG0,CLBG).
+  score_clause_refinements(T,M,Nrev1,NRef,Pos,Neg,NB1,NB,CL0,CL).
 
-score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
+score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL):-
   format3(M,'Score ref.  ~d of ~d~n',[Nrev,NRef]),
   write_rules3(M,[R1],user_output),
   M:local_setting(random_restarts_number_str_learn,NR),
@@ -1101,16 +1111,13 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
   write_rules3(M,NewR,user_output),
   write3(M,'Score (CLL) '),write3(M,Score),write3(M,'\n\n\n'),
   (NewR=[R3]->
-    M:local_setting(beamsize,BS),
-    M:local_setting(max_clauses,MC),
-    insert_in_order(NB0,[R3,Score],BS,NB1),
+    ord_add_element(NB0,c(Score,R3,_), NB1),
     (range_restricted(R3)->
-      insert_in_order(CL0,[R3,Score,MI,MIN],MC,CL1)
+      ord_add_element(CL0,c(Score,R3,[MI,MIN]), CL1)
     ;
       CL1=CL0
     ),
-    length(CL1,LCL1),
-    format2(M,"N. of target clauses ~d~n~n",[LCL1]),
+    format2(M,"Added a target clauses~n",[]),
     store_clause_refinement(R1,R3,M,Score),
     Nrev1 is Nrev+1
   ;
@@ -1118,8 +1125,7 @@ score_clause_refinements([R1|T],M,Nrev,NRef,Pos,Neg,NB0,NB,CL0,CL,CLBG0,CLBG):-
     CL1=CL0,
     Nrev1=Nrev+1
   ),
-  CLBG1=CLBG0,  
-  score_clause_refinements(T,M,Nrev1,NRef,Pos,Neg,NB1,NB,CL1,CL,CLBG1,CLBG).
+  score_clause_refinements(T,M,Nrev1,NRef,Pos,Neg,NB1,NB,CL1,CL).
 
 range_restricted(rule(_N,HL,BL,_Lit)):-
   term_variables(HL,VH),
@@ -1547,7 +1553,7 @@ generate_body([(A,H)|T],Mod,Out):-
     numbervars((HeadV,BodyListV),0,_V),
     format2(Mod,"Clause~n~q:0.5 :-~n",[HeadV]),
     write_body2(Mod,user_output,BodyListV),
-    Out=[[rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20]|CL0]
+    Out=[c(-inf, rule(R,[Head:0.5,'':0.5],[],BodyList),_)|CL0]
   ;
     format2(Mod,"No range restricted bottom clause~n~n",[]),
     Out=CL0
