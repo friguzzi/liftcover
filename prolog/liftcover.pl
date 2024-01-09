@@ -559,10 +559,11 @@ clauses_statistics(Pr,N,M,Pos,Neg,MIN0,MI,MIN,Th):-
     test_theory_neg_prob(Neg,M,Pr,MIN0,MIN),
     test_theory_pos_prob(Pos,M,Pr,N,MI)
   ;
-    (Th=cpu ->
-      current_prolog_flag(cpu_count,Chunks)
+    current_prolog_flag(cpu_count,Cores),
+    ((Th=cpu;Th>Cores)->
+      Chunks = Cores
     ;
-      Chunks is Th
+      Chunks = Th
     ),
     chunks(Pos,Chunks,PosC),
     chunks(Neg,Chunks,NegC),
@@ -1054,8 +1055,9 @@ score_clause_refinements(LR,M,Pos,Neg,NB0,NB,CL0,CL):-  %scans the list of revis
      list_to_ord_set(CL1,CL1OS),
      ord_union(CL1OS,CL0,CL)
   ;
-    (Th=cpu ->
-      current_prolog_flag(cpu_count,Chunks)
+    current_prolog_flag(cpu_count,Cores),
+    ((Th=cpu;Th>Cores)->
+      Chunks = Cores
     ;
       Chunks is Th
     ),
