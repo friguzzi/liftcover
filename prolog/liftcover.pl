@@ -582,7 +582,7 @@ test_theory_pos_prob_conc(Pr,M,N,Pos,MI):-
 
 chunks(L,N,Chunks):-
   length(L,Len),
-  LenChunks is floor(Len/N),
+  LenChunks is round(Len/N),
   split_list(L,N,LenChunks,Chunks).
 
 split_list(L,1,_,[L]):-!.
