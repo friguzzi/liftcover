@@ -33,6 +33,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :-use_module(library(terms)).
 :-use_module(library(ordsets)).
 :-use_module(library(apply)).
+:-use_module(library(settings)).
 :-use_module(library(clpfd), [transpose/2]).
 :-absolute_file_name(library(lbfgs),F,[solutions(all)]),atomic_concat(F,'.pl',Fpl),exists_file(Fpl),use_module(library(lbfgs));true.
 %:-use_foreign_library(foreign(bddem),install).
@@ -62,7 +63,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 
 
-
+:- setting(max_threads, integer, 256,
+    'Maximum number of threads to use in scoring clause refinements and parameter learning').
 
 
 
@@ -455,7 +457,7 @@ induce_parameters(M:Folds,R):-
   statistics(walltime,[_,_]),
   find_ex(DB,M,Pos,Neg,_NPos,_NNeg),
   M:local_setting(random_restarts_number_str_learn,RR),
-  M:local_setting(threads,Th),
+  number_of_threads(M,Th),
   learn_param(R0,M,Pos,Neg,RR,Th,R1,Score,_MI,_MIN),
   sort_rules_int(R1,R),
   statistics(walltime,[_,CT]),
@@ -468,6 +470,17 @@ induce_parameters(M:Folds,R):-
   ;
     true
   ).
+
+number_of_threads(M,Th):-
+  M:local_setting(threads,Th0),
+  current_prolog_flag(cpu_count,Cores),
+  ((Th0=cpu;Th0>Cores)->
+    Th1 = Cores
+  ;
+    Th1 = Th0
+  ),
+  setting(max_threads,ThMax),
+  Th is min(Th1,ThMax).
 
 /**
  * filter_rules(:RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
@@ -1047,7 +1060,7 @@ cycle_clauses([c(_ScoreH,RH,_)|T],M,Pos,Neg,NB0,NB,CL0,CL):-
 
 
 score_clause_refinements(LR,M,Pos,Neg,NB0,NB,CL0,CL):-  %scans the list of revised theories
-  M:local_setting(threads,Th),
+  number_of_threads(M,Th),
   (Th=1->
      score_clause_refinements_int(M,1,Pos,Neg,LR,NB1,CL1),
      list_to_ord_set(NB1,NB1OS),
@@ -1055,13 +1068,7 @@ score_clause_refinements(LR,M,Pos,Neg,NB0,NB,CL0,CL):-  %scans the list of revis
      list_to_ord_set(CL1,CL1OS),
      ord_union(CL1OS,CL0,CL)
   ;
-    current_prolog_flag(cpu_count,Cores),
-    ((Th=cpu;Th>Cores)->
-      Chunks = Cores
-    ;
-      Chunks is Th
-    ),
-    chunks(LR,Chunks,LRC),
+    chunks(LR,Th,LRC),
     concurrent_maplist(score_clause_refinements_int(M,1,Pos,Neg),LRC,NBs,CLs),
     merge_ordsets(NBs,NB0,NB),
     merge_ordsets(CLs,CL0,CL)
