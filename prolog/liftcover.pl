@@ -25,7 +25,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   filter_rules/2,filter_rules/3,sort_rules/2,
   remove_zero/2,
   op(500,fx,#),op(500,fx,'-#'),
-  test_prob_lift/6]).
+  test_prob_lift/6,prob_lift/2,prob_lift/3]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
 :-use_module(library(random)).
@@ -56,6 +56,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 :- meta_predicate test_lift(:,+,-,-,-,-,-).
 :- meta_predicate test_prob_lift(:,+,-,-,-,-).
+:- meta_predicate prob_lift(:,-).
+:- meta_predicate prob_lift(:,+,-).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
 :- meta_predicate filter_rules(:,-).
@@ -117,7 +119,7 @@ default_setting_lift(processor,cpu). % where to run em_python and gd_python: cpu
 default_setting_lift(threads,1). % number of threads to use in scoring clause refinements and parameter learning
 
 /**
- * induce_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
+ * induce_lift(:TrainFolds:list_of_atoms,-P:probabilistic_program) is det
  *
  * The predicate performs structure learning using the folds indicated in
  * TrainFolds for training.
@@ -127,7 +129,7 @@ induce_lift(TrainFolds,P):-
   induce_rules(TrainFolds,P0),
   rules2terms(P0,P).
 /**
- * test_lift(+P:probabilistic_program,+TestFolds:list_of_atoms,-LL:float,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
+ * test_lift(:P:probabilistic_program,+TestFolds:list_of_atoms,-LL:float,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
  *
  * The predicate takes as input in P a probabilistic program,
  * tests P on the folds indicated in TestFolds and returns the
@@ -141,7 +143,7 @@ test_lift(P,TestFolds,LL,AUCROC,ROC,AUCPR,PR):-
   compute_areas_diagrams(LG,AUCROC,ROC,AUCPR,PR).
 
 /**
- * test_prob_lift(+P:probabilistic_program,+TestFolds:list_of_atoms,-NPos:int,-NNeg:int,-LL:float,-Results:list) is det
+ * test_prob_lift(:P:probabilistic_program,+TestFolds:list_of_atoms,-NPos:int,-NNeg:int,-LL:float,-Results:list) is det
  *
  * The predicate takes as input in P a probabilistic program,
  * tests P on the folds indicated in TestFolds and returns
@@ -427,7 +429,7 @@ load_python_module(M):-
 load_python_module(_).
 
 /**
- * induce_par_lift(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
+ * induce_par_lift(:TrainFolds:list_of_atoms,-P:probabilistic_program) is det
  *
  * The predicate learns the parameters of the program stored in the in/1 fact
  * of the input file using the folds indicated in TrainFolds for training.
@@ -2597,7 +2599,7 @@ or_list1([H|T],Env,B0,B1):-
 */
 
 /**
- * set_lift(+Parameter:atom,+Value:term) is det
+ * set_lift(:Parameter:atom,+Value:term) is det
  *
  * The predicate sets the value of a parameter
  * For a list of parameters see
@@ -2608,7 +2610,7 @@ set_lift(M:Parameter,Value):-
   assert(M:local_setting(Parameter,Value)).
 
 /**
- * setting_lift(+Parameter:atom,-Value:term) is det
+ * setting_lift(:Parameter:atom,-Value:term) is det
  *
  * The predicate returns the value of a parameter
  * For a list of parameters see
@@ -3004,6 +3006,58 @@ neg_ex([H|T],[HT|TT],M,At1,C):-
   member(H,Co),
   neg_ex(T,TT,M,At1,C).
 
+/**
+ * prob_lift(:At:atom,-P:float) is multi
+ *
+ * The predicate computes the probability of atom =At= given by the
+ * input program. The first argument of =At= should be the model name.
+ * If =At= contains variables, the predicate returns
+ * all the instantiaions of =At= with their probabilities in backtracking.
+ */
+prob_lift(M:H,P):-
+  M:in(R00),
+  prob_lift(M:H,R00,P).
+
+/**
+ * prob_lift(:At:atom,+Program:probabilistic_program,-P:float) is multi
+ *
+ * The predicate computes the probability of atom =At= given by =Program=.
+ * The first argument of =At= should be the model name.
+ * If =At= contains variables, the predicate returns
+ * all the instantiaions of =At= with their probabilities in backtracking.
+ */
+prob_lift(M:H,R00,P):-
+  process_clauses(R00,M,R0),
+  generate_clauses(R0,M,0,[],Prog),
+  theory_counts(Prog,M,H,MI),
+  compute_prob_ex(Prog,MI,1,PG0),
+  P is 1-PG0.
+
+theory_counts([],_M,_H,[]).
+
+theory_counts([(H,B,_V,_P)|Rest],M,E,[MI|RestMI]):-
+  test_rule(H,B,M,E,MI),
+  theory_counts(Rest,M,E,RestMI).
+
+test_rule(H,B,M,E,N):-
+  copy_term((E,H,B),(E1,H1,B1)),
+  ((H1=E1,M:B1)->
+    term_variables(B,Vars),
+    term_variables(H,V),
+    subtract_eq(Vars,V,VB),
+    aggregate(count,VB^(H=E,M:B),N)
+  ;
+    N=0
+  ).
+
+subtract_eq([], _, R) =>
+  R = [].
+subtract_eq([E|T], D, R) =>
+  (   member_eq(E, D)
+  ->  subtract_eq(T, D, R)
+  ;   R = [E|R1],
+      subtract_eq(T, D, R1)
+  ).
 
 
 compute_prob_ex_neg(Prog,M,H,PG- (\+ H)):-
@@ -3359,6 +3413,8 @@ sandbox:safe_meta(liftcover:induce_par_lift(_,_) ,[]).
 sandbox:safe_meta(liftcover:induce_lift(_,_), []).
 sandbox:safe_meta(liftcover:test_prob_lift(_,_,_,_,_,_), []).
 sandbox:safe_meta(liftcover:test_lift(_,_,_,_,_,_,_), []).
+sandbox:safe_meta(liftcover:prob_lift(_,_), []).
+sandbox:safe_meta(liftcover:prob_lift(_,_,_), []).
 sandbox:safe_meta(liftcover:set_lift(_,_), []).
 sandbox:safe_meta(liftcover:setting_lift(_,_), []).
 sandbox:safe_meta(liftcover:filter_rules(_,_), []).

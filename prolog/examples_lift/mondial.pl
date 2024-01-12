@@ -35,7 +35,21 @@ Machine Learning, 100(1):127-156, July 2015
 :- set_lift(max_var,5).
 :- set_lift(verbosity,1).
 bg([]).
-in([]).
+in([
+(christian_religion(A):0.409107 :-
+  encompasses(A,B,C),
+  B='Australia/Oceania'),
+(christian_religion(A):0.000464718 :-
+  borders(B,A,C),
+  encompasses(A,D,E),
+  D='Europe',
+  encompasses(B,D,E)),
+(christian_religion(A):0.0205494 :-
+  isMember(A,B,C),
+  encompasses(A,D,E),
+  D='Europe',
+  C=member)
+  ]).
 
 fold(f1,[f1]).
 fold(f2,[f2]).

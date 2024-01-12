@@ -468,6 +468,32 @@ In SWISH, by including ::
 
 in the code before :code:`:- lift.` the curves will be shown as graphs using C3.js and the output program will be pretty printed.
 
+Predicates ::
+
+  prob_lift(:At:atom,-P:float) is multi
+  prob_lift(:At:atom,+Program:probabilistic_program,-P:float) is multi
+
+compute the probability of atom :code:`At` given by the 
+input program the first and by :code:`Program` the latter. 
+The first argument of :code:`At` should be the model name.
+If :code:`At` contains variables, the predicate returns
+all the instantiaions of :code:`At=` with their probabilities in backtracking.
+
+For example ::
+
+	?- prob_lift(pos(2),P).
+
+or ::
+
+	?- prob_lift(christian_religion(f1,C),P).
+	C = 'AMSA',
+	P = 0.409107 ;
+	C = 'AUS',
+	P = 0.409107
+	...
+
+
+
 Hyper-parameters for Learning
 -----------------------------
 Hyper-parameters are set with commands of the form ::

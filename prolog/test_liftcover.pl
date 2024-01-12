@@ -99,6 +99,10 @@ test(induce_par_gd_carc):-
 :-ensure_loaded(library(examples_lift/mondial)).
 :-use_module(library(cplint_test/cplint_test)).
 
+test(prob_lift_mondial):-
+  prob_lift(christian_religion(f1,C),P),!,
+  C='AMSA',P=:=0.409107.
+
 test(induce_mondial):-
   set_lift(verbosity,0),
   induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),

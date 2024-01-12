@@ -60,7 +60,7 @@
 
 
 \title{LIFTCOVER Documentation}
-\date{Jan 08, 2024}
+\date{Jan 12, 2024}
 \release{1.0.0}
 \author{Fabrizio Riguzzi}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -735,6 +735,40 @@ In SWISH, by including
 
 \sphinxAtStartPar
 in the code before \sphinxcode{\sphinxupquote{:\sphinxhyphen{} lift.}} the curves will be shown as graphs using C3.js and the output program will be pretty printed.
+
+\sphinxAtStartPar
+Predicates
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{prob\PYGZus{}lift}\PYG{p}{(}\PYG{p}{:}\PYG{n}{At}\PYG{p}{:}\PYG{n}{atom}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{P}\PYG{p}{:}\PYG{n+nb}{float}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{multi}
+\PYG{n}{prob\PYGZus{}lift}\PYG{p}{(}\PYG{p}{:}\PYG{n}{At}\PYG{p}{:}\PYG{n}{atom}\PYG{p}{,}\PYG{o}{+}\PYG{n}{Program}\PYG{p}{:}\PYG{n}{probabilistic\PYGZus{}program}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{P}\PYG{p}{:}\PYG{n+nb}{float}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{multi}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+compute the probability of atom \sphinxcode{\sphinxupquote{At}} given by the
+input program the first and by \sphinxcode{\sphinxupquote{Program}} the latter.
+The first argument of \sphinxcode{\sphinxupquote{At}} should be the model name.
+If \sphinxcode{\sphinxupquote{At}} contains variables, the predicate returns
+all the instantiaions of \sphinxcode{\sphinxupquote{At=}} with their probabilities in backtracking.
+
+\sphinxAtStartPar
+For example
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+?\PYGZhy{} prob\PYGZus{}lift(pos(2),P).
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+or
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+?\PYGZhy{} prob\PYGZus{}lift(christian\PYGZus{}religion(f1,C),P).
+C = \PYGZsq{}AMSA\PYGZsq{},
+P = 0.409107 ;
+C = \PYGZsq{}AUS\PYGZsq{},
+P = 0.409107
+...
+\end{sphinxVerbatim}
 
 
 \section{Hyper\sphinxhyphen{}parameters for Learning}

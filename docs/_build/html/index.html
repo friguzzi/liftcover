@@ -456,6 +456,29 @@ test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 </pre></div>
 </div>
 <p>in the code before <code class="code docutils literal notranslate"><span class="pre">:-</span> <span class="pre">lift.</span></code> the curves will be shown as graphs using C3.js and the output program will be pretty printed.</p>
+<p>Predicates</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">prob_lift</span><span class="p">(:</span><span class="n">At</span><span class="p">:</span><span class="n">atom</span><span class="p">,</span><span class="o">-</span><span class="n">P</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span> <span class="ow">is</span> <span class="n">multi</span>
+<span class="n">prob_lift</span><span class="p">(:</span><span class="n">At</span><span class="p">:</span><span class="n">atom</span><span class="p">,</span><span class="o">+</span><span class="n">Program</span><span class="p">:</span><span class="n">probabilistic_program</span><span class="p">,</span><span class="o">-</span><span class="n">P</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span> <span class="ow">is</span> <span class="n">multi</span>
+</pre></div>
+</div>
+<p>compute the probability of atom <code class="code docutils literal notranslate"><span class="pre">At</span></code> given by the
+input program the first and by <code class="code docutils literal notranslate"><span class="pre">Program</span></code> the latter.
+The first argument of <code class="code docutils literal notranslate"><span class="pre">At</span></code> should be the model name.
+If <code class="code docutils literal notranslate"><span class="pre">At</span></code> contains variables, the predicate returns
+all the instantiaions of <code class="code docutils literal notranslate"><span class="pre">At=</span></code> with their probabilities in backtracking.</p>
+<p>For example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- prob_lift(pos(2),P).
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- prob_lift(christian_religion(f1,C),P).
+C = &#39;AMSA&#39;,
+P = 0.409107 ;
+C = &#39;AUS&#39;,
+P = 0.409107
+...
+</pre></div>
+</div>
 </section>
 </section>
 <section id="hyper-parameters-for-learning">
