@@ -1110,7 +1110,7 @@ score_clause_refinements_int(M,Nrev,Pos,Neg,[R1|T],NB,CL):-
     ;
       CL=CL0
     ),
-    format2(M,"Added a target clauses~n",[]),
+    format2(M,"Added a target clause~n",[]),
     store_clause_refinement(R1,R3,M,Score),
     Nrev1 is Nrev+1
   ;
