@@ -67,6 +67,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 :- setting(max_threads, integer, 256,
     'Maximum number of threads to use in scoring clause refinements and parameter learning').
+:- setting(allow_gpu, boolean, true,
+    'Whether the use of GPU is allowed').
 
 
 
@@ -422,11 +424,19 @@ load_python_module(M):-
   absolute_file_name(library('liftcover.pl'), F),
   file_directory_name(F,Dir),
   py_add_lib_dir(Dir),
-  M:local_setting(processor,Proc),
+  processor(M,Proc),
   M:local_setting(verbosity,Verb),
   py_call(liftcover:init(PL,Proc,Verb)).
 
 load_python_module(_).
+
+processor(M,Proc):-
+  M:local_setting(processor,Proc0),
+  (setting(allow_gpu,true)->
+    Proc=Proc0
+  ;
+    Proc = cpu
+  ).
 
 /**
  * induce_par_lift(:TrainFolds:list_of_atoms,-P:probabilistic_program) is det
@@ -624,7 +634,7 @@ learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
   M:local_setting(zero,Zero),
   M:local_setting(ab,[A,B]),
   M:local_setting(verbosity,Verb),
-  M:local_setting(processor,Device),
+  processor(M,Device),
   py_call(liftcover:random_restarts(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL)),
   format3(M,"Final LL ~f~n",[LL]).
 
@@ -647,7 +657,7 @@ learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
   M:local_setting(gamma,Gamma),
   M:local_setting(regularization,Reg),
   M:local_setting(zero,Zero),
-  M:local_setting(processor,Device),
+  processor(M,Device),
   py_call(liftcover:random_restarts_gd(MI,MIN,Device,NR,UpdateMethod,
     Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Zero,Verb),-(Par,LL)),
   format3(M,"Final LL ~f~n",[LL]).
