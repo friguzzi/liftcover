@@ -510,7 +510,7 @@ filter_rules(M:R0,R):-
  * The predicate removes from the rules with a probability below or equal to =Min_prob=.
  */
 filter_rules(R0,R,Min_prob):-
-  (R0=[(_ :- -)|_]->
+  (R0=[(_ :- _)|_]->
     rules2terms(R0At,R0),
     remove_clauses(R0At,Min_prob,RAt,_Num),
     rules2terms(RAt,R)
