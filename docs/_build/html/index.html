@@ -415,7 +415,7 @@ the parameter <code class="code docutils literal notranslate"><span class="pre">
 </pre></div>
 </div>
 <p>The predicate sorts <code class="code docutils literal notranslate"><span class="pre">RulesIn</span></code> according to the probability of the rules.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">filter_rules</span><span class="p">(</span><span class="o">+</span><span class="n">RulesIn</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">-</span><span class="n">RulesOut</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">+</span><span class="n">Min_prob</span><span class="p">)</span> <span class="ow">is</span> <span class="n">det</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">filter_rules</span><span class="p">(</span><span class="o">+</span><span class="n">RulesIn</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">-</span><span class="n">RulesOut</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">+</span><span class="n">Min_prob</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span> <span class="ow">is</span> <span class="n">det</span>
 </pre></div>
 </div>
 <p>The predicate removes the rules with a probability below or equal to <code class="code docutils literal notranslate"><span class="pre">Min_prob</span></code>.</p>

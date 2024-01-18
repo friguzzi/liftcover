@@ -419,7 +419,7 @@ Helper Predicates
 
 The predicate sorts :code:`RulesIn` according to the probability of the rules. ::
   
-	filter_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules,+Min_prob) is det
+	filter_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules,+Min_prob:float) is det
 
 The predicate removes the rules with a probability below or equal to :code:`Min_prob`. ::
 

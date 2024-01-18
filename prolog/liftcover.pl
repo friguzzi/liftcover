@@ -505,7 +505,7 @@ filter_rules(M:R0,R):-
 
 
 /**
- * filter_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules,+Min_prob) is det
+ * filter_rules(+RulesIn:list_of_rules,-RulesOut:list_of_rules,+Min_prob:float) is det
  *
  * The predicate removes from the rules with a probability below or equal to =Min_prob=.
  */
