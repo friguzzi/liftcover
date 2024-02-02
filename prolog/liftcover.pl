@@ -119,6 +119,7 @@ default_setting_lift(eta,0.01). % fixed learning rate
 default_setting_lift(adam_params,[0.001,0.9,0.999,1e-8]). % default Adam hyper-pameters
 default_setting_lift(processor,cpu). % where to run em_python and gd_python: cpu or gpu
 default_setting_lift(threads,1). % number of threads to use in scoring clause refinements and parameter learning
+default_setting_lift(single_var,false). %false:1 variable for every grounding of a rule; true: 1 variable for rule (even if a rule has more groundings),simpler.
 
 /**
  * induce_lift(:TrainFolds:list_of_atoms,-P:probabilistic_program) is det
@@ -542,7 +543,11 @@ remove_clauses_loop([Rule|Rest],Prob,NumCur,Num,RulesCur,[Rule|RulesOut]):-
 
 
 test_theory_neg_prob(Ex,M,Theory,MIP0,MIP):-
-  test_clause_prob(Theory,M,Ex,MIP0,MIP).
+  (M:local_setting(single_var,false)->
+    test_clause_prob(Theory,M,Ex,MIP0,MIP)
+  ;
+    test_clause_prob_sv(Theory,M,Ex,MIP0,MIP)
+  ).
 
 test_clause_prob([],_M,_Exs,MIP,MIP).
 
@@ -556,13 +561,42 @@ test_ex(_V,H,B,M,E,N):-
   findall(1,(H=E,M:B),L),
   length(L,N).
 
+test_clause_prob_sv([],_M,_Exs,MIP,MIP).
 
-test_theory_pos_prob([],_M,_Theory,_N,[]).
+test_clause_prob_sv([(H,B,V,_P)|Rest],M,Exs,[MIPH0|MIPT0],[MIPH|MIPT]):-
+  maplist(test_ex_sv(V,H,B,M),Exs,L),
+  sum_list(L,MIP),
+  MIPH is MIPH0+MIP,
+  test_clause_prob_sv(Rest,M,Exs,MIPT0,MIPT).
 
-test_theory_pos_prob([Ex|Rest],M,Th,N,[MI|LMI]):-
+
+test_ex_sv(_V,H,B,M,E,N):-
+  (\+ \+ (H=E,M:B)->
+    N=1
+  ;
+    N=0
+  ).  
+
+test_theory_pos_prob(Ex,M,Th,N,LMI):-
+  (M:local_setting(single_var,false)->
+    test_theory_pos_prob_mv(Ex,M,Th,N,LMI)
+  ;
+    test_theory_pos_prob_sv(Ex,M,Th,N,LMI)
+  ).
+
+test_theory_pos_prob_mv([],_M,_Theory,_N,[]).
+
+test_theory_pos_prob_mv([Ex|Rest],M,Th,N,[MI|LMI]):-
   gen_initial_counts(N,MI0),
   test_clause_prob(Th,M,[Ex],MI0,MI),
-  test_theory_pos_prob(Rest,M,Th,N,LMI).
+  test_theory_pos_prob_mv(Rest,M,Th,N,LMI).
+
+test_theory_pos_prob_sv([],_M,_Theory,_N,[]).
+
+test_theory_pos_prob_sv([Ex|Rest],M,Th,N,[MI|LMI]):-
+  gen_initial_counts(N,MI0),
+  test_clause_prob_sv(Th,M,[Ex],MI0,MI),
+  test_theory_pos_prob_sv(Rest,M,Th,N,LMI).
 
 learn_param([],M,_,_,_,_,[],MInf,[],[]):-!,
   M:local_setting(minus_infinity,MInf).

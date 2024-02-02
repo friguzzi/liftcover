@@ -272,6 +272,46 @@ test(induce_par_bongard):-
   '\nAUCPR =', 0.5997247517658881],St1),
   writeln(St1).
 
+test(induce_par_single_var_bongard):-
+  set_lift(verbosity,1),
+  set_lift(single_var,true),
+  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-219.68079672612654,
+  '\nAUCROC =',0.7501277139208173,
+  '\nAUCPR =', 0.5997247517658881],St1),
+  writeln(St1).
+
+test(induce_bongard):-
+  set_lift(verbosity,1),
+  induce_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-102.73759622946764,
+  '\nAUCROC =',0.7045977011494252,
+  '\nAUCPR =', 0.4424569868032866],St1),
+  writeln(St1).
+
+test(induce_single_var_bongard):-
+  set_lift(verbosity,1),
+  set_lift(single_var,true),
+  induce_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-219.68079672612654,
+  '\nAUCROC =',0.7501277139208173,
+  '\nAUCPR =', 0.5997247517658881],St1),
+  writeln(St1).
 test(induce_conc_par_bongard):-
   set_lift(verbosity,1),
   set_lift(threads,2),

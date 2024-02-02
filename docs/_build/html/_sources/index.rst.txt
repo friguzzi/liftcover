@@ -507,6 +507,7 @@ and read with commands of the form ::
 * hyper-parameters
 
 - :code:`parameter_learning`: (values: :code:`{em,em_python,gd,gd_python,lbfgs}`, default value: :code:`em`) parameter learning algorithm
+- :code:`single_var` (values: :code:`{true,false}`, default value: :code:`false`): if set to :code:`true`, there is a random variable for each clause, instead of a different random variable for each grounding of each clause
 - :code:`processor`: (values: :code:`{cpu,gpu}`, default value: :code:`cpu`) which processor Python will use for parameter learning
 - :code:`regularization`: (values: :code:`{no,l1,l2,bayes}`, default value: :code:`l1`) type of regularization
 - :code:`gamma` (values: real number, default value: :code:`10`): regularization coefficient for L1 and L2
