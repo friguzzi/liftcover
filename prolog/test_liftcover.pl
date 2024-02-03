@@ -284,7 +284,7 @@ test(prob_bongard):-
 test(prob_sv_bongard):-
   set_lift(single_var,true),
   prob_lift(pos(2),P),
-  P=:=0.19757500000000006.
+  P=:=0.19793513395697515.
 
 test(induce_par_bongard):-
   set_lift(verbosity,1),

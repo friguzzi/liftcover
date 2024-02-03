@@ -2455,7 +2455,8 @@ process_clauses([],_M,[]):-!.
 process_clauses([end_of_file],_M,[]):-!.
 
 process_clauses([H|T],M,[H1|T1]):-
-  term_expansion_int(H,M,(_,[H1])),
+  copy_term(H,H0),
+  term_expansion_int(H0,M,(_,[H1])),
   process_clauses(T,M,T1).
 
 
@@ -3104,14 +3105,14 @@ theory_counts([(H,B,_V,_P)|Rest],M,E,[MI|RestMI]):-
   test_rule(H,B,M,E,MI),
   theory_counts(Rest,M,E,RestMI).
 
-test_rule(H,B,M,E,N):-
+test_rule(H,B,M,H,N):-
   (M:(\+ B)->
     N=0
   ;
     term_variables(B,Vars),
     term_variables(H,V),
     subtract_eq(Vars,V,VB),
-    aggregate(count,VB^(H=E,M:B),N)
+    aggregate(count,VB^(M:B),N)
   ).
 
 
@@ -3121,14 +3122,16 @@ theory_counts_sv([(H,B,_V,_P)|Rest],M,E,[MI|RestMI]):-
   test_rule_sv(H,B,M,E,MI),
   theory_counts_sv(Rest,M,E,RestMI).
 
-test_rule_sv(E,B,M,E,N):-
+test_rule_sv(H,B,M,H,N):-
   (M:(\+ B)->
     N=0
   ;
-    M:B,
+    term_variables(B,Vars),
+    term_variables(H,V),
+    subtract_eq(Vars,V,VB),
+    aggregate(count,VB^(M:B),_),
     N=1
   ).
-
 
 subtract_eq([], _, R) =>
   R = [].
