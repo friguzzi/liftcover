@@ -571,10 +571,10 @@ test_clause_prob_sv([(H,B,V,_P)|Rest],M,Exs,[MIPH0|MIPT0],[MIPH|MIPT]):-
 
 
 test_ex_sv(_V,H,B,M,E,N):-
-  (\+ \+ (H=E,M:B)->
-    N=1
-  ;
+  (\+ (H=E,M:B)->
     N=0
+  ;
+    N=1
   ).  
 
 test_theory_pos_prob(Ex,M,Th,N,LMI):-
