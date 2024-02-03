@@ -2854,11 +2854,28 @@ test_no_area(TestSet,M,Prog,NPos,NNeg,LL,Results):-
 */
 test_folds(F,M,Prog,LG,NPos,NNeg,LL):-
   find_ex(F,M,Pos,Neg,NPos,NNeg),
-  maplist(compute_prob_ex_pos(Prog,M),Pos,LGP),
-  maplist(compute_prob_ex_neg(Prog,M),Neg,LGN),
-  append(LGP,LGN,LG0),
-  keysort(LG0,LG),
+  M:local_setting(threads,Th),
+  current_prolog_flag(cpu_count,Cores),
+  ((Th=cpu;Th>Cores)->
+    Chunks = Cores
+  ;
+    Chunks = Th
+  ),
+  chunks(Pos,Chunks,PosC),
+  chunks(Neg,Chunks,NegC),
+  concurrent_maplist(compute_prob_ex_pos_list(Prog,M),PosC,LGP),
+  append(LGP,LG0),
+  concurrent_maplist(compute_prob_ex_neg_list(Prog,M),NegC,LGN),
+  append(LGN,LG1),
+  append(LG0,LG1,LG2),
+  keysort(LG2,LG),
   foldl(ll(M),LG,0,LL).
+
+compute_prob_ex_pos_list(Prog,M,Pos,LGP):-
+  maplist(compute_prob_ex_pos(Prog,M),Pos,LGP).
+
+compute_prob_ex_neg_list(Prog,M,Neg,LGN):-
+  maplist(compute_prob_ex_neg(Prog,M),Neg,LGN).
 
 ll(M,P- (\+ _),LL0,LL):-!,
   (P=:=1.0->

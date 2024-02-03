@@ -47,6 +47,19 @@ atomic_list_concat(['Expected:\n',
 '\nAUCPR =', 0.4962773673721876],St1),
 writeln(St1).
 
+test(par_test_carc):-
+  set_lift(threads,2),
+  in(P),test_lift(P,[all],LL,AUCROC,_ROC,AUCPR,_PR),
+writeln('Result:'),
+writeln(P),
+atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+writeln(St),
+atomic_list_concat(['Expected:\n', 
+'\nLL =', -2501.635205175788,
+'\nAUCROC =',0.43950726692662173,
+'\nAUCPR =', 0.4962773673721876],St1),
+writeln(St1).
+
 test(sort_carc):-
   in(P),sort_rules(P,P1),
   subset(P,P1),
