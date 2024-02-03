@@ -113,8 +113,13 @@ test(induce_par_gd_carc):-
 :-use_module(library(cplint_test/cplint_test)).
 
 test(prob_lift_mondial):-
-  prob_lift(christian_religion(f1,C),P),!,
-  C='AMSA',P=:=0.409107.
+  prob_lift(christian_religion(f1,C),P),
+  C='AMSA',P=:=0.409107,!.
+
+test(prob_lift_sv_mondial):-
+  set_lift(single_var,true),
+  prob_lift(christian_religion(f1,C),P),
+  C='AMSA',P=:=0.409107,!.
 
 test(induce_mondial):-
   set_lift(verbosity,0),
@@ -271,6 +276,15 @@ atomic_list_concat(['Expected:\n',
 '\nAUCROC =',0.7626436781609195,
 '\nAUCPR =', 0.5615465293941269],St1),
 writeln(St1).
+
+test(prob_bongard):-
+  prob_lift(pos(2),P),
+  P=:=0.1986549170515436.
+
+test(prob_sv_bongard):-
+  set_lift(single_var,true),
+  prob_lift(pos(2),P),
+  P=:=0.19757500000000006.
 
 test(induce_par_bongard):-
   set_lift(verbosity,1),

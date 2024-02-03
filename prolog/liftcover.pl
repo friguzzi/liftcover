@@ -3090,7 +3090,11 @@ prob_lift(M:H,P):-
 prob_lift(M:H,R00,P):-
   process_clauses(R00,M,R0),
   generate_clauses(R0,M,0,[],Prog),
-  theory_counts(Prog,M,H,MI),
+  (M:local_setting(single_var,true)->
+    theory_counts_sv(Prog,M,H,MI)
+  ;
+    theory_counts(Prog,M,H,MI)
+  ),
   compute_prob_ex(Prog,MI,1,PG0),
   P is 1-PG0.
 
@@ -3101,15 +3105,30 @@ theory_counts([(H,B,_V,_P)|Rest],M,E,[MI|RestMI]):-
   theory_counts(Rest,M,E,RestMI).
 
 test_rule(H,B,M,E,N):-
-  copy_term((E,H,B),(E1,H1,B1)),
-  ((H1=E1,M:B1)->
+  (M:(\+ B)->
+    N=0
+  ;
     term_variables(B,Vars),
     term_variables(H,V),
     subtract_eq(Vars,V,VB),
     aggregate(count,VB^(H=E,M:B),N)
-  ;
-    N=0
   ).
+
+
+theory_counts_sv([],_M,_H,[]).
+
+theory_counts_sv([(H,B,_V,_P)|Rest],M,E,[MI|RestMI]):-
+  test_rule_sv(H,B,M,E,MI),
+  theory_counts_sv(Rest,M,E,RestMI).
+
+test_rule_sv(E,B,M,E,N):-
+  (M:(\+ B)->
+    N=0
+  ;
+    M:B,
+    N=1
+  ).
+
 
 subtract_eq([], _, R) =>
   R = [].
