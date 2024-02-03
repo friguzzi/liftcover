@@ -59,7 +59,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate test_prob_lift(:,+,-,-,-,-).
 :- meta_predicate prob_lift(:,-).
 :- meta_predicate prob_lift(:,+,-).
-:- meta_predicate(explain_lift(:,-)).
+:- meta_predicate explain_lift(:,-).
+:- meta_predicate explain_lift(:,+,_).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
 :- meta_predicate filter_rules(:,-).
