@@ -265,6 +265,13 @@ test(induce_nba_bayesian):-
 :-ensure_loaded(library(examples_lift/bongard)).
 :-use_module(library(cplint_test/cplint_test)).
 
+test(explain_bongard):-
+  explain_lift(pos(2),Expl),
+  Expl=[0.197575-(circle(2, o3), inside(2, o2, o3)), 
+  0.000448807-(triangle(2, o5), circle(2, o3)), 
+  0.000448807-(triangle(2, o2), circle(2, o3)), 
+  0.000448807-(triangle(2, o1), circle(2, o3))].
+
 test(in_bongard):-
   in(P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
 writeln('Result:'),

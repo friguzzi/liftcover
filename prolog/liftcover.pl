@@ -25,7 +25,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   filter_rules/2,filter_rules/3,sort_rules/2,
   remove_zero/2,
   op(500,fx,#),op(500,fx,'-#'),
-  test_prob_lift/6,prob_lift/2,prob_lift/3]).
+  test_prob_lift/6,prob_lift/2,prob_lift/3,
+  explain_lift/2,explain_lift/3]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
 :-use_module(library(random)).
@@ -58,6 +59,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate test_prob_lift(:,+,-,-,-,-).
 :- meta_predicate prob_lift(:,-).
 :- meta_predicate prob_lift(:,+,-).
+:- meta_predicate(explain_lift(:,-)).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
 :- meta_predicate filter_rules(:,-).
@@ -3068,6 +3070,35 @@ neg_ex([H|T],[HT|TT],M,At1,C):-
   member(H,Co),
   neg_ex(T,TT,M,At1,C).
 
+
+
+/**
+ * explain_lift(:At:atom,-Exp:list) is multi
+ *
+ * The predicate returns the explanation of atom =At= given by the
+ * input program. The first argument of =At= should be the model name.
+ * The explanation is a list of pairs =(P-Ex)= where =P= is the probability
+ * in the head of a rule =H:P:-B= and =Ex= is a true grounding of =B=.
+ */
+explain_lift(M:H,Expl):-
+  M:in(R00),
+  explain_lift(M:H,R00,Expl).
+
+/**
+ * explain_lift(:At:atom,+Program:probabilistic_program,-Exp:list) is multi
+ *
+ * The predicate returns the explanation of atom =At= given by =Program=.
+ */
+explain_lift(M:H,R00,Expl):-
+  process_clauses(R00,M,R0),
+  generate_clauses(R0,M,0,[],Prog),
+  maplist(explain_rule(M,H),Prog,Expls),
+  append(Expls,Expl).
+
+
+explain_rule(M,H,(H,B,_V,P),Expl):-
+  findall((P-B),M:B,Expl).
+
 /**
  * prob_lift(:At:atom,-P:float) is multi
  *
@@ -3498,6 +3529,8 @@ sandbox:safe_meta(liftcover:test_prob_lift(_,_,_,_,_,_), []).
 sandbox:safe_meta(liftcover:test_lift(_,_,_,_,_,_,_), []).
 sandbox:safe_meta(liftcover:prob_lift(_,_), []).
 sandbox:safe_meta(liftcover:prob_lift(_,_,_), []).
+sandbox:safe_meta(liftcover:explain_lift(_,_), []).
+sandbox:safe_meta(liftcover:explain_lift(_,_,_), []).
 sandbox:safe_meta(liftcover:set_lift(_,_), []).
 sandbox:safe_meta(liftcover:setting_lift(_,_), []).
 sandbox:safe_meta(liftcover:filter_rules(_,_), []).
