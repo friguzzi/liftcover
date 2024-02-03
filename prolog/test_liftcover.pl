@@ -121,6 +121,11 @@ test(prob_lift_sv_mondial):-
   prob_lift(christian_religion(f1,C),P),
   C='AMSA',P=:=0.409107,!.
 
+
+test(ranked_answers_mondial):-
+  ranked_answers(christian_religion(f1,C),C,E),
+  E=[-(0.409107,'XMAS'),-(0.409107,'WS'),-(0.409107,'WAFU'),-(0.409107,'VU'),-(0.409107,'TUV'),-(0.409107,'TO'),-(0.409107,'SLB'),-(0.409107,'RI'),-(0.409107,'REUN'),-(0.409107,'PNG'),-(0.409107,'PITC'),-(0.409107,'PAL'),-(0.409107,'NZ'),-(0.409107,'NORF'),-(0.409107,'NMIS'),-(0.409107,'NIUE'),-(0.409107,'NCA'),-(0.409107,'NAU'),-(0.409107,'MH'),-(0.409107,'KIR'),-(0.409107,'HELX'),-(0.409107,'GUAM'),-(0.409107,'FSM'),-(0.409107,'FPOL'),-(0.409107,'FJI'),-(0.409107,'COOK'),-(0.409107,'COCO'),-(0.409107,'AUS'),-(0.409107,'AMSA')].
+
 test(induce_mondial):-
   set_lift(verbosity,0),
   induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),

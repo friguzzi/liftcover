@@ -40,14 +40,26 @@ For a list of parameters see
 <dt class="pubdef"><span style="float:right">&nbsp;</span><a name="setting_lift/2"><b class="pred">setting_lift</b><var class="arglist">(:Parameter:atom, -Value:term)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate returns the value of a parameter
 For a list of parameters see
 <a href="https://friguzzi.github.io/liftcover/">https://friguzzi.github.io/liftcover/</a></dd>
-<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="prob_lift/2"><b class="pred">prob_lift</b><var class="arglist">(:At:atom, -P:float)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate computes the probability of atom <code>At</code> given by the
-input program. The first argument of <code>At</code> should be the model name.
-If <code>At</code> contains variables, the predicate returns
-all the instantiaions of <code>At</code> with their probabilities in backtracking.</dd>
-<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="prob_lift/3"><b class="pred">prob_lift</b><var class="arglist">(:At:atom, +Program:probabilistic_program, -P:float)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate computes the probability of atom <code>At</code> given by <code>Program</code>.
-The first argument of <code>At</code> should be the model name.
-If <code>At</code> contains variables, the predicate returns
-all the instantiaions of <code>At</code> with their probabilities in backtracking.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="explain_lift/2"><b class="pred">explain_lift</b><var class="arglist">(:At:atom, -Exp:list)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate returns the explanation of atom <var>At</var> given by the
+input program. The first argument of <var>At</var> should be the model name.
+The explanation is a list of pairs (P-Ex) where P is the probability
+in the head of a rule H:P:-B and Ex is a true grounding of B.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="explain_lift/3"><b class="pred">explain_lift</b><var class="arglist">(:At:atom, +Program:probabilistic_program, -Exp:list)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate returns the explanation of atom <var>At</var> given by <var>Program</var>.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="ranked_answers/3"><b class="pred">ranked_answers</b><var class="arglist">(:At:atom, +Var:var, -RankedAnswers:list)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate returns a list of answers for the query <var>At</var>.
+<var>Var</var> should be a variable in <var>At</var>. <var>RankedAnswers</var> is a list of pairs
+(P-A) where P is the probability of the answer <var>At</var>{<var>Var</var>/A}.
+The list is sorted in decreasing order of probability.
+The first argument of <var>At</var> should be the model name.
+The query is asked to the input program.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="ranked_answers/4"><b class="pred">ranked_answers</b><var class="arglist">(:At:atom, +Var:var, +Prog:probabilistic_program, -RankedAnswers:list)</var></a> is <b class="det">multi</b></dt><dd class="defbody">As <a href="liftcover.html#ranked_answers/3">ranked_answers/3</a> but the query is asked to the program <var>Prog</var>.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="prob_lift/2"><b class="pred">prob_lift</b><var class="arglist">(:At:atom, -P:float)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate computes the probability of atom <var>At</var> given by the
+input program. The first argument of <var>At</var> should be the model name.
+If <var>At</var> contains variables, the predicate returns
+all the instantiaions of <var>At</var> with their probabilities in backtracking.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="prob_lift/3"><b class="pred">prob_lift</b><var class="arglist">(:At:atom, +Program:probabilistic_program, -P:float)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate computes the probability of atom <var>At</var> given by <var>Program</var>.
+The first argument of <var>At</var> should be the model name.
+If <var>At</var> contains variables, the predicate returns
+all the instantiaions of <var>At</var> with their probabilities in backtracking.</dd>
 </dl>
 
 </body>

@@ -493,6 +493,31 @@ or ::
 	...
 
 
+Predicates ::
+
+  ranked_answers(:At:atom,+Var:var,-RankedAnswers:list) is multi
+  ranked_answers(:At:atom,+Var:var,+Program:probabilistic_program,-RankedAnswers:list) is multi
+
+return a list of answers for the query :code:`At=.
+:code:`Var` should be a variable in :code:`At`. :code:`RankedAnswers` is a list of pairs
+:code:`(P-A)` where :code:`P` is the probability of the answer :code:`At{Var/A}`.
+The list is sorted in decreasing order of probability.
+The first argument of :code:`At `should be the model name.
+The query is asked to the input program for :code:`ranked_answers/3` and to the
+given progarm for :code:`ranked_answers/4`.
+
+
+Predicates ::
+
+	explain_lift(:At:atom,-Exp:list) is multi
+  explain_lift(:At:atom,+Program:probabilistic_program,-Exp:list) is multi1
+
+returns the explanation of atom :code:`At` given by the
+input program. The first argument of :code:`At` should be the model name.
+The explanation is a list of pairs :code:`(P-Ex)` where :code:`P` is the probability
+in the head of a rule :code:`H:P:-B` and :code:`Ex` is a true grounding of :code:`B`.
+The query is asked to the input program for :code:`explain_lift/2` and to the
+given progarm for :code:`explain_lift/3`.
 
 Hyper-parameters for Learning
 -----------------------------

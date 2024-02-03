@@ -25,8 +25,12 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   filter_rules/2,filter_rules/3,sort_rules/2,
   remove_zero/2,
   op(500,fx,#),op(500,fx,'-#'),
-  test_prob_lift/6,prob_lift/2,prob_lift/3,
-  explain_lift/2,explain_lift/3]).
+  test_prob_lift/6,
+  prob_lift/2,prob_lift/3,
+  explain_lift/2,explain_lift/3,
+  ranked_answers/3,
+  ranked_answers/4
+  ]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
 :-use_module(library(random)).
@@ -61,6 +65,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate prob_lift(:,+,-).
 :- meta_predicate explain_lift(:,-).
 :- meta_predicate explain_lift(:,+,-).
+:- meta_predicate ranked_answers(:,-,-).
+:- meta_predicate ranked_answers(:,-,+,-).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
 :- meta_predicate filter_rules(:,-).
@@ -3076,10 +3082,10 @@ neg_ex([H|T],[HT|TT],M,At1,C):-
 /**
  * explain_lift(:At:atom,-Exp:list) is multi
  *
- * The predicate returns the explanation of atom =At= given by the
- * input program. The first argument of =At= should be the model name.
- * The explanation is a list of pairs =(P-Ex)= where =P= is the probability
- * in the head of a rule =H:P:-B= and =Ex= is a true grounding of =B=.
+ * The predicate returns the explanation of atom At given by the
+ * input program. The first argument of At should be the model name.
+ * The explanation is a list of pairs  (P-Ex)  where P is the probability
+ * in the head of a rule H:P:-B and Ex is a true grounding of B.
  */
 explain_lift(M:H,Expl):-
   M:in(R00),
@@ -3088,7 +3094,7 @@ explain_lift(M:H,Expl):-
 /**
  * explain_lift(:At:atom,+Program:probabilistic_program,-Exp:list) is multi
  *
- * The predicate returns the explanation of atom =At= given by =Program=.
+ * The predicate returns the explanation of atom At given by Program.
  */
 explain_lift(M:H,R00,Expl):-
   process_clauses(R00,M,R0),
@@ -3100,13 +3106,38 @@ explain_lift(M:H,R00,Expl):-
 explain_rule(M,H,(H,B,_V,P),Expl):-
   findall((P-B),M:B,Expl).
 
+
+/**
+ * ranked_answers(:At:atom,+Var:var,-RankedAnswers:list) is multi
+ *
+ * The predicate returns a list of answers for the query At.
+ * Var should be a variable in At. RankedAnswers is a list of pairs
+ * (P-A) where P is the probability of the answer At{Var/A}.
+ * The list is sorted in decreasing order of probability.
+ * The first argument of At should be the model name.
+ * The query is asked to the input program.
+ */
+ranked_answers(M:H,Var,RankedNaswers):-
+  M:in(P),
+  ranked_answers(M:H,Var,P,RankedNaswers).
+
+
+/**
+ * ranked_answers(:At:atom,+Var:var,+Prog:probabilistic_program,-RankedAnswers:list) is multi
+ *
+ * As ranked_answers/3 but the query is asked to the program Prog.
+ */
+ranked_answers(M:H,Var,Prog,RankedNaswers):-
+  findall((P-Var),prob_lift(M:H,Prog,P),Answers),
+  sort(0,@>=,Answers,RankedNaswers).
+
 /**
  * prob_lift(:At:atom,-P:float) is multi
  *
- * The predicate computes the probability of atom =At= given by the
- * input program. The first argument of =At= should be the model name.
- * If =At= contains variables, the predicate returns
- * all the instantiaions of =At= with their probabilities in backtracking.
+ * The predicate computes the probability of atom At given by the
+ * input program. The first argument of At should be the model name.
+ * If At contains variables, the predicate returns
+ * all the instantiaions of At with their probabilities in backtracking.
  */
 prob_lift(M:H,P):-
   M:in(R00),
@@ -3115,10 +3146,10 @@ prob_lift(M:H,P):-
 /**
  * prob_lift(:At:atom,+Program:probabilistic_program,-P:float) is multi
  *
- * The predicate computes the probability of atom =At= given by =Program=.
- * The first argument of =At= should be the model name.
- * If =At= contains variables, the predicate returns
- * all the instantiaions of =At= with their probabilities in backtracking.
+ * The predicate computes the probability of atom At given by Program.
+ * The first argument of At should be the model name.
+ * If At contains variables, the predicate returns
+ * all the instantiaions of At with their probabilities in backtracking.
  */
 prob_lift(M:H,R00,P):-
   process_clauses(R00,M,R0),
@@ -3532,6 +3563,8 @@ sandbox:safe_meta(liftcover:prob_lift(_,_), []).
 sandbox:safe_meta(liftcover:prob_lift(_,_,_), []).
 sandbox:safe_meta(liftcover:explain_lift(_,_), []).
 sandbox:safe_meta(liftcover:explain_lift(_,_,_), []).
+sandbox:safe_meta(liftcover:ranked_answers(_,_,_), []).
+sandbox:safe_meta(liftcover:ranked_answers(_,_,_,_), []).
 sandbox:safe_meta(liftcover:set_lift(_,_), []).
 sandbox:safe_meta(liftcover:setting_lift(_,_), []).
 sandbox:safe_meta(liftcover:filter_rules(_,_), []).

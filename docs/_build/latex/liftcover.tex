@@ -60,7 +60,7 @@
 
 
 \title{LIFTCOVER Documentation}
-\date{Feb 02, 2024}
+\date{Feb 03, 2024}
 \release{1.0.0}
 \author{Fabrizio Riguzzi}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -769,6 +769,39 @@ C = \PYGZsq{}AUS\PYGZsq{},
 P = 0.409107
 ...
 \end{sphinxVerbatim}
+
+\sphinxAtStartPar
+Predicates
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{ranked\PYGZus{}answers}\PYG{p}{(}\PYG{p}{:}\PYG{n}{At}\PYG{p}{:}\PYG{n}{atom}\PYG{p}{,}\PYG{o}{+}\PYG{n}{Var}\PYG{p}{:}\PYG{n}{var}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{RankedAnswers}\PYG{p}{:}\PYG{n+nb}{list}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{multi}
+\PYG{n}{ranked\PYGZus{}answers}\PYG{p}{(}\PYG{p}{:}\PYG{n}{At}\PYG{p}{:}\PYG{n}{atom}\PYG{p}{,}\PYG{o}{+}\PYG{n}{Var}\PYG{p}{:}\PYG{n}{var}\PYG{p}{,}\PYG{o}{+}\PYG{n}{Program}\PYG{p}{:}\PYG{n}{probabilistic\PYGZus{}program}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{RankedAnswers}\PYG{p}{:}\PYG{n+nb}{list}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{multi}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+return a list of answers for the query \sphinxcode{\sphinxupquote{At=.
+:code:\textasciigrave{}Var}} should be a variable in \sphinxcode{\sphinxupquote{At}}. \sphinxcode{\sphinxupquote{RankedAnswers}} is a list of pairs
+\sphinxcode{\sphinxupquote{(P\sphinxhyphen{}A)}} where \sphinxcode{\sphinxupquote{P}} is the probability of the answer \sphinxcode{\sphinxupquote{At\{Var/A\}}}.
+The list is sorted in decreasing order of probability.
+The first argument of \sphinxcode{\sphinxupquote{At \textasciigrave{}should be the model name.
+The query is asked to the input program for :code:\textasciigrave{}ranked\_answers/3}} and to the
+given progarm for \sphinxcode{\sphinxupquote{ranked\_answers/4}}.
+
+\sphinxAtStartPar
+Predicates
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+      \PYG{n}{explain\PYGZus{}lift}\PYG{p}{(}\PYG{p}{:}\PYG{n}{At}\PYG{p}{:}\PYG{n}{atom}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{Exp}\PYG{p}{:}\PYG{n+nb}{list}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{multi}
+\PYG{n}{explain\PYGZus{}lift}\PYG{p}{(}\PYG{p}{:}\PYG{n}{At}\PYG{p}{:}\PYG{n}{atom}\PYG{p}{,}\PYG{o}{+}\PYG{n}{Program}\PYG{p}{:}\PYG{n}{probabilistic\PYGZus{}program}\PYG{p}{,}\PYG{o}{\PYGZhy{}}\PYG{n}{Exp}\PYG{p}{:}\PYG{n+nb}{list}\PYG{p}{)} \PYG{o+ow}{is} \PYG{n}{multi1}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+returns the explanation of atom \sphinxcode{\sphinxupquote{At}} given by the
+input program. The first argument of \sphinxcode{\sphinxupquote{At}} should be the model name.
+The explanation is a list of pairs \sphinxcode{\sphinxupquote{(P\sphinxhyphen{}Ex)}} where \sphinxcode{\sphinxupquote{P}} is the probability
+in the head of a rule \sphinxcode{\sphinxupquote{H:P:\sphinxhyphen{}B}} and \sphinxcode{\sphinxupquote{Ex}} is a true grounding of \sphinxcode{\sphinxupquote{B}}.
+The query is asked to the input program for \sphinxcode{\sphinxupquote{explain\_lift/2}} and to the
+given progarm for \sphinxcode{\sphinxupquote{explain\_lift/3}}.
 
 
 \section{Hyper\sphinxhyphen{}parameters for Learning}
