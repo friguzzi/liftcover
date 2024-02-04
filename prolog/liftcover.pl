@@ -29,7 +29,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   prob_lift/2,prob_lift/3,
   explain_lift/2,explain_lift/3,
   ranked_answers/3,
-  ranked_answers/4
+  ranked_answers/4,
+  rank/3
   ]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -3132,6 +3133,67 @@ ranked_answers(M:H,Var,Prog,RankedNaswers):-
   sort(0,@>=,Answers,RankedNaswers).
 
 /**
+ * rank(:Element:term,+OrderedList:list,-Rank:float) is det
+ * 
+ * The predicate returns the rank of Element in the list OrderedList.
+ * Group of records with the same value are assigned the average of the ranks.
+ * OrderedList is a list of pairs (S - E) where S is the score and E is the element.
+ * 
+ * https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.rank.html
+ */
+rank(E,L,R):-
+    rank_group(L,E,+inf,0.0,1.0,R).
+
+/**
+ * rank_group(+OrderedList:list,:Element:term,+CurrentScore:float,+LengthOfCurrentGroup:float,+CurrentPosition:float,-Rank:float) is det
+ * 
+ * CurrentScore is the score of the current group. LengthOfCurrentGroup is the number of elements in the current group.
+ * CurrentPosition is the position of the first element in the list.
+ */
+rank_group([],_E,_S,_NG,_N,+inf).
+
+rank_group([(S1 - E1)|T],E,S,NG,N,R):-
+  N1 is N+1.0,
+  (E1==E->
+    (S1<S->
+      rank_group_found(T,S1,1.0,N1,R)
+    ;
+      NG1 is NG+1.0,
+      rank_group_found(T,S1,NG1,N1,R)
+    )
+  ;
+    (S1<S->
+      rank_group(T,E,S1,1.0,N1,R)
+    ;
+      NG1 is NG+1.0,
+      rank_group(T,E,S1,NG1,N1,R)
+    )
+  ).
+
+/**
+ * rank_group_found(+OrderedList:list,+CurrentScore:float,+LengthOfCurrentGroup:float,+CurrentPosition:float,-Rank:float) is det
+ * 
+ * CurrentScore is the score of the current group. LengthOfCurrentGroup is the number of elements in the current group.
+ * CurrentPosition is the position of the first element in the list. The group contains the element to be ranked.
+ */
+rank_group_found([],_S,NG,N,R):-
+  R is N-(NG+1.0)/2.
+
+rank_group_found([(S1 - _E1)|T],S,NG,N,R):-
+  (S1<S->
+    R is N-(NG+1.0)/2
+  ;
+    N1 is N+1.0,
+    NG1 is NG+1.0,
+    rank_group_found(T,S1,NG1,N1,R)
+  ).
+
+
+
+
+
+
+/**
  * prob_lift(:At:atom,-P:float) is multi
  *
  * The predicate computes the probability of atom At given by the
@@ -3573,6 +3635,7 @@ sandbox:safe_meta(liftcover:filter_rules(_,_), []).
 sandbox:safe_primitive(liftcover:filter_rules(_,_,_), []).
 sandbox:safe_primitive(liftcover:sort_rules(_,_,_), []).
 sandbox:safe_primitive(liftcover:remove_zero(_,_), []).
+sandbox:safe_primitive(liftcover:rank(_,_,_), []).
 
 
 

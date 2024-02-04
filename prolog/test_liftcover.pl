@@ -10,7 +10,36 @@ test_all:-
   tests(A),
   run_tests(A).
 
-tests([carc,muta,bupa,mondial,nba,bongard]).
+tests([rank,carc,muta,bupa,mondial,nba,bongard]).
+
+:- begin_tests(rank, []).
+:-ensure_loaded(library(liftcover)).
+
+test(rank1):-
+  L=[8.0-spider,4.0-cat,4.0-dog,2.0-penguin,0.0-snake],
+  rank(spider,L,1.0),
+  rank(cat,L,2.5),
+  rank(dog,L,2.5),
+  rank(penguin,L,4.0),
+  rank(snake,L,5.0).
+
+test(rank2):-
+  L=[8.0-spider,8.0-crab,4.0-cat,4.0-dog,4.0-horse,2.0-penguin,0.0-snake],
+  rank(spider,L,1.5),
+  rank(crab,L,1.5),
+  rank(cat,L,4.0),
+  rank(dog,L,4.0),
+  rank(horse,L,4.0),
+  rank(penguin,L,6.0),
+  rank(snake,L,7.0).
+
+test(rank3):-
+  L=[8.0-spider,8.0-crab,4.0-cat,4.0-dog,4.0-horse,2.0-penguin,0.0-snake,0.0-snail],
+  rank(snake,L,7.5),
+  rank(snail,L,7.5),
+  rank(cricket,L,+inf).
+
+:- end_tests(rank).
 
 :- begin_tests(bupa, []).
 :-ensure_loaded(library(examples_lift/bupa)).
