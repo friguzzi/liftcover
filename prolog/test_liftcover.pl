@@ -141,14 +141,7 @@ test(induce_par_gd_carc):-
 :-ensure_loaded(library(examples_lift/mondial)).
 :-use_module(library(cplint_test/cplint_test)).
 
-test(prob_lift_mondial):-
-  prob_lift(christian_religion(f1,C),P),
-  C='AMSA',P=:=0.409107,!.
 
-test(prob_lift_sv_mondial):-
-  set_lift(single_var,true),
-  prob_lift(christian_religion(f1,C),P),
-  C='AMSA',P=:=0.409107,!.
 
 
 test(ranked_answers_mondial):-
@@ -181,6 +174,11 @@ test(induce_conc_mondial):-
   '\nAUCROC =',0.7250000000000001,
   '\nAUCPR =', 0.8568357523414214],St1),
   writeln(St1).
+
+test(prob_lift_sv_mondial):-
+  set_lift(single_var,true),
+  prob_lift(christian_religion(f1,C),P),
+  C='AMSA',P=:=0.409107,!.
 
 :- end_tests(mondial).
 
@@ -294,10 +292,10 @@ test(induce_nba_bayesian):-
 
 :- end_tests(nba).
 
-
 :- begin_tests(bongard, []).
 :-ensure_loaded(library(examples_lift/bongard)).
 :-use_module(library(cplint_test/cplint_test)).
+
 
 test(explain_bongard):-
   explain_lift(pos(2),Expl),
@@ -318,14 +316,7 @@ atomic_list_concat(['Expected:\n',
 '\nAUCPR =', 0.5615465293941269],St1),
 writeln(St1).
 
-test(prob_bongard):-
-  prob_lift(pos(2),P),
-  P=:=0.1986549170515436.
 
-test(prob_sv_bongard):-
-  set_lift(single_var,true),
-  prob_lift(pos(2),P),
-  P=:=0.19793513395697515.
 
 test(induce_par_bongard):-
   set_lift(verbosity,1),
@@ -340,19 +331,6 @@ test(induce_par_bongard):-
   '\nAUCPR =', 0.5997247517658881],St1),
   writeln(St1).
 
-test(induce_par_single_var_bongard):-
-  set_lift(verbosity,1),
-  set_lift(single_var,true),
-  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
-  writeln('Result:'),
-  writeln(P),
-  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
-  writeln(St),
-  atomic_list_concat(['Expected:\n',
-  '\nLL =',-219.68079672612654,
-  '\nAUCROC =',0.7501277139208173,
-  '\nAUCPR =', 0.5997247517658881],St1),
-  writeln(St1).
 
 test(induce_bongard):-
   set_lift(verbosity,1),
@@ -367,19 +345,6 @@ test(induce_bongard):-
   '\nAUCPR =', 0.4424569868032866],St1),
   writeln(St1).
 
-test(induce_single_var_bongard):-
-  set_lift(verbosity,1),
-  set_lift(single_var,true),
-  induce_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
-  writeln('Result:'),
-  writeln(P),
-  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
-  writeln(St),
-  atomic_list_concat(['Expected:\n',
-  '\nLL =',-219.68079672612654,
-  '\nAUCROC =',0.7501277139208173,
-  '\nAUCPR =', 0.5997247517658881],St1),
-  writeln(St1).
 test(induce_conc_par_bongard):-
   set_lift(verbosity,1),
   set_lift(threads,2),
@@ -494,5 +459,42 @@ test(induce_par_gd_adam_bongard):-
   '\nAUCPR =', 0.5979409655734421],St1),
   writeln(St1).
 
+test(prob_bongard):-
+  prob_lift(pos(2),P),
+  P=:=0.1986549170515436.
+
+test(prob_sv_bongard):-
+  set_lift(single_var,true),
+  prob_lift(pos(2),P),
+  writeln(P),
+  P=:=0.19793513395697515.
+
+test(induce_par_single_var_bongard):-
+  set_lift(verbosity,1),
+  set_lift(single_var,true),
+  induce_par_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-219.68079672612654,
+  '\nAUCROC =',0.7501277139208173,
+  '\nAUCPR =', 0.5997247517658881],St1),
+  writeln(St1).
+
+test(induce_single_var_bongard):-
+  set_lift(verbosity,1),
+  set_lift(single_var,true),
+  induce_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-219.68079672612654,
+  '\nAUCROC =',0.7501277139208173,
+  '\nAUCPR =', 0.5997247517658881],St1),
+  writeln(St1).
 
 :- end_tests(bongard).

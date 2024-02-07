@@ -176,7 +176,7 @@ test_prob_lift(M:P,TestFolds,NPos,NNeg,CLL,Results) :-
   write2(M,'Testing\n'),
   make_dynamic(M),
   process_clauses(P,M,PRules),
-  generate_clauses(PRules,M,0,[],Prog),
+  generate_clauses(PRules,M,0,Prog),
   (M:bg(RBG0)->
     process_clauses(RBG0,M,RBG),
     generate_clauses_bg(RBG,ClBG),
@@ -620,7 +620,7 @@ learn_param([],M,_,_,_,_,[],MInf,[],[]):-!,
   M:local_setting(minus_infinity,MInf).
 
 learn_param(Program0,M,Pos,Neg,RR,Th,Program,LL,MI,MIN):-
-  generate_clauses(Program0,M,0,[],Pr1),
+  generate_clauses(Program0,M,0,Pr1),
   length(Program0,N),
   format4(M,'Computing clause statistics~n',[]),
   gen_initial_counts(N,MIN0),
@@ -2746,13 +2746,12 @@ get_probs([_H:P|T], [P1|T1]) :-
 
 
 
-generate_clauses([],_M,_N,C,C):-!.
+generate_clauses([],_M,_N,[]):-!.
 
-generate_clauses([H|T],M,N,C0,C):-
+generate_clauses([H|T],M,N,[(Head,BA,V,P)|C]):-
   term_variables(H,V),
   gen_clause(H,M,N,N1,rule(_,[_:P|_],_,_),[(Head:-BA)]),!,  %agg.cut
-  append(C0,[(Head,BA,V,P)],C1),
-  generate_clauses(T,M,N1,C1,C).
+  generate_clauses(T,M,N1,C).
 
 
 gen_clause((H :- Body),_M,N,N,(H :- Body),[(H :- Body)]):-!.
@@ -3107,7 +3106,7 @@ explain_lift(M:H,Expl):-
  */
 explain_lift(M:H,R00,Expl):-
   process_clauses(R00,M,R0),
-  generate_clauses(R0,M,0,[],Prog),
+  generate_clauses(R0,M,0,Prog),
   maplist(explain_rule(M,H),Prog,Expls),
   append(Expls,Expl).
 
@@ -3131,7 +3130,7 @@ hits_at_k(M:Folds,TargetPred,Arg,K,HitsAtK,FilteredHitsAtK):-
  */
 hits_at_k(M:Folds,TargetPred,Arg,K,R00,HitsAtK,FilteredHitsAtK):-
   process_clauses(R00,M,R0),
-  generate_clauses(R0,M,0,[],Prog),
+  generate_clauses(R0,M,0,Prog),
   findall(IDs,(member(F,Folds),M:fold(F,IDs)),L),
   append(L,DB),
   find_ex_pred([TargetPred],M,DB,[],Exs,[],_),
@@ -3154,7 +3153,9 @@ hits(Prog,M,Arg,K,Exs,Hits,FilteredHits):-
   maplist(hit(Prog,M,Arg,K),Exs,Hits,FilteredHits).
 
 hit(Prog,M,Arg,K,Ex,Hit,FilteredHit):-
+  writeln(Ex),
   rank_answer_int(Ex,M,Arg,Prog,Rank,FRank),
+  write(Rank),write(' '),writeln(FRank),
   (Rank=<K->
     Hit = 1.0
   ;
@@ -3324,7 +3325,7 @@ prob_lift(M:H,P):-
  */
 prob_lift(M:H,R00,P):-
   process_clauses(R00,M,R0),
-  generate_clauses(R0,M,0,[],Prog),
+  generate_clauses(R0,M,0,Prog),
   prob_lift_int(H,M,Prog,P).
 
 prob_lift_int(H,M,Prog,P):-
@@ -3342,14 +3343,14 @@ theory_counts([(H,B,_V,_P)|Rest],M,E,[MI|RestMI]):-
   test_rule(H,B,M,E,MI),
   theory_counts(Rest,M,E,RestMI).
 
-test_rule(H,B,M,H,N):-
-  (M:(\+ B)->
+test_rule(H,B,M,E,N):-
+  ((H=E,M:(\+ B);H\=E)->
     N=0
   ;
     term_variables(B,Vars),
     term_variables(H,V),
     subtract_eq(Vars,V,VB),
-    aggregate(count,VB^(M:B),N)
+    aggregate(count,VB^(H=E,M:B),N)
   ).
 
 
@@ -3359,14 +3360,14 @@ theory_counts_sv([(H,B,_V,_P)|Rest],M,E,[MI|RestMI]):-
   test_rule_sv(H,B,M,E,MI),
   theory_counts_sv(Rest,M,E,RestMI).
 
-test_rule_sv(H,B,M,H,N):-
-  (M:(\+ B)->
+test_rule_sv(H,B,M,E,N):-
+  ((H=E,M:(\+ B);H\=E)->
     N=0
   ;
     term_variables(B,Vars),
     term_variables(H,V),
     subtract_eq(Vars,V,VB),
-    aggregate(count,VB^(M:B),_),
+    aggregate(count,VB^(H=E,M:B),_),
     N=1
   ).
 
