@@ -30,7 +30,11 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   explain_lift/2,explain_lift/3,
   ranked_answers/3,
   ranked_answers/4,
-  rank/3
+  rank/3,
+  rank_answer/3,
+  rank_answer/4,
+  hits_at_k/6,
+  hits_at_k/7
   ]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -68,6 +72,10 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate explain_lift(:,+,-).
 :- meta_predicate ranked_answers(:,-,-).
 :- meta_predicate ranked_answers(:,-,+,-).
+:- meta_predicate rank_answer(:,+,-).
+:- meta_predicate rank_answer(:,+,+,-).
+:- meta_predicate hits_at_k(:,+,+,+,-,-).
+:- meta_predicate hits_at_k(:,+,+,+,+,-,-).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
 :- meta_predicate filter_rules(:,-).
@@ -3107,7 +3115,104 @@ explain_lift(M:H,R00,Expl):-
 explain_rule(M,H,(H,B,_V,P),Expl):-
   findall((P-B),M:B,Expl).
 
+/**
+ * hits_at_k(:Folds:list_of_atoms,+TargetPred:predicate,+Arg:int,+K:int,-HitsAtK:float,-FilteredHitsAtK:float) is det
+ * Returns the Hits@K and filtered Hits@K of the target predicate TargetPred on the list of folds Folds
+ * for the argument in position Arg.
+ */
+hits_at_k(M:Folds,TargetPred,Arg,K,HitsAtK,FilteredHitsAtK):-
+  M:in(P),
+  hits_at_k(M:Folds,TargetPred,Arg,K,P,HitsAtK,FilteredHitsAtK).
 
+/**
+ * hits_at_k(:Folds:list_of_atoms,+TargetPred:predicate,+Arg:int,+Prog:probabilistic_program,+K:int,-Hits:float,-FilteredHits:float) is det
+ * Returns the Hits@K and filtered Hits@K of the target predicate TargetPred on the list of folds Folds
+ * for the argument in position Arg computed over Prog.
+ */
+hits_at_k(M:Folds,TargetPred,Arg,K,R00,HitsAtK,FilteredHitsAtK):-
+  process_clauses(R00,M,R0),
+  generate_clauses(R0,M,0,[],Prog),
+  findall(IDs,(member(F,Folds),M:fold(F,IDs)),L),
+  append(L,DB),
+  find_ex_pred([TargetPred],M,DB,[],Exs,[],_),
+  M:local_setting(threads,Th),
+  current_prolog_flag(cpu_count,Cores),
+  ((Th=cpu;Th>Cores)->
+    Chunks = Cores
+  ;
+    Chunks = Th
+  ),
+  chunks(Exs,Chunks,ExsC),
+  Arg1 is Arg+1,
+  concurrent_maplist(hits(Prog,M,Arg1,K),ExsC,LHits0,LFHits0),
+  append(LHits0,LHits),
+  average(LHits,HitsAtK),
+  append(LFHits0,LFHits),
+  average(LFHits,FilteredHitsAtK).
+
+hits(Prog,M,Arg,K,Exs,Hits,FilteredHits):-
+  maplist(hit(Prog,M,Arg,K),Exs,Hits,FilteredHits).
+
+hit(Prog,M,Arg,K,Ex,Hit,FilteredHit):-
+  rank_answer_int(Ex,M,Arg,Prog,Rank,FRank),
+  (Rank=<K->
+    Hit = 1.0
+  ;
+    Hit = 0.0
+  ),
+  (FRank=<K->
+    FilteredHit = 1.0
+  ;
+    FilteredHit = 0.0
+  ).
+
+
+average(L,Average):-
+  sum_list(L,Sum),
+  length(L,N),
+  (N>0->
+    Average is Sum/N
+  ;
+    Average is 0.0
+  ).
+/**
+ * rank_answer(:At:atom,+Arg:integer,-Rank:float) is det
+ * The predicate returns the rank of the constant in argument Arg of At in the
+ * list of answers for the query At.
+ */
+rank_answer(M:H,Arg,Rank):-
+  M:in(R00),
+  rank_answer(M:H,Arg,R00,Rank).
+
+/**
+ * rank_answer(:At:atom,+Arg:integer,+Prog:probabilistic_program,-Rank:float) is det
+ * The predicate returns the rank of the constant in argument Arg of At in the
+ * list of answers for the query At asked using the program Prog.
+ */
+rank_answer(M:H,Arg,Prog,Rank):-
+  arg(Arg,H,A),
+  setarg(Arg,H,Var),
+  ranked_answers(M:H,Var,Prog,RankedAnswers),
+  rank(A,RankedAnswers,Rank).
+
+rank_answer_int(H,M,Arg,Prog,Rank,FRank):-
+  arg(Arg,H,A),
+  setarg(Arg,H,Var),
+  ranked_answers_int(H,M,Var,Prog,RankedAnswers),
+  rank(A,RankedAnswers,Rank),
+  filter(RankedAnswers,FilteredRankedAnswers,H,Var),
+  rank(A,FilteredRankedAnswers,FRank).
+
+filter([],[],_H,_Var).
+
+filter([P-A|T],[P-A|T1],H,V):-
+  copy_term((H,V),(H1,V1)),
+  V1=A,
+  H1,!,
+  filter(T,T1,H,V).
+
+filter([_P-_A|T],T1,H,V):-
+  filter(T,T1,H,V).
 /**
  * ranked_answers(:At:atom,+Var:var,-RankedAnswers:list) is multi
  *
@@ -3130,6 +3235,10 @@ ranked_answers(M:H,Var,RankedNaswers):-
  */
 ranked_answers(M:H,Var,Prog,RankedNaswers):-
   findall((P-Var),prob_lift(M:H,Prog,P),Answers),
+  sort(0,@>=,Answers,RankedNaswers).
+
+ranked_answers_int(H,M,Var,Prog,RankedNaswers):-
+  findall((P-Var),prob_lift_int(H,M,Prog,P),Answers),
   sort(0,@>=,Answers,RankedNaswers).
 
 /**
@@ -3216,6 +3325,9 @@ prob_lift(M:H,P):-
 prob_lift(M:H,R00,P):-
   process_clauses(R00,M,R0),
   generate_clauses(R0,M,0,[],Prog),
+  prob_lift_int(H,M,Prog,P).
+
+prob_lift_int(H,M,Prog,P):-
   (M:local_setting(single_var,true)->
     theory_counts_sv(Prog,M,H,MI)
   ;
@@ -3627,6 +3739,10 @@ sandbox:safe_meta(liftcover:explain_lift(_,_), []).
 sandbox:safe_meta(liftcover:explain_lift(_,_,_), []).
 sandbox:safe_meta(liftcover:ranked_answers(_,_,_), []).
 sandbox:safe_meta(liftcover:ranked_answers(_,_,_,_), []).
+sandbox:safe_meta(liftcover:rank_answer(_,_,_), []).
+sandbox:safe_meta(liftcover:rank_answer(_,_,_,_), []).
+sandbox:safe_meta(liftcover:hits_at_k(_,_,_,_,_,_), []).
+sandbox:safe_meta(liftcover:hits_at_k(_,_,_,_,_,_,_), []).
 sandbox:safe_meta(liftcover:set_lift(_,_), []).
 sandbox:safe_meta(liftcover:setting_lift(_,_), []).
 sandbox:safe_meta(liftcover:filter_rules(_,_), []).
