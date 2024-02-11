@@ -34,7 +34,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   rank_answer/3,
   rank_answer/4,
   hits_at_k/6,
-  hits_at_k/7
+  hits_at_k/7,
+  rank_exs/4
   ]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -76,6 +77,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate rank_answer(:,+,+,-).
 :- meta_predicate hits_at_k(:,+,+,+,-,-).
 :- meta_predicate hits_at_k(:,+,+,+,+,-,-).
+:- meta_predicate rank_exs(:,+,+,+).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
 :- meta_predicate filter_rules(:,-).
@@ -667,9 +669,14 @@ split_list(L,1,_,[L]):-!.
 split_list(L0,N,NL,[H|L]):-
   N>1,
   N1 is N-1,
-  length(H,NL),
-  append(H,T,L0),
-  split_list(T,N1,NL,L).
+  length(H1,NL),
+  (append(H1,T,L0)->
+    H=H1,
+    split_list(T,N1,NL,L)
+  ;
+    H=L0,
+    L=[]
+  ).
 
 learn_param_int(MI,MIN,N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,em),!,
@@ -3153,9 +3160,9 @@ hits(Prog,M,Arg,K,Exs,Hits,FilteredHits):-
   maplist(hit(Prog,M,Arg,K),Exs,Hits,FilteredHits).
 
 hit(Prog,M,Arg,K,Ex,Hit,FilteredHit):-
-  writeln(Ex),
+  arg(Arg,Ex,Ent),
   rank_answer_int(Ex,M,Arg,Prog,Rank,FRank),
-  write(Rank),write(' '),writeln(FRank),
+  write_canonical(rank(Ex,Ent,Rank,FRank)),nl,
   (Rank=<K->
     Hit = 1.0
   ;
@@ -3166,6 +3173,34 @@ hit(Prog,M,Arg,K,Ex,Hit,FilteredHit):-
   ;
     FilteredHit = 0.0
   ).
+
+
+rank_exs(M:Folds,TargetPred,Arg,R00):-
+  process_clauses(R00,M,R0),
+  generate_clauses(R0,M,0,Prog),
+  findall(IDs,(member(F,Folds),M:fold(F,IDs)),L),
+  append(L,DB),
+  find_ex_pred([TargetPred],M,DB,[],Exs,[],_),
+  M:local_setting(threads,Th),
+  current_prolog_flag(cpu_count,Cores),
+  ((Th=cpu;Th>Cores)->
+    Chunks = Cores
+  ;
+    Chunks = Th
+  ),
+  chunks(Exs,Chunks,ExsC),
+  Arg1 is Arg+1,
+  concurrent_maplist(rank_list(Prog,M,Arg1),ExsC).
+
+rank_list(Prog,M,Arg,Exs):-
+  maplist(rank_ex(Prog,M,Arg),Exs).
+
+rank_ex(Prog,M,Arg,Ex):-
+  arg(Arg,Ex,Ent),
+  setarg(Arg,Ex,Var),
+  ranked_answers_int(Ex,M,Var,Prog,RankedAnswers),
+  write_canonical(rank(Ex,Ent,RankedAnswers)),writeln('.').
+
 
 
 average(L,Average):-
@@ -3208,8 +3243,10 @@ filter([],[],_H,_Var).
 
 filter([P-A|T],[P-A|T1],H,V):-
   copy_term((H,V),(H1,V1)),
+  H1=..[_|Args],
+  H2=..[t|Args],
   V1=A,
-  H1,!,
+  (H1;H2),!,
   filter(T,T1,H,V).
 
 filter([_P-_A|T],T1,H,V):-
