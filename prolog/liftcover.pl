@@ -3197,11 +3197,25 @@ rank_list(Prog,M,Arg,Exs):-
 
 rank_ex(Prog,M,Arg,Ex):-
   arg(Arg,Ex,Ent),
-  setarg(Arg,Ex,Var),
-  ranked_answers_int(Ex,M,Var,Prog,RankedAnswers),
+  setarg(Arg,Ex,_Var),
+  find_instantions(Ex,Prog,M,Inst),
+  maplist(compute_prob(Prog,M,Arg),Inst,Answers),
+  Answers=RankedAnswers,
+  %sort(0,@>=,Answers,RankedAnswers),
   write_canonical(rank(Ex,Ent,RankedAnswers)),writeln('.').
 
+compute_prob(Prog,M,Arg,G,(P-V)):-
+  prob_lift_int(G,M,Prog,P),
+  arg(Arg,G,V).
 
+find_instantions(Ex,Prog,M,Inst):-
+  setof(Ex,Prog^find_inst(Prog,M,Ex),Inst),!.
+
+find_instantions(_Ex,_Prog,_M,[]).
+
+find_inst(Prog,M,Ex):-
+  member((H,B,_V,_P),Prog),
+  H=Ex,M:B.
 
 average(L,Average):-
   sum_list(L,Sum),
@@ -3380,34 +3394,38 @@ theory_counts([(H,B,_V,_P)|Rest],M,E,[MI|RestMI]):-
   test_rule(H,B,M,E,MI),
   theory_counts(Rest,M,E,RestMI).
 
+
 test_rule(H,B,M,E,N):-
-  ((H=E,M:(\+ B);H\=E)->
-    N=0
-  ;
-    term_variables(B,Vars),
-    term_variables(H,V),
-    subtract_eq(Vars,V,VB),
-    aggregate(count,VB^(H=E,M:B),N)
-  ).
+ findall(1,(H=E,M:B),L),
+ length(L,N).
+/*
+  term_variables(B,Vars),
+  term_variables(H,V),
+  subtract_eq(Vars,V,VB),
+  aggregate(count,VB^(H=E,M:B),N),!.
+ 
 
-
+test_rule(_H,_B,_M,_E,0).
+*/
 theory_counts_sv([],_M,_H,[]).
 
 theory_counts_sv([(H,B,_V,_P)|Rest],M,E,[MI|RestMI]):-
-  test_rule_sv(H,B,M,E,MI),
+  copy_term((H,B),(H1,B1)),
+  test_rule_sv(H1,B1,M,E,MI),
   theory_counts_sv(Rest,M,E,RestMI).
 
 test_rule_sv(H,B,M,E,N):-
-  ((H=E,M:(\+ B);H\=E)->
-    N=0
-  ;
-    term_variables(B,Vars),
+  H=E,M:B,!,
+  N=1.
+
+test_rule_sv(_H,_B,_M,_E,0).
+/*    term_variables(B,Vars),
     term_variables(H,V),
     subtract_eq(Vars,V,VB),
-    aggregate(count,VB^(H=E,M:B),_),
-    N=1
-  ).
-
+    \+ aggregate(count,VB^(H=E,M:B),_),
+    %  (H=E,M:(\+ B);H\=E),*/
+    % N=0.
+ 
 subtract_eq([], _, R) =>
   R = [].
 subtract_eq([E|T], D, R) =>
