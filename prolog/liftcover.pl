@@ -3200,8 +3200,7 @@ rank_ex(Prog,M,Arg,Ex):-
   setarg(Arg,Ex,_Var),
   find_instantions(Ex,Prog,M,Inst),
   maplist(compute_prob(Prog,M,Arg),Inst,Answers),
-  Answers=RankedAnswers,
-  %sort(0,@>=,Answers,RankedAnswers),
+  sort(0,@>=,Answers,RankedAnswers),
   write_canonical(rank(Ex,Ent,RankedAnswers)),writeln('.').
 
 compute_prob(Prog,M,Arg,G,(P-V)):-
