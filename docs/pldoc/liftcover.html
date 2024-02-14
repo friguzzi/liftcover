@@ -45,6 +45,14 @@ input program. The first argument of <var>At</var> should be the model name.
 The explanation is a list of pairs (P-Ex) where P is the probability
 in the head of a rule H:P:-B and Ex is a true grounding of B.</dd>
 <dt class="pubdef"><span style="float:right">&nbsp;</span><a name="explain_lift/3"><b class="pred">explain_lift</b><var class="arglist">(:At:atom, +Program:probabilistic_program, -Exp:list)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate returns the explanation of atom <var>At</var> given by <var>Program</var>.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="hits_at_k/6"><b class="pred">hits_at_k</b><var class="arglist">(:Folds:list_of_atoms, +TargetPred:predicate, +Arg:int, +K:int, -HitsAtK:float, -FilteredHitsAtK:float)</var></a> is <b class="det">det</b></dt><dd class="defbody">Returns the Hits@<var>K</var> and filtered Hits@<var>K</var> of the target predicate <var>TargetPred</var> on the list of folds <var>Folds</var>
+for the argument in position <var>Arg</var>.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="hits_at_k/7"><b class="pred">hits_at_k</b><var class="arglist">(:Folds:list_of_atoms, +TargetPred:predicate, +Arg:int, +Prog:probabilistic_program, +K:int, -Hits:float, -FilteredHits:float)</var></a> is <b class="det">det</b></dt><dd class="defbody">Returns the <var>Hits</var>@<var>K</var> and filtered <var>Hits</var>@<var>K</var> of the target predicate <var>TargetPred</var> on the list of folds <var>Folds</var>
+for the argument in position <var>Arg</var> computed over <var>Prog</var>.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="rank_answer/3"><b class="pred">rank_answer</b><var class="arglist">(:At:atom, +Arg:integer, -Rank:float)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate returns the rank of the constant in argument <var>Arg</var> of <var>At</var> in the
+list of answers for the query <var>At</var>.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="rank_answer/4"><b class="pred">rank_answer</b><var class="arglist">(:At:atom, +Arg:integer, +Prog:probabilistic_program, -Rank:float)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate returns the rank of the constant in argument <var>Arg</var> of <var>At</var> in the
+list of answers for the query <var>At</var> asked using the program <var>Prog</var>.</dd>
 <dt class="pubdef"><span style="float:right">&nbsp;</span><a name="ranked_answers/3"><b class="pred">ranked_answers</b><var class="arglist">(:At:atom, +Var:var, -RankedAnswers:list)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate returns a list of answers for the query <var>At</var>.
 <var>Var</var> should be a variable in <var>At</var>. <var>RankedAnswers</var> is a list of pairs
 (P-A) where P is the probability of the answer <var>At</var>{<var>Var</var>/A}.
@@ -52,6 +60,12 @@ The list is sorted in decreasing order of probability.
 The first argument of <var>At</var> should be the model name.
 The query is asked to the input program.</dd>
 <dt class="pubdef"><span style="float:right">&nbsp;</span><a name="ranked_answers/4"><b class="pred">ranked_answers</b><var class="arglist">(:At:atom, +Var:var, +Prog:probabilistic_program, -RankedAnswers:list)</var></a> is <b class="det">multi</b></dt><dd class="defbody">As <a href="liftcover.html#ranked_answers/3">ranked_answers/3</a> but the query is asked to the program <var>Prog</var>.</dd>
+<dt class="pubdef"><span style="float:right">&nbsp;</span><a name="rank/3"><b class="pred">rank</b><var class="arglist">(:Element:term, +OrderedList:list, -Rank:float)</var></a> is <b class="det">det</b></dt><dd class="defbody">The predicate returns the rank of <var>Element</var> in the list <var>OrderedList</var>.
+Group of records with the same value are assigned the average of the ranks.
+<var>OrderedList</var> is a list of pairs (S - E) where S is the score and E is the element.
+
+<p>
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.rank.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.rank.html</a></p></dd>
 <dt class="pubdef"><span style="float:right">&nbsp;</span><a name="prob_lift/2"><b class="pred">prob_lift</b><var class="arglist">(:At:atom, -P:float)</var></a> is <b class="det">multi</b></dt><dd class="defbody">The predicate computes the probability of atom <var>At</var> given by the
 input program. The first argument of <var>At</var> should be the model name.
 If <var>At</var> contains variables, the predicate returns
@@ -60,6 +74,16 @@ all the instantiaions of <var>At</var> with their probabilities in backtracking.
 The first argument of <var>At</var> should be the model name.
 If <var>At</var> contains variables, the predicate returns
 all the instantiaions of <var>At</var> with their probabilities in backtracking.</dd>
+</dl>
+
+<h2 class="undoc">Undocumented predicates</h2>
+
+<p>
+The following predicates are exported, but not or incorrectly documented.</p>
+
+<dl class="undoc">
+<dt class="undoc"><span style="float:right">&nbsp;</span><a name="rank_ex/3"><b class="pred">rank_ex</b><var class="arglist">(Arg1, Arg2, Arg3)</var></a></dt>
+<dt class="undoc"><span style="float:right">&nbsp;</span><a name="rank_exs/4"><b class="pred">rank_exs</b><var class="arglist">(Arg1, Arg2, Arg3, Arg4)</var></a></dt>
 </dl>
 
 </body>

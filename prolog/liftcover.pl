@@ -35,6 +35,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   rank_answer/4,
   hits_at_k/6,
   hits_at_k/7,
+  rank_ex/3,
   rank_exs/4
   ]).
 :-use_module(library(auc)).
@@ -77,6 +78,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate rank_answer(:,+,+,-).
 :- meta_predicate hits_at_k(:,+,+,+,-,-).
 :- meta_predicate hits_at_k(:,+,+,+,+,-,-).
+:- meta_predicate rank_ex(:,+,+).
 :- meta_predicate rank_exs(:,+,+,+).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
@@ -3123,6 +3125,7 @@ explain_rule(M,H,(H,B,_V,P),Expl):-
 
 /**
  * hits_at_k(:Folds:list_of_atoms,+TargetPred:predicate,+Arg:int,+K:int,-HitsAtK:float,-FilteredHitsAtK:float) is det
+ *
  * Returns the Hits@K and filtered Hits@K of the target predicate TargetPred on the list of folds Folds
  * for the argument in position Arg.
  */
@@ -3132,6 +3135,7 @@ hits_at_k(M:Folds,TargetPred,Arg,K,HitsAtK,FilteredHitsAtK):-
 
 /**
  * hits_at_k(:Folds:list_of_atoms,+TargetPred:predicate,+Arg:int,+Prog:probabilistic_program,+K:int,-Hits:float,-FilteredHits:float) is det
+ *
  * Returns the Hits@K and filtered Hits@K of the target predicate TargetPred on the list of folds Folds
  * for the argument in position Arg computed over Prog.
  */
@@ -3194,6 +3198,17 @@ rank_exs(M:Folds,TargetPred,Arg,R00):-
 
 rank_list(Prog,M,Arg,Exs):-
   maplist(rank_ex(Prog,M,Arg),Exs).
+/**
+ * ranked_ex(:At:atom,+ProbabilisticProgram:list_of_probabilistic_clauses,+Arg:int) is det
+ *
+ * The predicate prints the list of answers for the query At where
+ * argument in position Arg has been replaced by a variable.
+ * The first argument of At should be the model name.
+ */
+rank_ex(M:Ex,R00,Arg):-
+  process_clauses(R00,M,R0),
+  generate_clauses(R0,M,0,Prog),
+  rank_ex(Prog,M,Arg,Ex).
 
 rank_ex(Prog,M,Arg,Ex):-
   arg(Arg,Ex,Ent),
@@ -3226,6 +3241,7 @@ average(L,Average):-
   ).
 /**
  * rank_answer(:At:atom,+Arg:integer,-Rank:float) is det
+ *
  * The predicate returns the rank of the constant in argument Arg of At in the
  * list of answers for the query At.
  */
@@ -3235,6 +3251,7 @@ rank_answer(M:H,Arg,Rank):-
 
 /**
  * rank_answer(:At:atom,+Arg:integer,+Prog:probabilistic_program,-Rank:float) is det
+ *
  * The predicate returns the rank of the constant in argument Arg of At in the
  * list of answers for the query At asked using the program Prog.
  */
