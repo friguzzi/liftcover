@@ -60,13 +60,18 @@
 
 
 \title{LIFTCOVER Documentation}
-\date{Feb 03, 2024}
+\date{Feb 15, 2024}
 \release{1.0.0}
 \author{Fabrizio Riguzzi}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
 \makeindex
 \begin{document}
+
+\ifdefined\shorthandoff
+  \ifnum\catcode`\=\string=\active\shorthandoff{=}\fi
+  \ifnum\catcode`\"=\active\shorthandoff{"}\fi
+\fi
 
 \pagestyle{empty}
 \sphinxmaketitle
@@ -79,7 +84,7 @@
 
 \chapter{Introduction}
 \label{\detokenize{index:introduction}}\begin{description}
-\item[{LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind}] \leavevmode
+\sphinxlineitem{LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind}
 \sphinxAtStartPar
 {[}\hyperlink{cite.index:id7}{GBA+23}, \hyperlink{cite.index:id34}{NFR19}{]}.
 
@@ -205,15 +210,15 @@ where \sphinxcode{\sphinxupquote{publication(A,B,C)}} means that A is a publicat
 \sphinxcode{\sphinxupquote{advisedby/2}} is the target predicate and \sphinxcode{\sphinxupquote{student/1, professor/1, project/2, ta/2, taughtby/2}}
 are input predicates.
 \begin{description}
-\item[{The first clause states that a student A is advised by a professor B with probability 0.3 if they both}] \leavevmode
+\sphinxlineitem{The first clause states that a student A is advised by a professor B with probability 0.3 if they both}
 \sphinxAtStartPar
 work on the same project C.
 
-\item[{The second states that a student A is advised by a professor B with probability 0.6 if the student}] \leavevmode
+\sphinxlineitem{The second states that a student A is advised by a professor B with probability 0.6 if the student}
 \sphinxAtStartPar
 is a teacher assistant in a course taught by the professor.
 
-\item[{The facts in the program state that harry is a student and ben a professor.}] \leavevmode
+\sphinxlineitem{The facts in the program state that harry is a student and ben a professor.}
 \sphinxAtStartPar
 They have two joint courses c1 and c2, two joint projects pr1 and pr2.
 
@@ -976,9 +981,6 @@ A PDF version of the manual is available at \sphinxurl{https://friguzzi.github.i
 phil follows the MIT License that you can find in phil root folder.
 The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.
 
-\sphinxAtStartPar
-
-
 \begin{sphinxthebibliography}{DRVL95}
 \bibitem[Coh95]{index:id23}
 \sphinxAtStartPar
@@ -988,7 +990,7 @@ William W. Cohen. Pac\sphinxhyphen{}learning non\sphinxhyphen{}recursive prolog
 L. De Raedt and W. Van Laer. Inductive constraint logic. In \sphinxstyleemphasis{Proceedings of the 6th Conference on Algorithmic Learning Theory (ALT 1995)}, volume 997 of LNAI, 80\textendash{}94. Fukuoka, Japan, 1995. Springer.
 \bibitem[GBA+23]{index:id7}
 \sphinxAtStartPar
-Elisabetta Gentili, Alice Bizzarri, Damiano Azzolini, Riccardo Zese, and Fabrizio Riguzzi. Regularization inâ probabilistic inductive logic programming. In Elena Bellodi, Francesca Alessandra Lisi, and Riccardo Zese, editors, \sphinxstyleemphasis{Inductive Logic Programming \sphinxhyphen{} ILP 2023}, volume 14363 of Lecture Notes in Artificial Intelligence, 16\textendash{}29. Cham, 2023. Springer Nature Switzerland. \sphinxhref{https://doi.org/10.1007/978-3-031-49299-0\_2}{doi:10.1007/978\sphinxhyphen{}3\sphinxhyphen{}031\sphinxhyphen{}49299\sphinxhyphen{}0\_2}.
+Elisabetta Gentili, Alice Bizzarri, Damiano Azzolini, Riccardo Zese, and Fabrizio Riguzzi. Regularization in probabilistic inductive logic programming. In Elena Bellodi, Francesca Alessandra Lisi, and Riccardo Zese, editors, \sphinxstyleemphasis{Inductive Logic Programming \sphinxhyphen{} ILP 2023}, volume 14363 of Lecture Notes in Artificial Intelligence, 16\textendash{}29. Cham, 2023. Springer Nature Switzerland. \sphinxhref{https://doi.org/10.1007/978-3-031-49299-0\_2}{doi:10.1007/978\sphinxhyphen{}3\sphinxhyphen{}031\sphinxhyphen{}49299\sphinxhyphen{}0\_2}.
 \bibitem[KD05]{index:id29}
 \sphinxAtStartPar
 Stanley Kok and Pedro Domingos. Learning the structure of markov logic networks. In \sphinxstyleemphasis{Proceedings of the 22nd international conference on Machine learning}, 441\textendash{}448. 2005.

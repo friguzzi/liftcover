@@ -8,7 +8,7 @@ and also
     > sudo apt install python3-sphinxcontrib.bibtex    
 
 
-To build the documentation using sphinx, move to doc, make sure the file index.rst is there and type:
+To build the documentation using sphinx, move to docs, make sure the file index.rst is there and type:
 
     > make html
 
@@ -43,7 +43,7 @@ to have less output.
 Note that you maybe need to run the command two times in order to link also the bibliography which is 
 located in newbib.bib
 
-The result pdf file will be in _build/latex/cplint.pdf. This because the program compiles the .rst file
+The result pdf file will be in _build/latex/liftcover.pdf. This because the program compiles the .rst file
 in a .tex file and then calls latexmk to compile the .tex file.
 
 The file conf.py in this folder defines some parameters for the compilation. In particular
