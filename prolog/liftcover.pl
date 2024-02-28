@@ -3178,7 +3178,13 @@ hit(Prog,M,Arg,K,Ex,Hit,FilteredHit):-
     FilteredHit = 0.0
   ).
 
-
+/**
+ * rank_exs(:Folds:list,+ProbabilisticProgram:list_of_probabilistic_clauses,+Arg:int) is det
+ *
+ * The predicate prints the list of answers for all the triples in 
+ * Folds where argument in position Arg has been replaced by a variable.
+ * The first argument of At should be the model name.
+ */
 rank_exs(M:Folds,TargetPred,Arg,R00):-
   process_clauses(R00,M,R0),
   generate_clauses(R0,M,0,Prog),
@@ -3199,7 +3205,7 @@ rank_exs(M:Folds,TargetPred,Arg,R00):-
 rank_list(Prog,M,Arg,Exs):-
   maplist(rank_ex(Prog,M,Arg),Exs).
 /**
- * ranked_ex(:At:atom,+ProbabilisticProgram:list_of_probabilistic_clauses,+Arg:int) is det
+ * rank_ex(:At:atom,+ProbabilisticProgram:list_of_probabilistic_clauses,+Arg:int) is det
  *
  * The predicate prints the list of answers for the query At where
  * argument in position Arg has been replaced by a variable.
