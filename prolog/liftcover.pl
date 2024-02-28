@@ -3179,11 +3179,10 @@ hit(Prog,M,Arg,K,Ex,Hit,FilteredHit):-
   ).
 
 /**
- * rank_exs(:Folds:list,+ProbabilisticProgram:list_of_probabilistic_clauses,+Arg:int) is det
+ * rank_exs(:Folds:list,+TargetPred:PredSpec,+Arg:int,+ProbabilisticProgram:list_of_probabilistic_clauses) is det
  *
- * The predicate prints the list of answers for all the triples in 
- * Folds where argument in position Arg has been replaced by a variable.
- * The first argument of At should be the model name.
+ * The predicate prints the list of answers for all the triples  in Folds for predicate
+ * TaragetPredwhere argument in position Arg has been replaced by a variable.
  */
 rank_exs(M:Folds,TargetPred,Arg,R00):-
   process_clauses(R00,M,R0),
