@@ -36,7 +36,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   hits_at_k/6,
   hits_at_k/7,
   rank_ex/3,
-  rank_exs/4
+  rank_exs/4,
+  inst_exs/4
   ]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -80,6 +81,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate hits_at_k(:,+,+,+,+,-,-).
 :- meta_predicate rank_ex(:,+,+).
 :- meta_predicate rank_exs(:,+,+,+).
+:- meta_predicate inst_exs(:,+,+,+).
 :- meta_predicate set_lift(:,+).
 :- meta_predicate setting_lift(:,-).
 :- meta_predicate filter_rules(:,-).
@@ -3177,6 +3179,42 @@ hit(Prog,M,Arg,K,Ex,Hit,FilteredHit):-
   ;
     FilteredHit = 0.0
   ).
+
+/**
+ * inst_exs(:Folds:list,+TargetPred:PredSpec,+Arg:int,+ProbabilisticProgram:list_of_probabilistic_clauses) is det
+ *
+ * The predicate prints the list of answers for all the triples  in Folds for predicate
+ * TaragetPredwhere argument in position Arg has been replaced by a variable.
+ */
+inst_exs(M:Folds,TargetPred,Arg,R00):-
+  process_clauses(R00,M,R0),
+  generate_clauses(R0,M,0,Prog),
+  findall(IDs,(member(F,Folds),M:fold(F,IDs)),L),
+  append(L,DB),
+  find_ex_pred([TargetPred],M,DB,[],Exs,[],_),
+  M:local_setting(threads,Th),
+  current_prolog_flag(cpu_count,Cores),
+  ((Th=cpu;Th>Cores)->
+    Chunks = Cores
+  ;
+    Chunks = Th
+  ),
+  chunks(Exs,Chunks,ExsC),
+  Arg1 is Arg+1,
+  concurrent_maplist(inst_list(Prog,M,Arg1),ExsC).
+
+inst_list(Prog,M,Arg,Exs):-
+  maplist(inst_ex(Prog,M,Arg),Exs).
+
+inst_ex(Prog,M,Arg,Ex):-
+  arg(Arg,Ex,Ent),
+  setarg(Arg,Ex,_Var),
+  find_instantions(Ex,Prog,M,Inst),
+  maplist(extract_arg(Arg),Inst,InstV),
+  write_canonical(inst(Ex,Ent,InstV)),writeln('.').
+
+extract_arg(Arg,G,V):-
+  arg(Arg,G,V).
 
 /**
  * rank_exs(:Folds:list,+TargetPred:PredSpec,+Arg:int,+ProbabilisticProgram:list_of_probabilistic_clauses) is det
