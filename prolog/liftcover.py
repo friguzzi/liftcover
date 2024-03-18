@@ -25,6 +25,10 @@ def eta0i(min,xp=np):
 def expectation(par,mi,min, xp=np, zero=0.000001):
     lln=lli(par,min,xp,zero)
     eta=eta0i(min,xp)
+    print("after eta")
+    mempool = xp.get_default_memory_pool()
+    print(mempool.used_bytes())              # 0
+    print(mempool.total_bytes())
     prod=xp.multiply.reduce((1-par)**mi,axis=1)
     #probex=xp.where(probex==0.0,zero,probex)
     probex=xp.maximum(1.0-prod, zero)
@@ -34,6 +38,9 @@ def expectation(par,mi,min, xp=np, zero=0.000001):
     eta10=xp.sum(xp.multiply(ocondp,mi),axis=0)
     eta11=xp.sum(xp.multiply(condp,mi),axis=0)
     eta1= eta+xp.stack([eta10,eta11],1)
+    print(mempool.used_bytes())              # 0
+    print(mempool.total_bytes())
+    print()
     return eta1, ll
 
 def maximization(eta, regularization="no", xp=np, zero=0.000001, gamma=10, a=0,b=10):
@@ -51,13 +58,22 @@ def maximization(eta, regularization="no", xp=np, zero=0.000001, gamma=10, a=0,b
 def maximization_no(eta, xp=np, zero=0.000001):
     sum=xp.sum(eta,axis=1)
     eta1=eta[:,1]
-    par=xp.divide(eta1,sum,where=sum!=0.0)
+    par=xp.divide(eta1,sum)
     return par
 
 def maximization_l1(eta, xp=np, zero=0.000001, gamma=10):
-    eta0=eta[:,0]
-    eta1=eta[:,1]
-    par=4*eta1/(2*(gamma+eta0+eta1+xp.sqrt((eta0+eta1)**2+gamma**2+2*gamma*(eta0-eta1))))
+    par=4*eta[:,1]/(2*(gamma+eta[:,0]+eta[:,1]+xp.sqrt((eta[:,0]+eta[:,1])**2+gamma**2+2*gamma*(eta[:,0]-eta[:,1]))))
+    mempool = xp.get_default_memory_pool()
+    pinned_mempool = xp.get_default_pinned_memory_pool()
+    print("maxi")
+    print(mempool.used_bytes())              # 0
+    print(mempool.total_bytes())
+    print(pinned_mempool.n_free_blocks())    # 
+    mempool.free_all_blocks()
+    pinned_mempool.free_all_blocks()
+    print(pinned_mempool.n_free_blocks())    # 0
+    print(mempool.total_bytes()) 
+    print()
     return par
 
 def maximization_l2(eta, xp=np, zero=0.000001, gamma=10):
@@ -76,13 +92,28 @@ def maximization_bayesian(eta, xp=np, a=0,b=10):
 
 def em(par, mi, min, xp=np, maxiter=100, tol=0.0001, tolr=0.00001, regularization="no", zero=0.000001, gamma=10, a=0,b=10, ver=1):
     ll=-1e20
+    mempool = xp.get_default_memory_pool()
+    pinned_mempool = xp.get_default_pinned_memory_pool()
     for i in range(maxiter):
         eta, ll1=expectation(par,mi,min,xp,zero)
+        print("eta bytes ",eta.shape," ",eta.nbytes)
         print4(ver,"Iteration ",i, " LL ",ll1.item())
         par1=maximization(eta,regularization,xp,zero,gamma,a,b)
         diff=xp.abs(ll1-ll)
         par=par1
         ll=ll1
+        print("it stats")
+        print(mempool.used_bytes())              # 0
+        print(mempool.total_bytes())             # 0
+        print(pinned_mempool.n_free_blocks())    # 0
+        mempool.free_all_blocks()
+        print(pinned_mempool.n_free_blocks())    # 0
+        pinned_mempool.free_all_blocks()
+        print(pinned_mempool.n_free_blocks())    # 0
+        print(mempool.used_bytes())              # 0
+        print(mempool.total_bytes())             # 0
+        print(mempool.n_free_blocks())    # 0
+        print()
         if diff<tol or diff<(-ll1)*tolr:
             break
     return par, ll
@@ -92,14 +123,26 @@ def random_restarts(mi0,min0,device="cpu",random_restarts_number=1, maxiter=100,
         import cupy as xp
     else:
         xp=np
-    mi= xp.array(mi0)
-    min=xp.array(min0)
+    mi= xp.array(mi0,dtype=np.int16)
+    print("mi shape ",mi.shape,' ',mi.nbytes)
+    min=xp.array(min0,dtype=np.int32)
+    print("min shaèe ",min.shape,' ',min.nbytes)
+    mempool = xp.get_default_memory_pool()
+    pinned_mempool = xp.get_default_pinned_memory_pool()
+    print("limit ",mempool.get_limit())
+    print(mempool.used_bytes())              # 0
+    print(mempool.total_bytes())             # 0
+    print(pinned_mempool.n_free_blocks())    # 0
+ 
     max_ll=-1e20
-    max_par=[]
+    max_par=None
     for i in range(random_restarts_number):
         print3(ver,"Restart number ",i)
-        par0= xp.random.uniform(0.0,1.0,len(min))
+        par0= xp.random.uniform(0.0,1.0,len(min),np.float32)
         par1, ll1=em(par0,mi,min,xp,maxiter,tol,tolr,regularization,zero,gamma,a,b,ver)
+        print(mempool.used_bytes())              # 0
+        print(mempool.total_bytes())             # 0
+        print(pinned_mempool.n_free_blocks())    # 0
         print3(ver,"Random_restart: Score ",ll1.item())
         if ll1>max_ll:
             max_ll=ll1
