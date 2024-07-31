@@ -3122,9 +3122,10 @@ explain_lift(M:H,R00,Expl):-
   append(Expls,Expl).
 
 
-explain_rule(M,H,(H,B,_V,P),Expl):-
+explain_rule(M,H,(H,B,_V,P),Expl):-!,
   findall((P-B),M:B,Expl).
 
+explain_rule(_,_,_,[]).
 /**
  * hits_at_k(:Folds:list_of_atoms,+TargetPred:predicate,+Arg:int,+K:int,-HitsAtK:float,-FilteredHitsAtK:float) is det
  *
