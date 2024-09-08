@@ -38,7 +38,9 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   rank_ex/3,
   rank_exs/4,
   inst_exs/4,
-  induce_par_kg/2
+  induce_par_kg/2,
+  write_rules_kg/1,
+  write_rules_kg/2
   ]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -1454,6 +1456,58 @@ rule2term(rule(_N,HL,BL,_Lit),(H:-B)):-!,
 rule2term(def_rule(H,BL,_Lit),((H:1.0):-B)):-
   list2and(BL,B).
 
+
+and2list((A,B),[A|L]):-
+  !,
+  and2list(B,L).
+
+and2list(A,[A]).
+write_rules_kg(R,File):-
+  open(File,write,S),
+  writeln(S,'out(['),
+  write_clauses_kg(R,S),
+  writeln(S,']).'),
+  close(S).
+
+
+write_rules_kg(R):-
+  maplist(write_clause_kg_screen,R).
+
+write_clause_kg_screen(Cl):-
+  write_clause_kg(user_output,Cl),
+  writeln('.').
+
+write_clauses_kg([Cl],S):-!,
+  write(S,'('),
+  write_clause_kg(S,Cl),
+  writeln(S,')').
+
+write_clauses_kg([ClH|ClT],S):-
+  write(S,'('),
+  write_clause_kg(S,ClH),
+  writeln(S,'),'),
+  write_clauses_kg(ClT,S).
+
+write_clause_kg(S,(H:-B)):-
+  copy_term((H,B),(H1,B1)),
+  numbervars((H1,B1),0,_),
+  write_head_kg(H1,S),
+  format(S,' :-',[]),
+  and2list(B1,L),
+  write_body_kg(L,S).
+
+write_head_kg(A:P,S):-
+  format(S,"~q:~g",[A,P]).
+
+write_body_kg([],S):-!,
+  format(S,'  true',[]).
+
+write_body_kg([A],S):-!,
+  format(S,'  ~q',[A]).
+
+write_body_kg([A|T],S):-
+  format(S,'  ~q,',[A]),
+  write_body_kg(T,S).
 
 write_rules([],_S).
 
