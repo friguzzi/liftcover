@@ -527,13 +527,40 @@ induce_parameters(M:Folds,R):-
 induce_par_kg(M:R,R1):-
   load_python_module(M),
   setof(Rel,(H,T)^t(H,Rel,T),Rels),
-  maplist(partition_rules(R),Rels,RP),
-  maplist(induce_parameters_kg(M),Rels,RP,RP1),
-  append(RP1,R1).
+  maplist(partition_rules(R,M),Rels),
+  (parallel(M)->
+    concurrent_maplist(compute_statistics_kg(M),Rels,MI,MIN)
+  ;
+    maplist(compute_statistics_kg(M),Rels,MI,MIN)
+  ),
+  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
+  append(Par0,Par),
+  maplist(update_rule,R,Par,R1).
 
-partition_rules(R,Rel,RRel):-
-  findall(R1,(member(R1,R),R1=(tt(_,Rel,_): _ :- _)),RRel).
+parallel(M):-
+  number_of_threads(M,Th),
+  Th>1.
+  
+induce_parameters_kg(M,Rel,MI,MIN,Par):-
+  format4(M,'Tuning parameters for relation ~w~n',[Rel]),
+  M:local_setting(random_restarts_number,RR),
+  length(MI,N),
+  learn_param_int(MI,MIN,N,M,RR,Par,_LL).
 
+
+partition_rules(R,M,Rel):-
+  findall(R1,(member(R1,R),R1=(tt(_,Rel,_): _ :- _)),RRel),
+  assert(M:rules(Rel,RRel)).
+
+compute_statistics_kg(M,Rel,MI,MIN):-
+  M:rules(Rel,R),
+  length(R,N),
+  format4(M,'Computing clause statistics for relation ~q, ~d clauses~n',[Rel,N]),
+  find_ex_kg(Rel,Pos,Neg),
+  length(Pos,NPos),
+  length(Neg,NNeg),
+  format4(M,'Pos ex ~d neg ex ~d~n',[NPos,NNeg]),
+  clauses_statistics_kg(R,M,Rel,Pos,Neg,MI,MIN).
 
 number_of_threads(M,Th):-
   M:local_setting(threads,Th0),
@@ -546,30 +573,12 @@ number_of_threads(M,Th):-
   setting(max_threads,ThMax),
   Th is min(Th1,ThMax).
 
-induce_parameters_kg(M,Rel,R0,R):-
-  format4(M,'Learning relation ~w~n',[Rel]),
-  find_ex_kg(Rel,Pos,Neg),
-  length(Pos,NPos),
-  length(Neg,NNeg),
-  format4(M,'Pos ex ~d neg ex ~d~n',[NPos,NNeg]),
-  M:local_setting(random_restarts_number,RR),
-  learn_param_kg(R0,M,Rel,Pos,Neg,RR,R,_Score,_MI,_MIN).
-
-
-
-learn_param_kg(Program0,M,Rel,Pos,Neg,RR,Program,LL,MI,MIN):-
-  length(Program0,N),
-  format4(M,'Computing clause statistics for ~d clauses~n',[N]),
-  clauses_statistics_kg(Program0,M,Rel,Pos,Neg,MI,MIN),
-  format4(M,'Updating parameters~n',[]),
-  learn_param_int(MI,MIN,N,M,RR,Par,LL),
-  maplist(update_rule,Program0,Par,Program).
 
 update_rule((H:_ :- B),P,(H:P :- B)).
 
 find_ex_kg(Rel,Pos,Neg):-
   findall(tt(S,Rel,T),t(S,Rel,T),Pos),
-  findall(tt(S,Rel,T),(t(S,Rel1,T),Rel1 \= Rel),Neg).
+  findall(tt(S,Rel,T),(t(S,Rel1,T),Rel1 \= Rel,\+ t(S,Rel,T)),Neg).
 
 
 /**
