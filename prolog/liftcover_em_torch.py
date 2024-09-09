@@ -3,7 +3,7 @@ import random
 
 def lli_torch(probs, counts, zero=1e-6):
     # Log-Likelihood calculation with safeguard against zero probabilities
-    nprobs = torch.maximum(1.0 - probs, torch.tensor(zero, device=probs.device))
+    nprobs = torch.clamp(1.0 - probs, min=zero)
     return torch.sum(counts * torch.log(nprobs))
 
 def eta0i_torch(min):
@@ -15,45 +15,51 @@ def expectation_torch(par, mi, min, zero=1e-6):
     lln = lli_torch(par, min, zero)
     eta = eta0i_torch(min)
 
-    prod = ((1 - par).unsqueeze(0).expand_as(mi).pow(mi)).prod(dim=1)
-    probex = torch.maximum(1.0 - prod, torch.tensor(zero, device=prod.device))
+    par_broadcasted = par.unsqueeze(0).expand_as(mi)  
+    prod = (1 - par_broadcasted).pow(mi).prod(dim=1) 
+
+    probex = torch.clamp(1.0 - prod, min=zero)
     ll = lln + torch.sum(torch.log(probex))
 
-    condp = (par.unsqueeze(0) / probex.unsqueeze(1)).expand_as(mi)
-    ocondp = torch.maximum(1 - condp, torch.tensor(0.0, device=condp.device))
+    condp = (par_broadcasted / probex.unsqueeze(1))  
+    ocondp = torch.clamp(1 - condp, min=0.0)
 
+    # Use in-place operations
     eta[:, 0].add_((ocondp * mi).sum(dim=0))  # In-place addition
     eta[:, 1].add_((condp * mi).sum(dim=0))   # In-place addition
 
     return eta, ll
 
+
 def maximization_no_torch(eta, zero=1e-6):
     # Maximization step without regularization
     sum_vals = eta.sum(dim=1)
     eta1 = eta[:, 1]
-    par = eta1 / torch.where(sum_vals != 0.0, sum_vals, torch.tensor(zero, device=eta.device))
+    # Use in-place division with torch.where to handle zero safely
+    par = torch.empty_like(eta1).copy_(eta1)
+    par.div_(torch.where(sum_vals != 0.0, sum_vals, torch.tensor(zero, device=eta.device)))
     return par
 
 def maximization_l1_torch(eta, zero=1e-6, gamma=10):
     # Maximization step with l1 regularization
     eta0 = eta[:, 0]
     eta1 = eta[:, 1]
-    denominator = 2 * (gamma + eta0 + eta1 + ((eta0 + eta1) ** 2 + gamma ** 2 + 2 * gamma * (eta0 - eta1)).sqrt_())
+    denominator = 2 * (gamma + eta0 + eta1 + (eta0 + eta1).pow_(2).add_(gamma ** 2).add_(2 * gamma * (eta0 - eta1)).sqrt_())
     par = 4 * eta1 / denominator
     return par
 
 def maximization_l2_torch(eta, zero=1e-6, gamma=10):
     # Maximization step with l2 regularization
-    sum_vals = 3 * eta.sum(dim=1) + gamma
+    sum_vals = 3 * eta.sum(dim=1).add_(gamma)
     eta0 = eta[:, 0]
     eta1 = eta[:, 1]
-    arccos_input = (gamma / sum_vals).sqrt_() * (9 * eta0 / 2 - 9 * eta1 + gamma) / (3 * eta0 + 3 * eta1 + gamma)
-    arccos = arccos_input.acos()
+    arccos_input = ((gamma / sum_vals).sqrt_() * (9 * eta0 / 2 - 9 * eta1 + gamma) / (3 * eta0 + 3 * eta1 + gamma)).clamp_(-1.0, 1.0)
+    arccos = arccos_input.acos_()
     par = 2 * (sum_vals / gamma).sqrt_() * (arccos / 3 - 2 * torch.pi / 3).cos_() / 3 + 1 / 3
     return par
 
 def maximization_bayesian_torch(eta, a=0, b=10):
-    # Maximization step with ayesian regularization
+    # Maximization step with Bayesian regularization
     sum_vals = eta.sum(dim=1)
     eta1 = eta[:, 1]
     par = (eta1 + a) / (sum_vals + a + b)
@@ -73,7 +79,7 @@ def maximization_torch(eta, regularization="no", zero=1e-6, gamma=10, a=0, b=10)
         raise ValueError("Unknown regularization type")
 
 def em_torch(par, mi, min, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no", zero=1e-6, gamma=10, a=0, b=10, ver=1):
-    # EM algorithm  with torch
+    # EM algorithm with torch
     ll = -1e20
     for i in range(maxiter):
         eta, ll1 = expectation_torch(par, mi, min, zero)
@@ -104,7 +110,7 @@ def random_restarts_torch(mi0, min0, device="cpu", random_restarts_number=1, max
         print(f"Random restart score: {ll1.item()}")
         if ll1 > max_ll:
             max_ll = ll1
-            max_par = par1.clone()
+            max_par = par1.detach().clone()  # Use detach() to avoid gradient tracking issues
     
     return max_par.tolist(), max_ll.item()
 

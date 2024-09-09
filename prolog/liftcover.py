@@ -218,3 +218,37 @@ def print4(ver,*arg):
     if ver>3:
         print(*arg)
 
+
+def main():
+    # Example counts 
+    mi0 = [
+        [8, 2, 1],  
+        [3, 7, 0],
+        [5, 3, 4],
+        [4, 1, 5],
+        [2, 8, 0],
+        [1, 3, 6],
+        [6, 4, 0],
+        [3, 3, 4],
+        [5, 2, 3],
+        [9, 1, 1],
+    ]
+    
+    # Initial probabilities 
+    min0 = [3, 4, 6]  
+
+    # Choose 'cuda' if GPU is available; otherwise, 'cpu'
+    # device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device='cpu'
+    
+    # Run the EM algorithm with random restarts
+    best_params, best_ll = random_restarts(
+        mi0, min0, device=device, random_restarts_number=5, maxiter=50, tol=1e-4, tolr=1e-5, regularization="no", ver=4
+    )
+
+    print("Best Parameters:", best_params)
+    print("Max Log-Likelihood:", best_ll)
+
+if __name__ == "__main__":
+    main()
+
