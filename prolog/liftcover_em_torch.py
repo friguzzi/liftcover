@@ -108,9 +108,9 @@ def random_restarts_torch(mi0, min0, device="cpu", random_restarts_number=1, max
 
 
 def main():
-    # Improved sample data: counts of observations fitting different categories
+    # Example counts 
     mi0 = [
-        [8, 2, 1],  # Example counts suggesting a mixture where one category is dominant
+        [8, 2, 1],  
         [3, 7, 0],
         [5, 3, 4],
         [4, 1, 5],
@@ -122,7 +122,7 @@ def main():
         [9, 1, 1],
     ]
     
-    # Non-uniform initial probabilities that suggest a structure in the data
+    # Initial probabilities 
     min0 = [0.5, 0.5, 0.5]  
 
     # Choose 'cuda' if GPU is available; otherwise, 'cpu'
