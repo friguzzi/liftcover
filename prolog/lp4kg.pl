@@ -40,7 +40,9 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   inst_exs/4,
   induce_par_kg/2,
   write_rules_kg/1,
-  write_rules_kg/2
+  write_rules_kg/2,
+  write_rules_anyburl/2,
+  read_rules_anyburl/2
   ]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -51,6 +53,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :-use_module(library(apply)).
 :-use_module(library(settings)).
 :-use_module(library(clpfd), [transpose/2]).
+
+:-use_module(library(dcg/basics)).
 %:-absolute_file_name(library(lbfgs),F,[solutions(all)]),atomic_concat(F,'.pl',Fpl),exists_file(Fpl),use_module(library(lbfgs));true.
 %:-use_foreign_library(foreign(bddem),install).
 :-set_prolog_flag(unknown,warning).
@@ -1471,6 +1475,40 @@ and2list((A,B),[A|L]):-
   and2list(B,L).
 
 and2list(A,[A]).
+
+write_rules_anyburl(R,File):-
+  open(File,write,S),
+  maplist(print_rule(S),R),
+  close(S).
+
+print_rule(S, (H:P :- B) ):-
+  triple_to_atom(H,HA),
+  numbervars(HA,23,_),
+  and2list(B,BL),
+  maplist(triple_to_atom,BL,BLA),
+  numbervars(BLA,0,_),
+  Supp is round(1000000*P),
+  format(S,"1000000\t~w\t~w\t~w <= ",[Supp,P,HA]),
+  write_body_ab(S,BLA).
+
+triple_to_atom(H,HA):-
+  H=..[_,S,R,T],
+  (R=i(RR)->
+    HA=..[RR,T,S]
+  ;
+    HA=..[R,S,T]
+  ).
+
+write_body_ab(S,[A]):-!,
+  write(S,A),nl(S).
+
+write_body_ab(S,[A|T]):-
+  write(S,A),write(S,', '),
+  write_body_ab(S,T).
+
+
+
+
 write_rules_kg(R,File):-
   open(File,write,S),
   writeln(S,'out(['),
@@ -1517,6 +1555,69 @@ write_body_kg([A],S):-!,
 write_body_kg([A|T],S):-
   format(S,'  ~q,',[A]),
   write_body_kg(T,S).
+
+
+read_rules_anyburl(File,R):-
+  phrase_from_file(rules(R),File).
+
+
+rules([H|T])-->
+  rule(H),!,
+  rules(T).
+
+rules([])--> blanks_to_nl,[].
+
+rule(((tt(X,R,Y):C):-BC))-->
+  integer(_SB),
+  "\t",
+  integer(_S),
+  "\t",
+  float(C),
+  "\t",
+  atm(r(X,R,Y),[],V),
+  " <= ",
+  body(B,V,_),
+  {list2and(B,BC)}.
+
+atm(A,V0,V)-->
+  string_without("\n\t(",P),
+  {atom_string(PA,P)},
+  "(",
+  param(Par1,V0,V1),
+  ",",
+  param(Par2,V1,V),
+  ")",
+  {A=r(Par1,PA,Par2)}.
+
+body([],V,V)-->
+  "\n",!.
+
+body([A],V0,V)-->
+  atm(A,V0,V),"\n",!.
+
+body([A|T],V0,V)-->
+  atm(A,V0,V1),
+  ", ",!,
+  body(T,V1,V).
+
+
+
+param(Var,V0,V)-->
+  prolog_var_name(P),!,
+  {find_var(P,V0,V,Var)}.
+
+param(PA,V,V)-->
+  string_without(",)",P),
+  {atom_string(PA,P)}.
+
+find_var(VN,V0,V0,V):-
+  member(VN:V,V0),!.
+
+find_var(VN,V0,[VN:V|V0],V).
+
+
+
+
 
 write_rules([],_S).
 
