@@ -1482,9 +1482,10 @@ write_rules_anyburl(R,File):-
   close(S).
 
 print_rule(S, (H:P :- B) ):-
-  triple_to_atom(H,HA),
+  copy_term((H,B),(H1,B1)),
+  triple_to_atom(H1,HA),
   numbervars(HA,23,_),
-  and2list(B,BL),
+  and2list(B1,BL),
   maplist(triple_to_atom,BL,BLA),
   numbervars(BLA,0,_),
   Supp is round(1000000*P),
