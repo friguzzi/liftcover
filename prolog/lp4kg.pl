@@ -457,7 +457,7 @@ logistic(X,Sigma_X):-
 
 load_python_module(M):-
   M:local_setting(parameter_learning,PL),
-  (PL=em_python;PL=gd_python),!,
+  (PL=em_python;PL=gd_python; PL=em_torch),!,
   absolute_file_name(library('liftcover.pl'), F),
   file_directory_name(F,Dir),
   py_add_lib_dir(Dir),
@@ -797,6 +797,21 @@ split_list(L0,N,NL,[H|L]):-
     H=L0,
     L=[]
   ).
+
+learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
+  M:local_setting(parameter_learning,em_torch),!,
+  M:local_setting(eps,EA),
+  M:local_setting(eps_f,ER),
+  M:local_setting(iter,Iter),
+  M:local_setting(regularization,Reg),
+  M:local_setting(gamma,Gamma),
+  M:local_setting(zero,Zero),
+  M:local_setting(ab,[A,B]),
+  M:local_setting(verbosity,Verb),
+  processor(M,Device),
+  py_call(liftcover:random_restarts_torch(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL)),
+  format3(M,"Final LL ~f~n",[LL]).
+
 
 learn_param_int(MI,MIN,N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,em),!,
