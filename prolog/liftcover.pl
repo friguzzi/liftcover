@@ -39,6 +39,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   rank_exs/4,
   inst_exs/4,
   induce_par_kg/2,
+  compute_stats_kg/2,
+  compute_par_kg/3,
   write_rules_kg/1,
   write_rules_kg/2,
   write_rules_anyburl/2,
@@ -95,6 +97,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate filter_rules(:,-).
 
 :- meta_predicate induce_par_kg(:,-).
+:- meta_predicate compute_stats_kg(:,+).
+:- meta_predicate compute_par_kg(:,+,-).
 
 
 
@@ -536,6 +540,28 @@ induce_par_kg(M:R,R1):-
   ;
     maplist(compute_statistics_kg(M),Rels,MI,MIN)
   ),
+  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
+  append(Par0,Par),
+  maplist(update_rule,R,Par,R1).
+
+compute_stats_kg(M:R,File):-
+  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
+  maplist(partition_rules(R,M),Rels),
+  (parallel(M)->
+    concurrent_maplist(compute_statistics_kg(M),Rels,MI,MIN)
+  ;
+    maplist(compute_statistics_kg(M),Rels,MI,MIN)
+  ),
+  open(File,write,S),
+  writeln(S,m(MI,MIN)),writeln(S,'.'),
+  close(S).
+
+compute_par_kg(M:R,FileStat,R1):-
+  load_python_module(M),
+  open(FileStat,read,S),
+  read_term(S,m(MI,MIN),[]),
+  close(S),
+  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
   maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
   append(Par0,Par),
   maplist(update_rule,R,Par,R1).
