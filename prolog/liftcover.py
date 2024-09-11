@@ -1,8 +1,10 @@
 
 
 import numpy as np
+from liftcover_em_torch import *
+
 def init(algorithm="em_python", processor="cpu", verb=1):
-    if algorithm=="gd_python":
+    if algorithm=="gd_python" or algorithm=="em_torch":
         import torch
     elif algorithm=="em_python":
         if processor=="gpu":
@@ -14,6 +16,7 @@ def init(algorithm="em_python", processor="cpu", verb=1):
                 print2(verb,"GPU does not exist.")
     else:
         raise ValueError("Unknown algorithm")
+
 
 def lli(probs, counts, xp=np, zero=0.000001):
     nprobs=xp.maximum(1.0-probs, zero)
@@ -217,4 +220,5 @@ def print3(ver,*arg):
 def print4(ver,*arg):
     if ver>3:
         print(*arg)
+
 
