@@ -94,6 +94,8 @@ def em_torch(par, mi, min, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no"
     return par, ll
 
 def random_restarts_torch(mi0, min0, device="cpu", random_restarts_number=1, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no", zero=1e-6, gamma=10, a=0, b=10, ver=1):
+    if device=="gpu":
+        device="cuda"
     # Random restarts EM algorithm with torch
     xp_device = torch.device(device)
     mi = torch.tensor(mi0, dtype=torch.float32, device=xp_device)
