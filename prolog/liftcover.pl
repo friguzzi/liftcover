@@ -37,7 +37,12 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   hits_at_k/7,
   rank_ex/3,
   rank_exs/4,
-  inst_exs/4
+  inst_exs/4,
+  induce_par_kg/2,
+  write_rules_kg/1,
+  write_rules_kg/2,
+  write_rules_anyburl/2,
+  read_rules_anyburl/2
   ]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -48,6 +53,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :-use_module(library(apply)).
 :-use_module(library(settings)).
 :-use_module(library(clpfd), [transpose/2]).
+
+:-use_module(library(dcg/basics)).
 :-absolute_file_name(library(lbfgs),F,[solutions(all)]),atomic_concat(F,'.pl',Fpl),exists_file(Fpl),use_module(library(lbfgs));true.
 %:-use_foreign_library(foreign(bddem),install).
 :-set_prolog_flag(unknown,warning).
@@ -57,6 +64,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 
 :- dynamic lift_input_mod/1.
+:- multifile t/3.
 
 :- thread_local v/3, lift_input_mod/1, local_setting/2, rule_lift_n/1.
 
@@ -86,6 +94,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate setting_lift(:,-).
 :- meta_predicate filter_rules(:,-).
 
+:- meta_predicate induce_par_kg(:,-).
 
 
 
@@ -145,6 +154,8 @@ default_setting_lift(processor,cpu). % where to run em_python and gd_python: cpu
 default_setting_lift(threads,1). % number of threads to use in scoring clause refinements and parameter learning
 default_setting_lift(single_var,false). %false:1 variable for every grounding of a rule; true: 1 variable for rule (even if a rule has more groundings),simpler.
 
+
+:- dynamic pos/2,neg/2.
 /**
  * induce_lift(:TrainFolds:list_of_atoms,-P:probabilistic_program) is det
  *
@@ -508,6 +519,52 @@ induce_parameters(M:Folds,R):-
     true
   ).
 
+
+/**
+ * induce_par_kg(:P:probabilistic_program,-P1:probabilistic_program) is det
+ *
+ * The predicate learns the parameters of the program stored in the in/1 fact
+ * of the input file using the folds indicated in TrainFolds for training.
+ * It returns in P the input program with the updated parameters.
+ */
+induce_par_kg(M:R,R1):-
+  load_python_module(M),
+  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
+  maplist(partition_rules(R,M),Rels),
+  (parallel(M)->
+    concurrent_maplist(compute_statistics_kg(M),Rels,MI,MIN)
+  ;
+    maplist(compute_statistics_kg(M),Rels,MI,MIN)
+  ),
+  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
+  append(Par0,Par),
+  maplist(update_rule,R,Par,R1).
+
+parallel(M):-
+  number_of_threads(M,Th),
+  Th>1.
+  
+induce_parameters_kg(M,Rel,MI,MIN,Par):-
+  format4(M,'Tuning parameters for relation ~w~n',[Rel]),
+  M:local_setting(random_restarts_number,RR),
+  length(MI,N),
+  learn_param_int(MI,MIN,N,M,RR,Par,_LL).
+
+
+partition_rules(R,M,Rel):-
+  findall(R1,(member(R1,R),R1=(tt(_,Rel,_): _ :- _)),RRel),
+  assert(M:rules(Rel,RRel)).
+
+compute_statistics_kg(M,Rel,MI,MIN):-
+  M:rules(Rel,R),
+  length(R,N),
+  format4(M,'Computing clause statistics for relation ~q, ~d clauses~n',[Rel,N]),
+  find_ex_kg(Rel,M,Pos,Neg),
+  length(Pos,NPos),
+  length(Neg,NNeg),
+  format4(M,'Pos ex ~d neg ex ~d~n',[NPos,NNeg]),
+  clauses_statistics_kg(R,M,Rel,Pos,Neg,MI,MIN).
+
 number_of_threads(M,Th):-
   M:local_setting(threads,Th0),
   current_prolog_flag(cpu_count,Cores),
@@ -518,6 +575,14 @@ number_of_threads(M,Th):-
   ),
   setting(max_threads,ThMax),
   Th is min(Th1,ThMax).
+
+
+update_rule((H:_ :- B),P,(H:P :- B)).
+
+find_ex_kg(Rel,M,Pos,Neg):-
+  findall(tt(S,Rel,T),M:t(S,Rel,T),Pos),
+  findall(tt(S,Rel,T),(M:t(S,Rel1,T),Rel1 \= Rel,\+ M:t(S,Rel,T)),Neg).
+
 
 /**
  * filter_rules(:RulesIn:list_of_rules,-RulesOut:list_of_rules) is det
@@ -622,6 +687,46 @@ test_theory_pos_prob_sv([Ex|Rest],M,Th,N,[MI|LMI]):-
   test_clause_prob_sv(Th,M,[Ex],MI0,MI),
   test_theory_pos_prob_sv(Rest,M,Th,N,LMI).
 
+
+
+test_theory_pos_kg(M,Rel,(H:_ :-B),MI):-
+  M:pos(Rel,Ex),
+  maplist(check_rule(H,B,M),Ex,MI).
+
+
+check_rule(H1,B1,M,Ex,Cov):-
+  copy_term((H1,B1),(H,B)),
+  term_variables(B,Vars),
+  H=Ex,
+  ((M:B,oi(Vars))->
+    Cov=1
+  ;
+    Cov=0
+  ).
+
+test_theory_neg_kg(M,Rel,(H:_ :-B),MIN):-
+  M:neg(Rel,Ex),
+  foldl(update_min(H,B,M),Ex,0,MIN).
+
+update_min(H1,B1,M,Ex,MIN0,MIN):-
+  copy_term((H1,B1),(H,B)),
+  term_variables(B,Vars),
+  H=Ex,
+  ((M:B,oi(Vars))->
+    MIN is MIN0+1
+  ;
+    MIN=MIN0
+  ).
+
+oi(Vars):-
+  sort(Vars,VarsOI),
+  length(VarsOI,LOI),
+  length(Vars,L),
+  L=LOI.
+
+
+
+
 learn_param([],M,_,_,_,_,[],MInf,[],[]):-!,
   M:local_setting(minus_infinity,MInf).
 
@@ -663,6 +768,16 @@ test_theory_neg_prob_conc(Pr,M,MIN0,Neg,MIN):-
 test_theory_pos_prob_conc(Pr,M,N,Pos,MI):-
   test_theory_pos_prob(Pos,M,Pr,N,MI).
 
+
+clauses_statistics_kg(Pr,M,Rel,Pos,Neg,MI,MIN):-
+  assert(M:pos(Rel,Pos)),
+  assert(M:neg(Rel,Neg)),
+  maplist(test_theory_neg_kg(M,Rel),Pr,MIN),
+  maplist(test_theory_pos_kg(M,Rel),Pr,MIT),
+  transpose(MIT,MI),
+  retract(M:pos(Rel,Pos)),
+  retract(M:neg(Rel,Neg)).
+
 chunks(L,N,Chunks):-
   length(L,Len),
   LenChunks is round(Len/N),
@@ -695,7 +810,7 @@ learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
   processor(M,Device),
   py_call(liftcover:random_restarts_torch(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL)),
   format3(M,"Final LL ~f~n",[LL]).
-  
+
 
 learn_param_int(MI,MIN,N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,em),!,
@@ -1367,6 +1482,156 @@ rule2term(rule(_N,HL,BL,_Lit),(H:-B)):-!,
 
 rule2term(def_rule(H,BL,_Lit),((H:1.0):-B)):-
   list2and(BL,B).
+
+
+and2list((A,B),[A|L]):-
+  !,
+  and2list(B,L).
+
+and2list(A,[A]).
+
+write_rules_anyburl(R,File):-
+  open(File,write,S),
+  maplist(print_rule(S),R),
+  close(S).
+
+print_rule(S, (H:P :- B) ):-
+  copy_term((H,B),(H1,B1)),
+  triple_to_atom(H1,HA),
+  numbervars(HA,23,_),
+  and2list(B1,BL),
+  maplist(triple_to_atom,BL,BLA),
+  numbervars(BLA,0,_),
+  Supp is round(1000000*P),
+  format(S,"1000000\t~w\t~w\t~w <= ",[Supp,P,HA]),
+  write_body_ab(S,BLA).
+
+triple_to_atom(H,HA):-
+  H=..[_,S,R,T],
+  (R=i(RR)->
+    HA=..[RR,T,S]
+  ;
+    HA=..[R,S,T]
+  ).
+
+write_body_ab(S,[A]):-!,
+  write(S,A),nl(S).
+
+write_body_ab(S,[A|T]):-
+  write(S,A),write(S,', '),
+  write_body_ab(S,T).
+
+
+
+
+write_rules_kg(R,File):-
+  open(File,write,S),
+  writeln(S,'out(['),
+  write_clauses_kg(R,S),
+  writeln(S,']).'),
+  close(S).
+
+
+write_rules_kg(R):-
+  maplist(write_clause_kg_screen,R).
+
+write_clause_kg_screen(Cl):-
+  write_clause_kg(user_output,Cl),
+  writeln('.').
+
+write_clauses_kg([Cl],S):-!,
+  write(S,'('),
+  write_clause_kg(S,Cl),
+  writeln(S,')').
+
+write_clauses_kg([ClH|ClT],S):-
+  write(S,'('),
+  write_clause_kg(S,ClH),
+  writeln(S,'),'),
+  write_clauses_kg(ClT,S).
+
+write_clause_kg(S,(H:-B)):-
+  copy_term((H,B),(H1,B1)),
+  numbervars((H1,B1),0,_),
+  write_head_kg(H1,S),
+  format(S,' :-',[]),
+  and2list(B1,L),
+  write_body_kg(L,S).
+
+write_head_kg(A:P,S):-
+  format(S,"~q:~g",[A,P]).
+
+write_body_kg([],S):-!,
+  format(S,'  true',[]).
+
+write_body_kg([A],S):-!,
+  format(S,'  ~q',[A]).
+
+write_body_kg([A|T],S):-
+  format(S,'  ~q,',[A]),
+  write_body_kg(T,S).
+
+
+read_rules_anyburl(File,R):-
+  phrase_from_file(rules(R),File).
+
+
+rules([H|T])-->
+  rule(H),!,
+  rules(T).
+
+rules([])--> blanks_to_nl,[].
+
+rule(((tt(X,R,Y):C):-BC))-->
+  integer(_SB),
+  "\t",
+  integer(_S),
+  "\t",
+  float(C),
+  "\t",
+  atm(r(X,R,Y),[],V),
+  " <= ",
+  body(B,V,_),
+  {list2and(B,BC)}.
+
+atm(A,V0,V)-->
+  string_without("\n\t(",P),
+  {atom_string(PA,P)},
+  "(",
+  param(Par1,V0,V1),
+  ",",
+  param(Par2,V1,V),
+  ")",
+  {A=r(Par1,PA,Par2)}.
+
+body([],V,V)-->
+  "\n",!.
+
+body([A],V0,V)-->
+  atm(A,V0,V),"\n",!.
+
+body([A|T],V0,V)-->
+  atm(A,V0,V1),
+  ", ",!,
+  body(T,V1,V).
+
+
+
+param(Var,V0,V)-->
+  prolog_var_name(P),!,
+  {find_var(P,V0,V,Var)}.
+
+param(PA,V,V)-->
+  string_without(",)",P),
+  {atom_string(PA,P)}.
+
+find_var(VN,V0,V0,V):-
+  member(VN:V,V0),!.
+
+find_var(VN,V0,[VN:V|V0],V).
+
+
+
 
 
 write_rules([],_S).
