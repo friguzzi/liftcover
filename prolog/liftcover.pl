@@ -66,7 +66,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 
 
 :- dynamic lift_input_mod/1.
-:- multifile t/3.
+
 
 :- thread_local v/3, lift_input_mod/1, local_setting/2, rule_lift_n/1.
 
@@ -159,7 +159,6 @@ default_setting_lift(threads,1). % number of threads to use in scoring clause re
 default_setting_lift(single_var,false). %false:1 variable for every grounding of a rule; true: 1 variable for rule (even if a rule has more groundings),simpler.
 
 
-:- dynamic pos/2,neg/2.
 /**
  * induce_lift(:TrainFolds:list_of_atoms,-P:probabilistic_program) is det
  *
@@ -542,6 +541,7 @@ induce_par_kg(M:R,R1):-
   ),
   maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
   append(Par0,Par),
+  retractall(M:rules(_,_)),
   maplist(update_rule,R,Par,R1).
 
 compute_stats_kg(M:R,File):-
@@ -552,6 +552,7 @@ compute_stats_kg(M:R,File):-
   ;
     maplist(compute_statistics_kg(M),Rels,MI,MIN)
   ),
+  retractall(M:rules(_,_)),
   open(File,write,S),
   writeln(S,m(MI,MIN)),writeln(S,'.'),
   close(S).
