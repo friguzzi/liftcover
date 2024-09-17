@@ -35,5 +35,15 @@ test(induce_nations):-
   writeln('Result:'),
   writeln(R1).
 
+
+test(induce_nations_pos):-
+  set_lift(parameter_learning,em_python),
+  set_lift(verbosity,0),
+  set_lift(regularization,l2),
+  out(R),
+  induce_par_pos_kg(R,R1),
+  writeln('Result:'),
+  writeln(R1).
+
 :- end_tests(nations).
 

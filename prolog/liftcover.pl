@@ -39,7 +39,9 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   rank_exs/4,
   inst_exs/4,
   induce_par_kg/2,
+  induce_par_pos_kg/2,
   compute_stats_kg/2,
+  compute_stats_pos_kg/2,
   compute_par_kg/3,
   write_rules_kg/1,
   write_rules_kg/2,
@@ -97,7 +99,9 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate filter_rules(:,-).
 
 :- meta_predicate induce_par_kg(:,-).
+:- meta_predicate induce_par_pos_kg(:,-).
 :- meta_predicate compute_stats_kg(:,+).
+:- meta_predicate compute_stats_pos_kg(:,+).
 :- meta_predicate compute_par_kg(:,+,-).
 
 
@@ -544,6 +548,20 @@ induce_par_kg(M:R,R1):-
   retractall(M:rules(_,_)),
   maplist(update_rule,R,Par,R1).
 
+induce_par_pos_kg(M:R,R1):-
+  load_python_module(M),
+  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
+  maplist(partition_rules(R,M),Rels),
+  (parallel(M)->
+    concurrent_maplist(compute_statistics_pos_kg(M),Rels,MI,MIN)
+  ;
+    maplist(compute_statistics_pos_kg(M),Rels,MI,MIN)
+  ),
+  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
+  append(Par0,Par),
+  retractall(M:rules(_,_)),
+  maplist(update_rule,R,Par,R1).
+
 compute_stats_kg(M:R,File):-
   setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
   maplist(partition_rules(R,M),Rels),
@@ -551,6 +569,19 @@ compute_stats_kg(M:R,File):-
     concurrent_maplist(compute_statistics_kg(M),Rels,MI,MIN)
   ;
     maplist(compute_statistics_kg(M),Rels,MI,MIN)
+  ),
+  retractall(M:rules(_,_)),
+  open(File,write,S),
+  writeln(S,m(MI,MIN)),writeln(S,'.'),
+  close(S).
+
+compute_stats_pos_kg(M:R,File):-
+  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
+  maplist(partition_rules(R,M),Rels),
+  (parallel(M)->
+    concurrent_maplist(compute_statistics_pos_kg(M),Rels,MI,MIN)
+  ;
+    maplist(compute_statistics_pos_kg(M),Rels,MI,MIN)
   ),
   retractall(M:rules(_,_)),
   open(File,write,S),
@@ -592,6 +623,15 @@ compute_statistics_kg(M,Rel,MI,MIN):-
   format4(M,'Pos ex ~d neg ex ~d~n',[NPos,NNeg]),
   clauses_statistics_kg(R,M,Rel,Pos,Neg,MI,MIN).
 
+compute_statistics_pos_kg(M,Rel,MI,MIN):-
+  M:rules(Rel,R),
+  length(R,N),
+  format4(M,'Computing clause statistics for relation ~q, ~d clauses~n',[Rel,N]),
+  find_pos_ex_kg(Rel,M,Pos),
+  length(Pos,NPos),
+  format4(M,'Pos ex ~d neg ex ~d~n',[NPos,0]),
+  clauses_statistics_kg(R,M,Rel,Pos,[],MI,MIN).
+
 number_of_threads(M,Th):-
   M:local_setting(threads,Th0),
   current_prolog_flag(cpu_count,Cores),
@@ -607,8 +647,11 @@ number_of_threads(M,Th):-
 update_rule((H:_ :- B),P,(H:P :- B)).
 
 find_ex_kg(Rel,M,Pos,Neg):-
-  findall(tt(S,Rel,T),M:t(S,Rel,T),Pos),
+  find_pos_ex_kg(Rel,M,Pos),
   findall(tt(S,Rel,T),(M:t(S,Rel1,T),Rel1 \= Rel,\+ M:t(S,Rel,T)),Neg).
+
+find_pos_ex_kg(Rel,M,Pos):-
+  findall(tt(S,Rel,T),M:t(S,Rel,T),Pos).
 
 
 /**
