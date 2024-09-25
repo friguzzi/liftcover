@@ -15,13 +15,13 @@ def expectation_torch(par, mi, min, zero=1e-6):
     lln = lli_torch(par, min, zero)
     eta = eta0i_torch(min)
 
-    par_broadcasted = par.unsqueeze(0).expand_as(mi)  
-    prod = (1 - par_broadcasted).pow(mi).prod(dim=1) 
+    # par_broadcasted = par.unsqueeze(0).expand_as(mi)  
+    prod = (1 - par).pow(mi).prod(dim=1) 
 
     probex = torch.clamp(1.0 - prod, min=zero)
     ll = lln + torch.sum(torch.log(probex))
 
-    condp = (par_broadcasted / probex.unsqueeze(1))  
+    condp = (par / probex.unsqueeze(1))  
     ocondp = torch.clamp(1 - condp, min=0.0)
 
     # Use in-place operations
@@ -29,6 +29,37 @@ def expectation_torch(par, mi, min, zero=1e-6):
     eta[:, 1].add_((condp * mi).sum(dim=0))   # In-place addition
 
     return eta, ll
+
+def expectation_torch_in_chunks(par, mi, min_vals, chunk_size=100, zero=1e-6):
+    lln = lli_torch(par, min_vals, zero)
+    eta = eta0i_torch(min_vals)
+
+    num_chunks = (mi.size(0) + chunk_size - 1) // chunk_size  # Calculate number of chunks
+
+    for i in range(num_chunks):
+        # Select the current chunk
+        start = i * chunk_size
+        end = min(start + chunk_size, mi.size(0))  # Use Python's built-in min function
+
+        mi_chunk = mi[start:end]
+
+        # Apply element-wise operations for the chunk
+        prod_chunk = (1 - par).pow(mi_chunk).prod(dim=1)
+        probex_chunk = torch.clamp(1.0 - prod_chunk, min=zero)
+
+        # Update the log-likelihood for the chunk
+        lln.add_(torch.sum(torch.log(probex_chunk)))
+
+        # Update eta for the chunk
+        condp_chunk = par / probex_chunk.unsqueeze(1)
+        ocondp_chunk = torch.clamp(1 - condp_chunk, min=0.0)
+
+        eta[:, 0].add_((ocondp_chunk * mi_chunk).sum(dim=0))
+        eta[:, 1].add_((condp_chunk * mi_chunk).sum(dim=0))
+
+    return eta, lln
+
+
 
 
 def maximization_no_torch(eta, zero=1e-6):
@@ -82,7 +113,7 @@ def em_torch(par, mi, min, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no"
     # EM algorithm with torch
     ll = -1e20
     for i in range(maxiter):
-        eta, ll1 = expectation_torch(par, mi, min, zero)
+        eta, ll1 = expectation_torch_in_chunks(par, mi, min)
         print(f"Iteration {i}, Log-Likelihood: {ll1.item()}")
         
         par1 = maximization_torch(eta, regularization, zero, gamma, a, b)
@@ -94,6 +125,8 @@ def em_torch(par, mi, min, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no"
     return par, ll
 
 def random_restarts_torch(mi0, min0, device="cpu", random_restarts_number=1, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no", zero=1e-6, gamma=10, a=0, b=10, ver=1):
+    if device=="gpu":
+        device="cuda"
     # Random restarts EM algorithm with torch
     xp_device = torch.device(device)
     mi = torch.tensor(mi0, dtype=torch.float32, device=xp_device)
