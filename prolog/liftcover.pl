@@ -537,7 +537,9 @@ induce_parameters(M:Folds,R):-
 induce_par_kg(M:R,R1):-
   load_python_module(M),
   setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
-  maplist(partition_rules(R,M),Rels),
+  assert(M:rules(R)),
+  maplist(partition_rules(M),Rels),
+  retract(M:rules(R)),
   (parallel(M)->
     concurrent_maplist(compute_statistics_kg(M),Rels,MI,MIN)
   ;
@@ -551,7 +553,9 @@ induce_par_kg(M:R,R1):-
 induce_par_pos_kg(M:R,R1):-
   load_python_module(M),
   setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
-  maplist(partition_rules(R,M),Rels),
+  assert(M:rules(R)),
+  maplist(partition_rules(M),Rels),
+  retract(M:rules(R)),
   (parallel(M)->
     concurrent_maplist(compute_statistics_pos_kg(M),Rels,MI,MIN)
   ;
@@ -564,7 +568,9 @@ induce_par_pos_kg(M:R,R1):-
 
 compute_stats_kg(M:R,File):-
   setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
-  maplist(partition_rules(R,M),Rels),
+  assert(M:rules(R)),
+  maplist(partition_rules(M),Rels),
+  retract(M:rules(R)),
   (parallel(M)->
     concurrent_maplist(compute_statistics_kg(M),Rels,MI,MIN)
   ;
@@ -577,7 +583,9 @@ compute_stats_kg(M:R,File):-
 
 compute_stats_pos_kg(M:R,File):-
   setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
-  maplist(partition_rules(R,M),Rels),
+  assert(M:rules(R)),
+  maplist(partition_rules(M),Rels),
+  retract(M:rules(R)),
   (parallel(M)->
     concurrent_maplist(compute_statistics_pos_kg(M),Rels,MI,MIN)
   ;
@@ -609,7 +617,8 @@ induce_parameters_kg(M,Rel,MI,MIN,Par):-
   learn_param_int(MI,MIN,N,M,RR,Par,_LL).
 
 
-partition_rules(R,M,Rel):-
+partition_rules(M,Rel):-
+  M:rules(R),
   findall(R1,(member(R1,R),R1=(tt(_,Rel,_): _ :- _)),RRel),
   assert(M:rules(Rel,RRel)).
 
@@ -767,8 +776,7 @@ test_theory_pos_kg(M,Rel,(H:_ :-B),MI):-
 check_rule(H1,B1,M,Ex,Cov):-
   copy_term((H1,B1),(H,B)),
   term_variables(B,Vars),
-  H=Ex,
-  ((M:B,oi(Vars))->
+  ((H=Ex,M:B,oi(Vars))->
     Cov=1
   ;
     Cov=0
@@ -781,8 +789,7 @@ test_theory_neg_kg(M,Rel,(H:_ :-B),MIN):-
 update_min(H1,B1,M,Ex,MIN0,MIN):-
   copy_term((H1,B1),(H,B)),
   term_variables(B,Vars),
-  H=Ex,
-  ((M:B,oi(Vars))->
+  ((H=Ex,M:B,oi(Vars))->
     MIN is MIN0+1
   ;
     MIN=MIN0
@@ -1659,7 +1666,7 @@ rule(((tt(X,R,Y):C):-BC))-->
   "\t",
   float(C),
   "\t",
-  atm(r(X,R,Y),[],V),
+  atm(t(X,R,Y),[],V),
   " <= ",
   body(B,V,_),
   {list2and(B,BC)}.
@@ -1672,7 +1679,7 @@ atm(A,V0,V)-->
   ",",
   param(Par2,V1,V),
   ")",
-  {A=r(Par1,PA,Par2)}.
+  {A=t(Par1,PA,Par2)}.
 
 body([],V,V)-->
   "\n",!.
