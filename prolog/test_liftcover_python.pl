@@ -11,7 +11,7 @@ test_all:-
   run_tests(A).
 
 tests([carc,muta,nba,bongard]).
-
+ 
 
 :- begin_tests(carc, []).
 :-ensure_loaded(library(examples_lift/carc)).
@@ -20,6 +20,22 @@ tests([carc,muta,nba,bongard]).
 test(induce_par_carc):-
   set_lift(verbosity,0),
   set_lift(parameter_learning,em_python),
+  set_lift(iter,100),
+  induce_par_lift([train],P),
+  test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =', -26.41604269110072,
+  '\nAUCROC =',0.6710526315789473,
+  '\nAUCPR =', 0.5989337661969046],St1),
+  writeln(St1).
+
+test(induce_par_em_torch_carc):-
+  set_lift(verbosity,0),
+  set_lift(parameter_learning,em_torch),
   set_lift(iter,100),
   induce_par_lift([train],P),
   test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
@@ -60,6 +76,20 @@ test(induce_par_gd_carc):-
 test(induce_par_muta):-
   set_lift(verbosity,0),
   set_lift(parameter_learning,em_python),
+  induce_par_lift([1,2,3,4,5,6,7,8,9],P),test_lift(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n',
+  '\nLL =',-50.3968461506984,
+  '\nAUCROC =',0.4924242424242425,
+  '\nAUCPR =', 0.7123209210586535],St1),
+  writeln(St1).
+
+test(induce_par_em_torch_muta):-
+  set_lift(verbosity,0),
+  set_lift(parameter_learning,em_torch),
   induce_par_lift([1,2,3,4,5,6,7,8,9],P),test_lift(P,[10],LL,AUCROC,_ROC,AUCPR,_PR),
   writeln('Result:'),
   writeln(P),
@@ -140,6 +170,52 @@ test(induce_nba_bayesian):-
   '\nAUCPR =', 0.8189102564102563],St1),
   writeln(St1).
 
+
+test(induce_nba_em_torch_l1):-
+  set_lift(verbosity,0),
+  set_lift(regularization,l1),
+  set_lift(parameter_learning,em_torch),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n', 
+  '\nLL =', -49.7938188339248,
+  '\nAUCROC =',0.625,
+  '\nAUCPR =', 0.8189102564102563],St1),
+  writeln(St1).
+
+test(induce_nba_em_torch_l2):-
+  set_lift(verbosity,0),
+  set_lift(regularization,l2),
+  set_lift(parameter_learning,em_torch),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n', 
+  '\nLL =', -49.7938188339248,
+  '\nAUCROC =',0.625,
+  '\nAUCPR =', 0.8189102564102563],St1),
+  writeln(St1).
+
+test(induce_nba_em_torch_bayesian):-
+  set_lift(verbosity,0),
+  set_lift(regularization,bayesian),
+  set_lift(parameter_learning,em_torch),
+  induce_lift([f1,f2,f3,f4],P),test_lift(P,[f5],LL,AUCROC,_ROC,AUCPR,_PR),
+  writeln('Result:'),
+  writeln(P),
+  atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+  writeln(St),
+  atomic_list_concat(['Expected:\n', 
+  '\nLL =', -49.7938188339248,
+  '\nAUCROC =',0.625,
+  '\nAUCPR =', 0.8189102564102563],St1),
+  writeln(St1).
+
 :- end_tests(nba).
 
 
@@ -197,6 +273,22 @@ test(induce_conc_bongard):-
   '\nAUCROC =',0.8199872286079184,
   '\nAUCPR =',0.6676162174173899],St1),
   writeln(St1).
+
+  test(induce_conc_em_torch_bongard):-
+    set_lift(verbosity,1),
+    set_lift(parameter_learning,em_torch),
+    set_lift(threads,2),
+    induce_lift([train],P),test_lift(P,[test],LL,AUCROC,_ROC,AUCPR,_PR),
+    writeln('Result:'),
+    writeln(P),
+    atomic_list_concat(['\nLL=',LL,'\nAUCROC=',AUCROC,'\nAUCPR=',AUCPR,'\n'],St),
+    writeln(St),
+    atomic_list_concat(['Expected:\n',
+    '\nLL =',-88.11894369013643,
+    '\nAUCROC =',0.8199872286079184,
+    '\nAUCPR =',0.6676162174173899],St1),
+    writeln(St1).
+
 test(induce_gd_l1_bongard):-
   set_lift(verbosity,1),
   set_lift(parameter_learning,gd_python),
