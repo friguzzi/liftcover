@@ -46,7 +46,8 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
   write_rules_kg/1,
   write_rules_kg/2,
   write_rules_anyburl/2,
-  read_rules_anyburl/2
+  read_rules_anyburl/2,
+  rules_for_rel/3
   ]).
 :-use_module(library(auc)).
 :-use_module(library(lists)).
@@ -103,6 +104,7 @@ Copyright (c) 2016, Fabrizio Riguzzi and Elena Bellodi
 :- meta_predicate compute_stats_kg(:,+).
 :- meta_predicate compute_stats_pos_kg(:,+).
 :- meta_predicate compute_par_kg(:,+,-).
+:- meta_predicate rules_for_rel(:,+,-).
 
 
 
@@ -615,6 +617,13 @@ induce_parameters_kg(M,Rel,MI,MIN,Par):-
   M:local_setting(random_restarts_number,RR),
   length(MI,N),
   learn_param_int(MI,MIN,N,M,RR,Par,_LL).
+
+rules_for_rel(M:Rules,Rel,RulesRel):-
+  assert(M:rules(Rules)),
+  partition_rules(M,Rel),
+  M:rules(Rel,RulesRel),
+  retract(M:rules(_)),
+  retract(M:rules(Rel,_)).
 
 
 partition_rules(M,Rel):-
