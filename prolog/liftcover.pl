@@ -538,7 +538,7 @@ induce_parameters(M:Folds,R):-
  */
 induce_par_kg(M:R,R1):-
   load_python_module(M),
-  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
+  compute_rel(R,Rels),
   assert(M:rules(R)),
   maplist(partition_rules(M),Rels),
   retract(M:rules(R)),
@@ -554,7 +554,7 @@ induce_par_kg(M:R,R1):-
 
 induce_par_pos_kg(M:R,R1):-
   load_python_module(M),
-  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
+  compute_rel(R,Rels),
   assert(M:rules(R)),
   maplist(partition_rules(M),Rels),
   retract(M:rules(R)),
@@ -569,7 +569,7 @@ induce_par_pos_kg(M:R,R1):-
   maplist(update_rule,R,Par,R1).
 
 compute_stats_kg(M:R,File):-
-  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
+  compute_rel(R,Rels),
   assert(M:rules(R)),
   maplist(partition_rules(M),Rels),
   retract(M:rules(R)),
@@ -584,7 +584,7 @@ compute_stats_kg(M:R,File):-
   close(S).
 
 compute_stats_pos_kg(M:R,File):-
-  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
+  compute_rel(R,Rels),
   assert(M:rules(R)),
   maplist(partition_rules(M),Rels),
   retract(M:rules(R)),
@@ -598,12 +598,15 @@ compute_stats_pos_kg(M:R,File):-
   writeln(S,m(MI,MIN)),writeln(S,'.'),
   close(S).
 
+compute_rel(R,Rels):-
+  setof(Rel,(H,T,P,B,R)^member((tt(H,Rel,T): P :- B),R),Rels).
+
 compute_par_kg(M:R,FileStat,R1):-
   load_python_module(M),
   open(FileStat,read,S),
   read_term(S,m(MI,MIN),[]),
   close(S),
-  setof(Rel,(H,T)^(M:t(H,Rel,T)),Rels),
+  compute_rel(R,Rels),
   maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
   append(Par0,Par),
   maplist(update_rule,R,Par,R1).
