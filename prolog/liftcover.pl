@@ -1708,7 +1708,7 @@ body([A|T],V0,V)-->
 
 param(Var,V0,V)-->
   prolog_var_name(P),!,
-  {find_var(P,V0,V,Var)}.
+  {atom_length(P,1),find_var(P,V0,V,Var)}.
 
 param(PA,V,V)-->
   string_without(",)",P),
