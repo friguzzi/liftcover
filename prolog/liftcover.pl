@@ -513,7 +513,7 @@ induce_parameters(M:Folds,R):-
   process_clauses(R00,M,R0),
   statistics(walltime,[_,_]),
   find_ex(DB,M,Pos,Neg,_NPos,_NNeg),
-  M:local_setting(random_restarts_number_str_learn,RR),
+  M:local_setting(random_restarts_number,RR),
   number_of_threads(M,Th),
   learn_param(R0,M,Pos,Neg,RR,Th,R1,Score,_MI,_MIN),
   sort_rules_int(R1,R),
@@ -897,7 +897,11 @@ learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
   M:local_setting(ab,[A,B]),
   M:local_setting(verbosity,Verb),
   processor(M,Device),
-  py_call(liftcover:random_restarts_torch(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL)),
+  (NR=fixed(P) ->
+    py_call(liftcover:fixed_initial_par(MI,MIN,Device,P,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL))
+  ;
+    py_call(liftcover:random_restarts_torch(MI,MIN,Device,NR,Iter,EA,ER,Reg,Zero,Gamma,A,B,Verb),-(Par,LL))
+  ),
   format3(M,"Final LL ~f~n",[LL]).
 
 
