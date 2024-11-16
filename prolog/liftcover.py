@@ -1,6 +1,7 @@
 
 
 import numpy as np
+import math
 from liftcover_em_torch import *
 
 def init(algorithm="em_python", processor="cpu", verb=1):
@@ -127,7 +128,11 @@ class Model:
         self.device=device
         self.torch=torch
         if parR:
-            self.parR=torch.tensor(parR,dtype=torch.float64,requires_grad=Truei,device=device)
+            parameter = math.log(parR / (1 - parR))
+            par0 = torch.empty((len(min),), device=device,dtype=torch.float64)
+            self.parR=par0.new_full((len(min),),parameter,requires_grad=True)
+            print4(5,"Initial Parameters:", self.torch.special.expit(self.parR).tolist())        
+
         else:
             self.parR=torch.randn_like(self.min,dtype=torch.float64,requires_grad=True,device=device)
 
@@ -138,19 +143,33 @@ class Model:
         zero=self.torch.tensor(self.zero,device=self.device)
         prod=self.torch.sum(self.torch.log(one-par)*self.mi,axis=1)
         probex=self.torch.maximum(one-self.torch.exp(prod), zero)
+        #probex=one-self.torch.exp(prod)
         ll=lln+self.torch.sum(self.torch.log(probex))
         ll=-ll
         if self.regularization=="l1":
             ll=ll+self.gamma*self.torch.sum(par)
         elif self.regularization=="l2":
             ll=ll+self.gamma*self.torch.sum(self.torch.square(par))
-            
+ 
+
         return ll
     
     def parameters(self):
         return [self.parR]
+def gd_fixed_par(min,mi,device,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", 
+       regularization="no", gamma=10, lr=0.01,
+       lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, zero=0.000001, ver=0):
+    
+    import torch
+    min=torch.tensor(min,device=device)
+    mi=torch.tensor(mi,device=device)
+    par1, ll1=gd(min,mi,torch,device,parR,maxiter=maxiter,tol=tol, opt=opt, regularization=regularization,
+                     gamma=gamma, lr=lr, lr_adam=lr_adam, 
+                     betas=betas, eps=eps, zero=zero, ver=ver)
+    par=torch.special.expit(par1)
+    return par.tolist(), ll1.item()
 
-def gd(min,mi,device,torch,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", 
+def gd(min,mi,torch,device,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learning_rate", 
        regularization="no", gamma=10, lr=0.01,
        lr_adam=0.001, betas=(0.9,0.999), eps=1e-8, zero=0.000001, ver=0):
     model=Model(min,mi,device,torch,parR,regularization,gamma,zero)
@@ -166,9 +185,10 @@ def gd(min,mi,device,torch,parR=False,maxiter=1000,tol=0.0001, opt="fixed_learni
     for i in range(maxiter):
         optimizer.zero_grad()
         ll1=model.forward(model.parR)
-        print4(ver,"GD iteration ",i, " LL ",ll1.item())
+        print4(ver,"GD iteration ",i, " LL ",-ll1.item())
         ll1.backward()
         optimizer.step()
+        print4(ver,"Parameters:", torch.special.expit(model.parR).tolist())        
         diff=torch.abs(ll1-ll)
         ll=ll1
         if diff.item()<tol:
@@ -196,7 +216,7 @@ def random_restarts_gd(mi,min,processor="cpu",random_restarts_number=1,
     
     for i in range(random_restarts_number):
         print3(ver,"GD Restart number ",i)
-        par1, ll1=gd(min,mi,device,torch,maxiter=maxiter,tol=tol, opt=opt, regularization=regularization,
+        par1, ll1=gd(min,mi,torch,device,maxiter=maxiter,tol=tol, opt=opt, regularization=regularization,
                      gamma=gamma, lr=lr, lr_adam=lr_adam, 
                      betas=betas, eps=eps, zero=zero, ver=ver)
         print3(ver,"GD Random_restart: Score ",ll1.item())
@@ -222,3 +242,41 @@ def print4(ver,*arg):
         print(*arg)
 
 
+def main():
+    import torch
+    import random
+    mi0 = [
+        [8, 2, 1],  
+        [3, 7, 0],
+        [5, 3, 4],
+        [4, 1, 5],
+        [2, 8, 0],
+        [1, 3, 6],
+        [6, 4, 0],
+        [3, 3, 4],
+        [5, 2, 3],
+        [9, 1, 1],
+    ]
+    """
+    mi0=[
+        [1,1,1]
+    ]
+    """
+#    min0 = [3, 4, 6]
+    min0 = [0, 0, 0]
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    min=torch.tensor(min0,device=device)
+    mi=torch.tensor(mi0,device=device)    
+    regularization = "l1" #random.choice(["no", "l1", "l2", "bayesian"])
+    print("Regularization:", regularization)
+    best_params, best_ll = gd(min, mi,torch=torch, device=device, gamma=5, parR=0.8,
+                             ver=4, regularization=regularization)
+    #random_restarts_torch(
+    #    mi0, min0, device=device, random_restarts_number=5, maxiter=50, tol=1e-4, tolr=1e-5, regularization=regularization, ver=4
+    #)
+    print("Best Parameters:", torch.special.expit(best_params).tolist())
+    print("Max Log-Likelihood:", best_ll.item())
+
+if __name__ == "__main__":
+    main()

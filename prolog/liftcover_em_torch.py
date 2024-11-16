@@ -124,14 +124,14 @@ def em_torch(par, mi, min, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no"
             break
     return par, ll
 
-def fixed_initial_par(mi0, min0, device="cpu", parameter=1.0, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no", zero=1e-6, gamma=10, a=0, b=10, ver=1):
+def fixed_initial_par(mi0, min0, device="cpu", parameter=0.90, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no", zero=1e-6, gamma=10, a=0, b=10, ver=1):
     if device=="gpu":
         device="cuda"
     # Random restarts EM algorithm with torch
     xp_device = torch.device(device)
     mi = torch.tensor(mi0, dtype=torch.float32, device=xp_device)
     min = torch.tensor(min0, dtype=torch.float32, device=xp_device)
-    par0 = torch.ones(len(min), device=xp_device)
+    par0 = torch.empty((len(min),), device=xp_device)
     par0=par0.new_full((len(min),),parameter)
     par, ll = em_torch(par0, mi, min, maxiter, tol, tolr, regularization, zero, gamma, a, b, ver)
     return par.tolist(), ll.item()
@@ -160,7 +160,7 @@ def random_restarts_torch(mi0, min0, device="cpu", random_restarts_number=1, max
     return max_par.tolist(), max_ll.item()
 
 def main():
-    mi0 = [
+    '''mi0 = [
         [8, 2, 1],  
         [3, 7, 0],
         [5, 3, 4],
@@ -172,13 +172,16 @@ def main():
         [5, 2, 3],
         [9, 1, 1],
     ]
-    
+    '''
+    mi0=[
+        [1,1,1]
+    ]
 #    min0 = [3, 4, 6]
     min0 = [0, 0, 0]
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    regularization = random.choice(["no", "l1", "l2", "bayesian"])
+    regularization = "l1" #random.choice(["no", "l1", "l2", "bayesian"])
     print("Regularization:", regularization)
-    best_params, best_ll = fixed_initial_par(mi0, min0, device=device)
+    best_params, best_ll = fixed_initial_par(mi0, min0, device=device, regularization=regularization)
     #random_restarts_torch(
     #    mi0, min0, device=device, random_restarts_number=5, maxiter=50, tol=1e-4, tolr=1e-5, regularization=regularization, ver=4
     #)

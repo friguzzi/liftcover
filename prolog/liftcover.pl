@@ -944,8 +944,13 @@ learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
   M:local_setting(regularization,Reg),
   M:local_setting(zero,Zero),
   processor(M,Device),
-  py_call(liftcover:random_restarts_gd(MI,MIN,Device,NR,UpdateMethod,
-    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Zero,Verb),-(Par,LL)),
+  (NR=fixed(P) ->
+    py_call(liftcover:gd_fixed_par(MIN,MI,Device,P,Iter,Eps,UpdateMethod,Reg,Gamma,LearningRate,Eta,
+      -(Beta1,Beta2),Epsilon,Zero,Verb),-(Par,LL))
+  ;
+    py_call(liftcover:random_restarts_gd(MI,MIN,Device,NR,UpdateMethod,
+    Iter,Eps,Reg,Gamma,LearningRate,Eta,-(Beta1,Beta2),Epsilon,Zero,Verb),-(Par,LL))
+  ),
   format3(M,"Final LL ~f~n",[LL]).
 
 
