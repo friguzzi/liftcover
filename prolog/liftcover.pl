@@ -547,10 +547,10 @@ induce_par_kg(M:R,R1):-
   ;
     maplist(compute_statistics_kg(M),Rels,MI,MIN)
   ),
-  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
-  append(Par0,Par),
+  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par),
+  maplist(update_rules_rel(M),Rels,Par,R0),
   retractall(M:rules(_,_)),
-  maplist(update_rule,R,Par,R1).
+  append(R0,R1).
 
 induce_par_pos_kg(M:R,R1):-
   load_python_module(M),
@@ -563,10 +563,10 @@ induce_par_pos_kg(M:R,R1):-
   ;
     maplist(compute_statistics_pos_kg(M),Rels,MI,MIN)
   ),
-  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
-  append(Par0,Par),
+  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par),
+  maplist(update_rules_rel(M),Rels,Par,R0),
   retractall(M:rules(_,_)),
-  maplist(update_rule,R,Par,R1).
+  append(R0,R1).
 
 compute_stats_kg(M:R,File):-
   compute_rel(R,Rels),
@@ -606,10 +606,20 @@ compute_par_kg(M:R,FileStat,R1):-
   open(FileStat,read,S),
   read_term(S,m(MI,MIN),[]),
   close(S),
+  assert(M:rules(R)),
   compute_rel(R,Rels),
-  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par0),
-  append(Par0,Par),
-  maplist(update_rule,R,Par,R1).
+  maplist(partition_rules(M),Rels),
+  retract(M:rules(R)),
+  maplist(induce_parameters_kg(M),Rels,MI,MIN,Par),
+  flush_output,
+  maplist(update_rules_rel(M),Rels,Par,R0),
+  retractall(M:rules(_,_)),
+  append(R0,R1).
+
+update_rules_rel(M,Rel,Par,R):-
+  M:rules(Rel,R0),
+  flush_output,
+  maplist(update_rule,R0,Par,R).
 
 parallel(M):-
   number_of_threads(M,Th),
@@ -885,6 +895,10 @@ split_list(L0,N,NL,[H|L]):-
     H=L0,
     L=[]
   ).
+
+% case of no rules
+%learn_param_int(_MI,[],_N,_M,_NR,[],-inf):-!,
+%  writeln("No rules").
 
 learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
   M:local_setting(parameter_learning,em_torch),!,

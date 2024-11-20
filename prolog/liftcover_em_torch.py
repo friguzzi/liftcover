@@ -114,7 +114,7 @@ def em_torch(par, mi, min, maxiter=100, tol=1e-4, tolr=1e-5, regularization="no"
     ll = -1e20
     for i in range(maxiter):
         eta, ll1 = expectation_torch_in_chunks(par, mi, min)
-        print(f"Iteration {i}, Log-Likelihood: {ll1.item()}")
+        print4(ver,f"Iteration {i}, Log-Likelihood: {ll1.item()}")
         
         par1 = maximization_torch(eta, regularization, zero, gamma, a, b)
         diff = torch.abs(ll1 - ll)
@@ -148,17 +148,31 @@ def random_restarts_torch(mi0, min0, device="cpu", random_restarts_number=1, max
     max_par = torch.empty(0, device=xp_device)
     
     for i in range(random_restarts_number):
-        print(f"Restart number {i}")
+        print4(ver,f"Restart number {i}")
         par0 = torch.rand(len(min), device=xp_device)
         par1, ll1 = em_torch(par0, mi, min, maxiter, tol, tolr, regularization, zero, gamma, a, b, ver)
         
-        print(f"Random restart score: {ll1.item()}")
+        print4(ver,f"Random restart score: {ll1.item()}")
         if ll1 > max_ll:
             max_ll = ll1
             max_par = par1.detach().clone()  # Use detach() to avoid gradient tracking issues
     
     return max_par.tolist(), max_ll.item()
 
+def print1(_,*arg):
+    print(*arg)
+
+def print2(ver,*arg):
+    if ver>1:
+        print(*arg)
+
+def print3(ver,*arg):
+    if ver>2:
+        print(*arg)
+
+def print4(ver,*arg):
+    if ver>3:
+        print(*arg)
 def main():
     '''mi0 = [
         [8, 2, 1],  
