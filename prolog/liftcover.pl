@@ -906,7 +906,13 @@ learn_param_int(MI,MIN,_N,M,NR,Par,LL):-
   M:local_setting(eps_f,ER),
   M:local_setting(iter,Iter),
   M:local_setting(regularization,Reg),
-  M:local_setting(gamma,Gamma),
+  M:local_setting(gamma,Gamma0),
+  (Gamma0=relative(G)->
+    length(MI,N),
+    Gamma is G*N
+  ;
+    Gamma=Gamma0
+  ),
   M:local_setting(zero,Zero),
   M:local_setting(ab,[A,B]),
   M:local_setting(verbosity,Verb),
