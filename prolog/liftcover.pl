@@ -641,7 +641,7 @@ rules_for_rel(M:Rules,Rel,RulesRel):-
 
 partition_rules(M,Rel):-
   M:rules(R),
-  findall(R1,(member(R1,R),R1=(tt(_,Rel,_): _ :- _)),RRel),
+  findall((tt(S,Rel,T): P :- Body),member((tt(S,Rel,T): P :- Body),R),RRel),
   assert(M:rules(Rel,RRel)).
 
 compute_statistics_kg(M,Rel,MI,MIN):-
