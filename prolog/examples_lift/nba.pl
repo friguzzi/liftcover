@@ -20,10 +20,24 @@
 
 :- set_lift(neg_ex,given).
 :- set_lift(megaex_bottom,4).
-:- set_lift(max_iter,20).
-:- set_lift(max_var,100).
+:- set_lift(max_iter,10).
+:- set_lift(beamsize,5).
+:- set_lift(max_body_length,6).
 :- set_lift(maxdepth_var,20). %da inserire nel tutorial
-:- set_lift(verbosity,0).
+:- set_lift(verbosity,5).
+%:- set_lift(seed,rand(44,32,4550)).
+%:- set_lift(max_var,4).
+%:- set_lift(seed,rand(2,32,1212)).
+
+
+%:- initialization(main,main).
+main:-
+    induce_lift([f1,f2,f3,f4],P),tell('theory.pl'),write_canonical(out(P)),writeln('.'),told.
+   
+maintest:-
+ induce_lift([f1,f2,f3,f4],P),tell('theory.pl'),write_canonical(out(P)),writeln('.'),told,
+ test_lift(P,[f5],LL,AUCROC,_,AUCPR,_),
+ writeln(ll(LL)),writeln(aucroc(AUCROC)),writeln(aucpr(AUCPR)).
 
 
 fold(f1,[1,2,3,4,5,6]).
@@ -33,243 +47,931 @@ fold(f4,[19,20,21,22,23,24]).
 fold(f5,[27,28,29,30,25,26]).
 
 
-output(game/3).    % game(GameId,Team1Id,Team2Id,ResultOfTeam1,URL,Date).
-input(actions/21). % actions(GameId,TeamId,PlayerId,...
-input(player/2).   % player(PlayerId,PlayerName).
-input(team/2).     % team(TeamId,TeamName).
+output(game/2).    % game(GameId,Team1Id,Team2Id,ResultOfTeam1,URL,Date).
+% input(actions/21). % actions(GameId,TeamId,PlayerId,...
+input(greater_than_or_equal_minutes/3).
+input(greater_than_or_equal_fieldGoalsMade/3).
+input(greater_than_or_equal_fieldGoalAttempts/3).
+input(greater_than_or_equal_threePointsMade/3).
+input(greater_than_or_equal_threePointAttempts/3).
+input(greater_than_or_equal_freeThrowsMade/3).
+input(greater_than_or_equal_freeThrowAttempts/3).
+input(greater_than_or_equal_plusMinus/3).
+input(greater_than_or_equal_offensiveRebounds/3).
+input(greater_than_or_equal_defensiveRebounds/3).
+input(greater_than_or_equal_totalRebounds/3).
+input(greater_than_or_equal_assists/3).
+input(greater_than_or_equal_personalFouls/3).
+input(greater_than_or_equal_steals/3).  
+input(greater_than_or_equal_turnovers/3).
+input(greater_than_or_equal_blockedShots/3).
+input(greater_than_or_equal_blocksAgainst/3).
+input(greater_than_or_equal_points/3).
+input(greater_than_or_equal_starter/3).
+input(smaller_than_or_equal_minutes/3).
+input(smaller_than_or_equal_fieldGoalsMade/3).
+input(smaller_than_or_equal_fieldGoalAttempts/3).
+input(smaller_than_or_equal_threePointsMade/3).
+input(smaller_than_or_equal_threePointAttempts/3).
+input(smaller_than_or_equal_freeThrowsMade/3).
+input(smaller_than_or_equal_freeThrowAttempts/3).
+input(smaller_than_or_equal_plusMinus/3).
+input(smaller_than_or_equal_offensiveRebounds/3).
+input(smaller_than_or_equal_defensiveRebounds/3).
+input(smaller_than_or_equal_totalRebounds/3).
+input(smaller_than_or_equal_assists/3).
+input(smaller_than_or_equal_personalFouls/3).
+input(smaller_than_or_equal_steals/3).
+input(smaller_than_or_equal_turnovers/3).
+input(smaller_than_or_equal_blockedShots/3).
+input(smaller_than_or_equal_blocksAgainst/3).
+input(smaller_than_or_equal_points/3).
+input(smaller_than_or_equal_starter/3).
+
+input(team_greater_than_or_equal_minutes/4).
+input(team_greater_than_or_equal_fieldGoalsMade/4).
+input(team_greater_than_or_equal_fieldGoalAttempts/4).
+input(team_greater_than_or_equal_threePointsMade/4).
+input(team_greater_than_or_equal_threePointAttempts/4).
+input(team_greater_than_or_equal_freeThrowsMade/4).
+input(team_greater_than_or_equal_freeThrowAttempts/4).
+input(team_greater_than_or_equal_plusMinus/4).
+input(team_greater_than_or_equal_offensiveRebounds/4).
+input(team_greater_than_or_equal_defensiveRebounds/4).
+input(team_greater_than_or_equal_totalRebounds/4).
+input(team_greater_than_or_equal_assists/4).
+input(team_greater_than_or_equal_personalFouls/4).
+input(team_greater_than_or_equal_steals/4).
+input(team_greater_than_or_equal_turnovers/4).
+input(team_greater_than_or_equal_blockedShots/4).
+input(team_greater_than_or_equal_blocksAgainst/4).
+input(team_greater_than_or_equal_points/4).
+input(team_greater_than_or_equal_starter/4).
+
+
 
 %modeh(1,win1).
 
 
-modeh(1,game(+teamId,+teamId,-#resulteam1)).
-%modeh(1,game(+teamId,+teamId,-#resulteam1,+url,+date)).
+modeh(1,game(+teamId,+teamId)).
 
-%------- nessun istanziato --------%
-%modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
 
-%------- una var istanziata --------%
-
-modeb(3,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-/*
-modeb(1,actions(+teamId,-playerId,-#minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-#fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-#fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-#threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-#threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-#freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -#freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-#plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-#offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-#defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-#totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-#assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-#personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-#steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-#turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-#blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-#blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-#points,-starter)).
-
-modeb(1,actions(+teamId,-playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-#starter)).
-*/
-
-%------- playerID istanziato + una var istanziata --------%
-/*
-modeb(1,actions(+teamId,-#playerId,-#minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-#fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-#fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-#threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-#threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-#freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -#freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-#plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-#offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-#defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-#totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-#assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-#personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-#steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-#turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-#blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-#blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-#points,-starter)).
-
-modeb(1,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-#starter)).
-*/
-%------- tutto istanziato --------%
-
-%modeb(1,actions(+teamId,-#playerId,-#minutes,-#fieldGoalsMade,-#fieldGoalAttempts,-#threePointsMade,-#threePointAttempts,-#freeThrowsMade, -#freeThrowAttempts,-#plusMinus,-#offensiveRebounds,-#defensiveRebounds,-#totalRebounds,-#assists,-#personalFouls,-#steals,-#turnovers,-#blockedShots,-#blocksAgainst,-#points,-#starter)).
-
-
-%------- playerID input --------%
-
-%modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-%------- playerID input + una var istanziata --------%
-/*
-modeb(1,actions(+teamId,+playerId,-#minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-#fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-#fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-#threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-#threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-#freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -#freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-#plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-#offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-#defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-#totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-#assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-#personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-#steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-#turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-#blockedShots,-blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-#blocksAgainst,-points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-#points,-starter)).
-
-modeb(1,actions(+teamId,+playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,-plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-#starter)).
-*/
-
-%------- playerID input + tutto istanziato --------%
-
-%modeb(1,actions(+teamId,+playerId,-#minutes,-#fieldGoalsMade,-#fieldGoalAttempts,-#threePointsMade,-#threePointAttempts,-#freeThrowsMade, -#freeThrowAttempts,-#plusMinus,-#offensiveRebounds,-#defensiveRebounds,-#totalRebounds,-#assists,-#personalFouls,-#steals,-#turnovers,-#blockedShots,-#blocksAgainst,-#points,-#starter)).
+% modeb(3,actions(+teamId,-#playerId,-minutes,-fieldGoalsMade,-fieldGoalAttempts,-threePointsMade,-threePointAttempts,-freeThrowsMade, -freeThrowAttempts,
+%  -plusMinus,-offensiveRebounds,-defensiveRebounds,-totalRebounds,-assists,-personalFouls,-steals,-turnovers,-blockedShots,-blocksAgainst,-points,-starter)).
 
 
 modeb(3,player(+playerId,-#pname)).
 modeb(3,team(+teamId,-#tname)).
+/*
+modeb(3,minutes(+teamId, -playerId, -minutes)).
+modeb(3,fieldGoalsMade(+teamId, -playerId, -fieldGoalsMade)).
+modeb(3,fieldGoalAttempts(+teamId, -playerId, -fieldGoalAttempts)).
+modeb(3,threePointsMade(+teamId, -playerId, -threePointsMade)).
+modeb(3,threePointAttempts(+teamId, -playerId, -threePointAttempts)).
+modeb(3,freeThrowsMade(+teamId, -playerId, -freeThrowsMade)).
+modeb(3,freeThrowAttempts(+teamId, -playerId, -freeThrowAttempts)).
+modeb(3,plusMinus(+teamId, -playerId, -plusMinus)).
+modeb(3,offensiveRebounds(+teamId, -playerId, -offensiveRebounds)).
+modeb(3,defensiveRebounds(+teamId, -playerId, -defensiveRebounds)).
+modeb(3,totalRebounds(+teamId, -playerId, -totalRebounds)).
+modeb(3,assists(+teamId, -playerId, -assists)).
+modeb(3,personalFouls(+teamId, -playerId, -personalFouls)).
+modeb(3,steals(+teamId, -playerId, -steals)).
+modeb(3,turnovers(+teamId, -playerId, -turnovers)).
+modeb(3,blockedShots(+teamId, -playerId, -blockedShots)).
+modeb(3,blocksAgainst(+teamId, -playerId, -blocksAgainst)).
+modeb(3,points(+teamId, -playerId, -points)).
+modeb(3,starter(+teamId, -playerId, -starter)).
+*/
+modeb(4,greater_than_or_equal_minutes(+teamId,-playerId, -#minutes)).
+modeb(4,greater_than_or_equal_fieldGoalsMade(+teamId,-playerId, -#fieldGoalsMade)).
+modeb(4,greater_than_or_equal_fieldGoalAttempts(+teamId,-playerId, -#fieldGoalAttempts)).
+modeb(4,greater_than_or_equal_threePointsMade(+teamId,-playerId, -#threePointsMade)).
+modeb(4,greater_than_or_equal_threePointAttempts(+teamId,-playerId, -#threePointAttempts)).
+modeb(4,greater_than_or_equal_freeThrowsMade(+teamId,-playerId, -#freeThrowsMade)).
+modeb(4,greater_than_or_equal_freeThrowAttempts(+teamId,-playerId, -#freeThrowAttempts)).
+modeb(4,greater_than_or_equal_plusMinus(+teamId,-playerId, -#plusMinus)).
+modeb(4,greater_than_or_equal_offensiveRebounds(+teamId,-playerId, -#offensiveRebounds)).
+modeb(4,greater_than_or_equal_defensiveRebounds(+teamId,-playerId, -#defensiveRebounds)).
+modeb(4,greater_than_or_equal_totalRebounds(+teamId,-playerId, -#totalRebounds)).
+modeb(4,greater_than_or_equal_assists(+teamId,-playerId, -#assists)).
+modeb(4,greater_than_or_equal_personalFouls(+teamId,-playerId, -#personalFouls)).
+modeb(4,greater_than_or_equal_steals(+teamId,-playerId, -#steals)).
+modeb(4,greater_than_or_equal_turnovers(+teamId,-playerId, -#turnovers)).
+modeb(4,greater_than_or_equal_blockedShots(+teamId,-playerId, -#blockedShots)).
+modeb(4,greater_than_or_equal_blocksAgainst(+teamId,-playerId, -#blocksAgainst)).
+modeb(4,greater_than_or_equal_points(+teamId,-playerId, -#points)).
+modeb(4,greater_than_or_equal_starter(+teamId,-playerId, -#starter)).
+
+modeb(4,smaller_than_or_equal_minutes(+teamId,-playerId, -#minutes)).
+modeb(4,smaller_than_or_equal_fieldGoalsMade(+teamId,-playerId, -#fieldGoalsMade)).
+modeb(4,smaller_than_or_equal_fieldGoalAttempts(+teamId,-playerId, -#fieldGoalAttempts)).
+modeb(4,smaller_than_or_equal_threePointsMade(+teamId,-playerId, -#threePointsMade)).
+modeb(4,smaller_than_or_equal_threePointAttempts(+teamId,-playerId, -#threePointAttempts)).
+modeb(4,smaller_than_or_equal_freeThrowsMade(+teamId,-playerId, -#freeThrowsMade)).
+modeb(4,smaller_than_or_equal_freeThrowAttempts(+teamId,-playerId, -#freeThrowAttempts)).
+modeb(4,smaller_than_or_equal_plusMinus(+teamId,-playerId, -#plusMinus)).
+modeb(4,smaller_than_or_equal_offensiveRebounds(+teamId,-playerId, -#offensiveRebounds)).
+modeb(4,smaller_than_or_equal_defensiveRebounds(+teamId,-playerId, -#defensiveRebounds)).
+modeb(4,smaller_than_or_equal_totalRebounds(+teamId,-playerId, -#totalRebounds)).
+modeb(4,smaller_than_or_equal_assists(+teamId,-playerId, -#assists)).
+modeb(4,smaller_than_or_equal_personalFouls(+teamId,-playerId, -#personalFouls)).
+modeb(4,smaller_than_or_equal_steals(+teamId,-playerId, -#steals)).
+modeb(4,smaller_than_or_equal_turnovers(+teamId,-playerId, -#turnovers)).
+modeb(4,smaller_than_or_equal_blockedShots(+teamId,-playerId, -#blockedShots)).
+modeb(4,smaller_than_or_equal_blocksAgainst(+teamId,-playerId, -#blocksAgainst)).
+modeb(4,smaller_than_or_equal_points(+teamId,-playerId, -#points)).
+modeb(4,smaller_than_or_equal_starter(+teamId,-playerId, -#starter)).
+
+modeb(1,team_greater_than_or_equal_minutes(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_fieldGoalsMade(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_fieldGoalAttempts(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_threePointsMade(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_threePointAttempts(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_freeThrowsMade(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_freeThrowAttempts(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_plusMinus(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_offensiveRebounds(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_defensiveRebounds(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_totalRebounds(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_assists(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_personalFouls(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_steals(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_turnovers(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_blockedShots(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_blocksAgainst(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_points(+teamId,+teamId,-playerId,-playerId)).
+modeb(1,team_greater_than_or_equal_starter(+teamId,+teamId,-playerId,-playerId)).
+/*
+modeb(3,smaller_than_or_equal_minutes(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_fieldGoalsMade(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_fieldGoalAttempts(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_threePointsMade(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_threePointAttempts(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_freeThrowsMade(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_freeThrowAttempts(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_plusMinus(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_offensiveRebounds(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_defensiveRebounds(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_totalRebounds(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_assists(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_personalFouls(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_steals(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_turnovers(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_blockedShots(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_blocksAgainst(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_points(-playerId,-playerId)).
+modeb(3,smaller_than_or_equal_starter(-playerId,-playerId)).
+modeb(3,greater_than_or_equal_minutes(+teamId, +minutes)).
+modeb(3,greater_than_or_equal_fieldGoalsMade(+teamId, +fieldGoalsMade)).
+modeb(3,greater_than_or_equal_fieldGoalAttempts(+teamId, +fieldGoalAttempts)).
+modeb(3,greater_than_or_equal_threePointsMade(+teamId, +threePointsMade)).
+modeb(3,greater_than_or_equal_threePointAttempts(+teamId, +threePointAttempts)).
+modeb(3,greater_than_or_equal_freeThrowsMade(+teamId, +freeThrowsMade)).
+modeb(3,greater_than_or_equal_freeThrowAttempts(+teamId, +freeThrowAttempts)).
+modeb(3,greater_than_or_equal_plusMinus(+teamId, +plusMinus)).
+modeb(3,greater_than_or_equal_offensiveRebounds(+teamId, +offensiveRebounds)).
+modeb(3,greater_than_or_equal_defensiveRebounds(+teamId, +defensiveRebounds)).
+modeb(3,greater_than_or_equal_totalRebounds(+teamId, +totalRebounds)).
+modeb(3,greater_than_or_equal_assists(+teamId, +assists)).
+modeb(3,greater_than_or_equal_personalFouls(+teamId, +personalFouls)).
+modeb(3,greater_than_or_equal_steals(+teamId, +steals)).
+modeb(3,greater_than_or_equal_turnovers(+teamId, +turnovers)).
+modeb(3,greater_than_or_equal_blockedShots(+teamId, +blockedShots)).
+modeb(3,greater_than_or_equal_blocksAgainst(+teamId, +blocksAgainst)).
+modeb(3,greater_than_or_equal_points(+teamId, +points)).
+modeb(3,greater_than_or_equal_starter(+teamId, +starter)).
+
+*/
+/*
+% minutes
+
+modeb(1,(+minutes) >= (#minutes)).
+modeb(1,(+minutes) =< (#minutes)).
+modeb(1,(+minutes) = (#minutes)).
+
+modeb(1,(+minutes) >= (+minutes)).
+
+% fieldGoalsMade
+modeb(1,(+fieldGoalsMade) >= (+fieldGoalsMade)).
+modeb(1,(+fieldGoalsMade) >= (#fieldGoalsMade)).
+modeb(1,(+fieldGoalsMade) =< (#fieldGoalsMade)).
+modeb(1,(+fieldGoalsMade) = (#fieldGoalsMade)).
+
+% fieldGoalAttempts
+modeb(1,(+fieldGoalAttempts) >= (+fieldGoalAttempts)).
+modeb(1,(+fieldGoalAttempts) >= (#fieldGoalAttempts)).
+modeb(1,(+fieldGoalAttempts) =< (#fieldGoalAttempts)).
+modeb(1,(+fieldGoalAttempts) = (#fieldGoalAttempts)).
+
+% threePointsMade
+modeb(1,(+threePointsMade) >= (+threePointsMade)).
+modeb(1,(+threePointsMade) >= (#threePointsMade)).
+modeb(1,(+threePointsMade) =< (#threePointsMade)).
+modeb(1,(+threePointsMade) = (#threePointsMade)).
+
+% threePointAttempts
+modeb(1,(+threePointAttempts) >= (+threePointAttempts)).
+modeb(1,(+threePointAttempts) >= (#threePointAttempts)).
+modeb(1,(+threePointAttempts) =< (#threePointAttempts)).
+modeb(1,(+threePointAttempts) = (#threePointAttempts)).
+
+% freeThrowsMade
+modeb(1,(+freeThrowsMade) >= (+freeThrowsMade)).
+modeb(1,(+freeThrowsMade) >= (#freeThrowsMade)).
+modeb(1,(+freeThrowsMade) =< (#freeThrowsMade)).
+modeb(1,(+freeThrowsMade) = (#freeThrowsMade)).
+
+% freeThrowAttempts
+modeb(1,(+freeThrowAttempts) >= (+freeThrowAttempts)).
+modeb(1,(+freeThrowAttempts) >= (#freeThrowAttempts)).
+modeb(1,(+freeThrowAttempts) =< (#freeThrowAttempts)).
+modeb(1,(+freeThrowAttempts) = (#freeThrowAttempts)).
+
+% plusMinus
+modeb(1,(+plusMinus) >= (+plusMinus)).
+modeb(1,(+plusMinus) >= (#plusMinus)).
+modeb(1,(+plusMinus) =< (#plusMinus)).
+modeb(1,(+plusMinus) = (#plusMinus)).
+
+% offensiveRebounds
+modeb(1,(+offensiveRebounds) >= (+offensiveRebounds)).
+modeb(1,(+offensiveRebounds) >= (#offensiveRebounds)).
+modeb(1,(+offensiveRebounds) =< (#offensiveRebounds)).
+modeb(1,(+offensiveRebounds) = (#offensiveRebounds)).
+
+% defensiveRebounds
+modeb(1,(+defensiveRebounds) >= (+defensiveRebounds)).
+modeb(1,(+defensiveRebounds) >= (#defensiveRebounds)).
+modeb(1,(+defensiveRebounds) =< (#defensiveRebounds)).
+modeb(1,(+defensiveRebounds) = (#defensiveRebounds)).
+
+% totalRebounds
+modeb(1,(+totalRebounds) >= (+totalRebounds)).
+modeb(1,(+totalRebounds) >= (#totalRebounds)).
+modeb(1,(+totalRebounds) =< (#totalRebounds)).
+modeb(1,(+totalRebounds) = (#totalRebounds)).
 
 
-determination(game/3,actions/21).
-determination(game/3,player/2).
-determination(game/3,team/2).
+% assists
+modeb(1,(+assists) >= (+assists)).
+modeb(1,(+assists) >= (#assists)).
+modeb(1,(+assists) =< (#assists)).
+modeb(1,(+assists) = (#assists)).
+
+% personalFouls
+modeb(1,(+personalFouls) >= (+personalFouls)).
+modeb(1,(+personalFouls) >= (#personalFouls)).
+modeb(1,(+personalFouls) =< (#personalFouls)).
+modeb(1,(+personalFouls) = (#personalFouls)).
+
+% steals
+modeb(1,(+steals) >= (+steals)).
+modeb(1,(+steals) >= (#steals)).
+modeb(1,(+steals) =< (#steals)).
+modeb(1,(+steals) = (#steals)).
+
+% turnovers
+modeb(1,(+turnovers) >= (+turnovers)).
+modeb(1,(+turnovers) >= (#turnovers)).
+modeb(1,(+turnovers) =< (#turnovers)).
+modeb(1,(+turnovers) = (#turnovers)).
+
+% blockedShots
+modeb(1,(+blockedShots) >= (+blockedShots)).
+modeb(1,(+blockedShots) >= (#blockedShots)).
+modeb(1,(+blockedShots) =< (#blockedShots)).
+modeb(1,(+blockedShots) = (#blockedShots)).
+
+% blocksAgainst
+modeb(1,(+blocksAgainst) >= (+blocksAgainst)).
+modeb(1,(+blocksAgainst) >= (#blocksAgainst)).
+modeb(1,(+blocksAgainst) =< (#blocksAgainst)).
+modeb(1,(+blocksAgainst) = (#blocksAgainst)).
+
+% points
+modeb(1,(+points) >= (+points)).
+modeb(1,(+points) >= (#points)).
+modeb(1,(+points) =< (#points)).
+modeb(1,(+points) = (#points)).
+
+% starter
+modeb(1,(+starter) >= (+starter)).
+modeb(1,(+starter) >= (#starter)).
+modeb(1,(+starter) =< (#starter)).
+modeb(1,(+starter) = (#starter)).
 
 
+*/
 
 
+% determination(game/3,actions/21).
+%determination(game/3,player/2).
+%determination(game/3,team/2).
+/*
+determination(game/2,minutes/3).
+determination(game/2,fieldGoalsMade/3).
+determination(game/2,fieldGoalAttempts/3).
+determination(game/2,threePointsMade/3).
+determination(game/2,threePointAttempts/3).
+determination(game/2,freeThrowsMade/3).
+determination(game/2,freeThrowAttempts/3).
+determination(game/2,plusMinus/3).
+determination(game/2,offensiveRebounds/3).
+determination(game/2,defensiveRebounds/3).
+determination(game/2,totalRebounds/3).
+determination(game/2,assists/3).
+determination(game/2,personalFouls/3).
+determination(game/2,steals/3).
+determination(game/2,turnovers/3).
+determination(game/2,blockedShots/3).
+determination(game/2,blocksAgainst/3).
+determination(game/2,points/3).
+determination(game/2,starter/3).
 
-% Game information
-%%
-% predicate: game_k(GameId,ResultOfTeam1).
+determination(game/2,'=<'/2).
+determination(game/2,'>='/2).
+determination(game/2,'='/2).
+*/
+determination(game/2,greater_than_or_equal_minutes/3).
+determination(game/2,greater_than_or_equal_fieldGoalsMade/3).
+determination(game/2,greater_than_or_equal_fieldGoalAttempts/3).
+determination(game/2,greater_than_or_equal_threePointsMade/3).
+determination(game/2,greater_than_or_equal_threePointAttempts/3).
+determination(game/2,greater_than_or_equal_freeThrowsMade/3).
+determination(game/2,greater_than_or_equal_freeThrowAttempts/3).
+determination(game/2,greater_than_or_equal_plusMinus/3).
+determination(game/2,greater_than_or_equal_offensiveRebounds/3).
+determination(game/2,greater_than_or_equal_defensiveRebounds/3).
+determination(game/2,greater_than_or_equal_totalRebounds/3).
+determination(game/2,greater_than_or_equal_assists/3).
+determination(game/2,greater_than_or_equal_personalFouls/3).
+determination(game/2,greater_than_or_equal_steals/3).
+determination(game/2,greater_than_or_equal_turnovers/3).
+determination(game/2,greater_than_or_equal_blockedShots/3).
+determination(game/2,greater_than_or_equal_blocksAgainst/3).
+determination(game/2,greater_than_or_equal_points/3).
+determination(game/2,greater_than_or_equal_starter/3).
 
-%game_k(1).
-%game_k(2).
-%game_k(3).
-%game_k(4).
-%game_k(10).
-%game_k(11).
-%game_k(15).
-%game_k(19).
-%game_k(20).
-%game_k(23).
-%game_k(24).
-%game_k(27).
-%game_k(28).
-%game_k(29).
-%game_k(30).
-%
-%neg(game_k(5)).
-%neg(game_k(6)).
-%neg(game_k(7)).
-%neg(game_k(8)).
-%neg(game_k(9)).
-%neg(game_k(12)).
-%neg(game_k(13)).
-%neg(game_k(14)).
-%neg(game_k(16)).
-%neg(game_k(17)).
-%neg(game_k(18)).
-%neg(game_k(21)).
-%neg(game_k(22)).
-%neg(game_k(25)).
-%neg(game_k(26)).
+determination(game/2,smaller_than_or_equal_minutes/3).
+determination(game/2,smaller_than_or_equal_fieldGoalsMade/3).
+determination(game/2,smaller_than_or_equal_fieldGoalAttempts/3).
+determination(game/2,smaller_than_or_equal_threePointsMade/3).
+determination(game/2,smaller_than_or_equal_threePointAttempts/3).
+determination(game/2,smaller_than_or_equal_freeThrowsMade/3).
+determination(game/2,smaller_than_or_equal_freeThrowAttempts/3).
+determination(game/2,smaller_than_or_equal_plusMinus/3).
+determination(game/2,smaller_than_or_equal_offensiveRebounds/3).
+determination(game/2,smaller_than_or_equal_defensiveRebounds/3).
+determination(game/2,smaller_than_or_equal_totalRebounds/3).
+determination(game/2,smaller_than_or_equal_assists/3).
+determination(game/2,smaller_than_or_equal_personalFouls/3).
+determination(game/2,smaller_than_or_equal_steals/3).
+determination(game/2,smaller_than_or_equal_turnovers/3).
+determination(game/2,smaller_than_or_equal_blockedShots/3).
+determination(game/2,smaller_than_or_equal_blocksAgainst/3).
+determination(game/2,smaller_than_or_equal_points/3).
+determination(game/2,smaller_than_or_equal_starter/3).
+
+determination(game/2,team_greater_than_or_equal_minutes/4).
+determination(game/2,team_greater_than_or_equal_fieldGoalsMade/4).
+determination(game/2,team_greater_than_or_equal_fieldGoalAttempts/4).
+determination(game/2,team_greater_than_or_equal_threePointsMade/4).
+determination(game/2,team_greater_than_or_equal_threePointAttempts/4).
+determination(game/2,team_greater_than_or_equal_freeThrowsMade/4).
+determination(game/2,team_greater_than_or_equal_freeThrowAttempts/4).
+determination(game/2,team_greater_than_or_equal_plusMinus/4).
+determination(game/2,team_greater_than_or_equal_offensiveRebounds/4).
+determination(game/2,team_greater_than_or_equal_defensiveRebounds/4).
+determination(game/2,team_greater_than_or_equal_totalRebounds/4).
+determination(game/2,team_greater_than_or_equal_assists/4).
+determination(game/2,team_greater_than_or_equal_personalFouls/4).
+determination(game/2,team_greater_than_or_equal_steals/4).
+determination(game/2,team_greater_than_or_equal_turnovers/4).
+determination(game/2,team_greater_than_or_equal_blockedShots/4).
+determination(game/2,team_greater_than_or_equal_blocksAgainst/4).
+determination(game/2,team_greater_than_or_equal_points/4).
+determination(game/2,team_greater_than_or_equal_starter/4).
+
+
+greater_than_or_equal_minutes(M,TeamId,PlayerID,Y):-
+    minutes(M,TeamId,PlayerID,X),
+    minutes(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_fieldGoalsMade(M,TeamId,PlayerID,Y):-
+    fieldGoalsMade(M,TeamId,PlayerID,X),
+    fieldGoalsMade(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_fieldGoalAttempts(M,TeamId,PlayerID,Y):-
+    fieldGoalAttempts(M,TeamId,PlayerID,X),
+    fieldGoalAttempts(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_threePointsMade(M,TeamId,PlayerID,Y):-
+    threePointsMade(M,TeamId,PlayerID,X),
+    threePointsMade(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_threePointAttempts(M,TeamId,PlayerID,Y):-
+    threePointAttempts(M,TeamId,PlayerID,X),
+    threePointAttempts(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_freeThrowsMade(M,TeamId,PlayerID,Y):-
+    freeThrowsMade(M,TeamId,PlayerID,X),
+    freeThrowsMade(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_freeThrowAttempts(M,TeamId,PlayerID,Y):-
+    freeThrowAttempts(M,TeamId,PlayerID,X),
+    freeThrowAttempts(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_plusMinus(M,TeamId,PlayerID,Y):-
+    plusMinus(M,TeamId,PlayerID,X),
+    plusMinus(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_offensiveRebounds(M,TeamId,PlayerID,Y):-
+    offensiveRebounds(M,TeamId,PlayerID,X),
+    offensiveRebounds(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_defensiveRebounds(M,TeamId,PlayerID,Y):-
+    defensiveRebounds(M,TeamId,PlayerID,X),
+    defensiveRebounds(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_totalRebounds(M,TeamId,PlayerID,Y):-
+    totalRebounds(M,TeamId,PlayerID,X),
+    totalRebounds(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_assists(M,TeamId,PlayerID,Y):-
+    assists(M,TeamId,PlayerID,X),
+    assists(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_personalFouls(M,TeamId,PlayerID,Y):-
+    personalFouls(M,TeamId,PlayerID,X),
+    personalFouls(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_steals(M,TeamId,PlayerID,Y):-
+    steals(M,TeamId,PlayerID,X),
+    steals(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_turnovers(M,TeamId,PlayerID,Y):-
+    turnovers(M,TeamId,PlayerID,X),
+    turnovers(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_blockedShots(M,TeamId,PlayerID,Y):-
+    blockedShots(M,TeamId,PlayerID,X),
+    blockedShots(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_blocksAgainst(M,TeamId,PlayerID,Y):-
+    blocksAgainst(M,TeamId,PlayerID,X),
+    blocksAgainst(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_points(M,TeamId,PlayerID,Y):-
+    points(M,TeamId,PlayerID,X),
+    points(M,_,_,Y),
+    X >= Y.
+
+greater_than_or_equal_starter(M,TeamId,PlayerID,Y):-
+    starter(M,TeamId,PlayerID,X),
+    starter(M,_,_,Y),
+    X >= Y.
+
+
+smaller_than_or_equal_minutes(M,TeamId,PlayerID,Y):-
+    minutes(M,TeamId,PlayerID,X),
+    minutes(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_fieldGoalsMade(M,TeamId,PlayerID,Y):-
+    fieldGoalsMade(M,TeamId,PlayerID,X),
+    fieldGoalsMade(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_fieldGoalAttempts(M,TeamId,PlayerID,Y):-
+    fieldGoalAttempts(M,TeamId,PlayerID,X),
+    fieldGoalAttempts(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_threePointsMade(M,TeamId,PlayerID,Y):-
+    threePointsMade(M,TeamId,PlayerID,X),
+    threePointsMade(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_threePointAttempts(M,TeamId,PlayerID,Y):-
+    threePointAttempts(M,TeamId,PlayerID,X),
+    threePointAttempts(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_freeThrowsMade(M,TeamId,PlayerID,Y):-
+    freeThrowsMade(M,TeamId,PlayerID,X),
+    freeThrowsMade(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_freeThrowAttempts(M,TeamId,PlayerID,Y):-
+    freeThrowAttempts(M,TeamId,PlayerID,X),
+    freeThrowAttempts(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_plusMinus(M,TeamId,PlayerID,Y):-
+    plusMinus(M,TeamId,PlayerID,X),
+    plusMinus(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_offensiveRebounds(M,TeamId,PlayerID,Y):-
+    offensiveRebounds(M,TeamId,PlayerID,X),
+    offensiveRebounds(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_defensiveRebounds(M,TeamId,PlayerID,Y):-
+    defensiveRebounds(M,TeamId,PlayerID,X),
+    defensiveRebounds(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_totalRebounds(M,TeamId,PlayerID,Y):-
+    totalRebounds(M,TeamId,PlayerID,X),
+    totalRebounds(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_assists(M,TeamId,PlayerID,Y):-
+    assists(M,TeamId,PlayerID,X),
+    assists(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_personalFouls(M,TeamId,PlayerID,Y):-
+    personalFouls(M,TeamId,PlayerID,X),
+    personalFouls(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_steals(M,TeamId,PlayerID,Y):-
+    steals(M,TeamId,PlayerID,X),
+    steals(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_turnovers(M,TeamId,PlayerID,Y):-
+    turnovers(M,TeamId,PlayerID,X),
+    turnovers(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_blockedShots(M,TeamId,PlayerID,Y):-
+    blockedShots(M,TeamId,PlayerID,X),
+    blockedShots(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_blocksAgainst(M,TeamId,PlayerID,Y):-
+    blocksAgainst(M,TeamId,PlayerID,X),
+    blocksAgainst(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_points(M,TeamId,PlayerID,Y):-
+    points(M,TeamId,PlayerID,X),
+    points(M,_,_,Y),
+    X =< Y.
+
+smaller_than_or_equal_starter(M,TeamId,PlayerID,Y):-
+    starter(M,TeamId,PlayerID,X),
+    starter(M,_,_,Y),
+    X =< Y.
+
+team_greater_than_or_equal_minutes(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    minutes(M,TeamId1,PlayerID1,X),
+    minutes(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_fieldGoalsMade(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    fieldGoalsMade(M,TeamId1,PlayerID1,X),
+    fieldGoalsMade(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_fieldGoalAttempts(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    fieldGoalAttempts(M,TeamId1,PlayerID1,X),
+    fieldGoalAttempts(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_threePointsMade(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    threePointsMade(M,TeamId1,PlayerID1,X),
+    threePointsMade(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_threePointAttempts(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    threePointAttempts(M,TeamId1,PlayerID1,X),
+    threePointAttempts(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_freeThrowsMade(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    freeThrowsMade(M,TeamId1,PlayerID1,X),
+    freeThrowsMade(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_freeThrowAttempts(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    freeThrowAttempts(M,TeamId1,PlayerID1,X),
+    freeThrowAttempts(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_plusMinus(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    plusMinus(M,TeamId1,PlayerID1,X),
+    plusMinus(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_offensiveRebounds(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    offensiveRebounds(M,TeamId1,PlayerID1,X),
+    offensiveRebounds(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_defensiveRebounds(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    defensiveRebounds(M,TeamId1,PlayerID1,X),
+    defensiveRebounds(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_totalRebounds(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    totalRebounds(M,TeamId1,PlayerID1,X),
+    totalRebounds(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_assists(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    assists(M,TeamId1,PlayerID1,X),
+    assists(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_personalFouls(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    personalFouls(M,TeamId1,PlayerID1,X),
+    personalFouls(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_steals(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    steals(M,TeamId1,PlayerID1,X),
+    steals(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_turnovers(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    turnovers(M,TeamId1,PlayerID1,X),
+    turnovers(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_blockedShots(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    blockedShots(M,TeamId1,PlayerID1,X),
+    blockedShots(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_blocksAgainst(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    blocksAgainst(M,TeamId1,PlayerID1,X),
+    blocksAgainst(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_points(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    points(M,TeamId1,PlayerID1,X),
+    points(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+team_greater_than_or_equal_starter(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    starter(M,TeamId1,PlayerID1,X),
+    starter(M,TeamId2,PlayerID2,Y),
+    X >= Y.
+
+
+smaller_than_or_equal_minutes(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    minutes(M,TeamId1,PlayerID1,X),
+    minutes(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_fieldGoalsMade(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    fieldGoalsMade(M,TeamId1,PlayerID1,X),
+    fieldGoalsMade(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_fieldGoalAttempts(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    fieldGoalAttempts(M,TeamId1,PlayerID1,X),
+    fieldGoalAttempts(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_threePointsMade(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    threePointsMade(M,TeamId1,PlayerID1,X),
+    threePointsMade(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_threePointAttempts(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    threePointAttempts(M,TeamId1,PlayerID1,X),
+    threePointAttempts(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_freeThrowsMade(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    freeThrowsMade(M,TeamId1,PlayerID1,X),
+    freeThrowsMade(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_freeThrowAttempts(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    freeThrowAttempts(M,TeamId1,PlayerID1,X),
+    freeThrowAttempts(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_plusMinus(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    plusMinus(M,TeamId1,PlayerID1,X),
+    plusMinus(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_offensiveRebounds(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    offensiveRebounds(M,TeamId1,PlayerID1,X),
+    offensiveRebounds(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_defensiveRebounds(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    defensiveRebounds(M,TeamId1,PlayerID1,X),
+    defensiveRebounds(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_totalRebounds(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    totalRebounds(M,TeamId1,PlayerID1,X),
+    totalRebounds(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_assists(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    assists(M,TeamId1,PlayerID1,X),
+    assists(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_personalFouls(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    personalFouls(M,TeamId1,PlayerID1,X),
+    personalFouls(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_steals(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    steals(M,TeamId1,PlayerID1,X),
+    steals(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_turnovers(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    turnovers(M,TeamId1,PlayerID1,X),
+    turnovers(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_blockedShots(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    blockedShots(M,TeamId1,PlayerID1,X),
+    blockedShots(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_blocksAgainst(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    blocksAgainst(M,TeamId1,PlayerID1,X),
+    blocksAgainst(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_points(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    points(M,TeamId1,PlayerID1,X),
+    points(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+smaller_than_or_equal_starter(M,TeamId1,TeamId2,PlayerID1,PlayerID2):-
+    TeamId1 \= TeamId2,
+    starter(M,TeamId1,PlayerID1,X),
+    starter(M,TeamId2,PlayerID2,Y),
+    X =< Y.
+
+% Each predicate for each action argument
+minutes(M,TeamId, PlayerId,Minutes):-
+  actions(M,TeamId, PlayerId,Minutes,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_).
+
+fieldGoalsMade(M, TeamId, PlayerId, FieldGoalsMade):-
+    actions(M, TeamId, PlayerId, _, FieldGoalsMade, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _).
+
+fieldGoalAttempts(M, TeamId, PlayerId, FieldGoalAttempts):-
+    actions(M, TeamId, PlayerId, _, _, FieldGoalAttempts, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _).
+
+threePointsMade(M, TeamId, PlayerId, ThreePointsMade):-
+    actions(M, TeamId, PlayerId, _, _, _, ThreePointsMade, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _).
+
+threePointAttempts(M, TeamId, PlayerId, ThreePointAttempts):-
+    actions(M, TeamId, PlayerId, _, _, _, _, ThreePointAttempts, _, _, _, _, _, _, _, _, _, _, _, _, _, _).
+
+freeThrowsMade(M, TeamId, PlayerId, FreeThrowsMade):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, FreeThrowsMade, _, _, _, _, _, _, _, _, _, _, _, _, _).
+
+freeThrowAttempts(M, TeamId, PlayerId, FreeThrowAttempts):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, FreeThrowAttempts, _, _, _, _, _, _, _, _, _, _, _, _).
+
+plusMinus(M, TeamId, PlayerId, PlusMinus):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, PlusMinus, _, _, _, _, _, _, _, _, _, _, _).
+
+offensiveRebounds(M, TeamId, PlayerId, OffensiveRebounds):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, OffensiveRebounds, _, _, _, _, _, _, _, _, _, _).
+
+defensiveRebounds(M, TeamId, PlayerId, DefensiveRebounds):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, DefensiveRebounds, _, _, _, _, _, _, _, _, _).
+
+totalRebounds(M, TeamId, PlayerId, TotalRebounds):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, _, TotalRebounds, _, _, _, _, _, _, _, _).
+
+assists(M, TeamId, PlayerId, Assists):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, _, _, Assists, _, _, _, _, _, _, _).
+
+personalFouls(M, TeamId, PlayerId, PersonalFouls):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, _, _, _, PersonalFouls, _, _, _, _, _, _).
+
+steals(M, TeamId, PlayerId, Steals):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, _, _, _, _, Steals, _, _, _, _, _).
+
+turnovers(M, TeamId, PlayerId, Turnovers):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, _, _, _, _, _, Turnovers, _, _, _, _).
+
+blockedShots(M, TeamId, PlayerId, BlockedShots):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, BlockedShots, _, _, _).
+
+blocksAgainst(M, TeamId, PlayerId, BlocksAgainst):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, BlocksAgainst, _, _).
+
+points(M, TeamId, PlayerId, Points):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, Points, _).
+
+starter(M, TeamId, PlayerId, Starter):-
+    actions(M, TeamId, PlayerId, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, Starter).
+  
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Game information
 %%
 % predicate: game(GameId,Team1Id,Team2Id,ResultOfTeam1,URL,Date).
-game(M,T1,T2,Res):-
-  game(M,T1,T2,Res,_,_).
+game(M,T1,T2):-
+  game(M,T1,T2,1,_,_).
 
-neg(game(M,T1,T2,Res)):-
-    neg(game(M,T1,T2,Res,_,_)).
-  
+neg(game(M,T1,T2)):-
+    nega(game(M,T1,T2,-1,_,_)).
+
+
 game(1,7,8,1,"http://www.nba.com/games/20140331/NYKUTA/gameinfo.html","2014-03-31 00:00:00").
 game(2,9,10,1,"http://www.nba.com/games/20140331/MEMDEN/gameinfo.html","2014-03-31 00:00:00").
 game(3,11,12,1,"http://www.nba.com/games/20140331/SACNOP/gameinfo.html","2014-03-31 00:00:00").
 game(4,13,14,1,"http://www.nba.com/games/20140331/LACMIN/gameinfo.html","2014-03-31 00:00:00").
-neg(game(5,15,16,-1,"http://www.nba.com/games/20140331/BOSCHI/gameinfo.html","2014-03-31 00:00:00")).
-neg(game(6,17,18,-1,"http://www.nba.com/games/20140331/TORMIA/gameinfo.html","2014-03-31 00:00:00")).
-neg(game(7,19,20,-1,"http://www.nba.com/games/20140331/MILDET/gameinfo.html","2014-03-31 00:00:00")).
-neg(game(8,21,22,-1,"http://www.nba.com/games/20140331/PHIATL/gameinfo.html","2014-03-31 00:00:00")).
-neg(game(9,23,24,-1,"http://www.nba.com/games/20140331/WASCHA/gameinfo.html","2014-03-31 00:00:00")).
+nega(game(5,15,16,-1,"http://www.nba.com/games/20140331/BOSCHI/gameinfo.html","2014-03-31 00:00:00")).
+nega(game(6,17,18,-1,"http://www.nba.com/games/20140331/TORMIA/gameinfo.html","2014-03-31 00:00:00")).
+nega(game(7,19,20,-1,"http://www.nba.com/games/20140331/MILDET/gameinfo.html","2014-03-31 00:00:00")).
+nega(game(8,21,22,-1,"http://www.nba.com/games/20140331/PHIATL/gameinfo.html","2014-03-31 00:00:00")).
+nega(game(9,23,24,-1,"http://www.nba.com/games/20140331/WASCHA/gameinfo.html","2014-03-31 00:00:00")).
 game(10,1,2,1,"http://www.nba.com/games/20140401/PORLAL/gameinfo.html?ls=slt","2014-04-01 00:00:00").
 game(11,3,4,1,"http://www.nba.com/games/20140401/GSWDAL/gameinfo.html?ls=slt","2014-04-01 00:00:00").
-neg(game(12,5,6,-1,"http://www.nba.com/games/20140401/HOUBKN/gameinfo.html?ls=slt","2014-04-01 00:00:00")).
-neg(game(13,20,25,-1,"http://www.nba.com/games/20140402/DETIND/gameinfo.html","2014-04-02 00:00:00")).
-neg(game(14,6,7,-1,"http://www.nba.com/games/20140402/BKNNYK/gameinfo.html","2014-04-02 00:00:00")).
+nega(game(12,5,6,-1,"http://www.nba.com/games/20140401/HOUBKN/gameinfo.html?ls=slt","2014-04-01 00:00:00")).
+nega(game(13,20,25,-1,"http://www.nba.com/games/20140402/DETIND/gameinfo.html","2014-04-02 00:00:00")).
+nega(game(14,6,7,-1,"http://www.nba.com/games/20140402/BKNNYK/gameinfo.html","2014-04-02 00:00:00")).
 game(15,26,27,1,"http://www.nba.com/games/20140402/CLEORL/gameinfo.html","2014-04-02 00:00:00").
-neg(game(16,21,24,-1,"http://www.nba.com/games/20140402/CHAPHI/gameinfo.html","2014-04-02 00:00:00")).
-neg(game(17,5,17,-1,"http://www.nba.com/games/20140402/HOUTOR/gameinfo.html","2014-04-02 00:00:00")).
-neg(game(18,15,23,-1,"http://www.nba.com/games/20140402/BOSWAS/gameinfo.html","2014-04-02 00:00:00")).
+nega(game(16,21,24,-1,"http://www.nba.com/games/20140402/CHAPHI/gameinfo.html","2014-04-02 00:00:00")).
+nega(game(17,5,17,-1,"http://www.nba.com/games/20140402/HOUTOR/gameinfo.html","2014-04-02 00:00:00")).
+nega(game(18,15,23,-1,"http://www.nba.com/games/20140402/BOSWAS/gameinfo.html","2014-04-02 00:00:00")).
 game(19,16,22,1,"http://www.nba.com/games/20140402/CHIATL/gameinfo.html","2014-04-02 00:00:00").
 game(20,18,19,1,"http://www.nba.com/games/20140402/MILMIA/gameinfo.html","2014-04-02 00:00:00").
-neg(game(21,9,14,-1,"http://www.nba.com/games/20140402/MEMMIN/gameinfo.html","2014-04-02 00:00:00")).
-neg(game(22,3,28,-1,"http://www.nba.com/games/20140402/GSWSAS/gameinfo.html","2014-04-02 00:00:00")).
+nega(game(21,9,14,-1,"http://www.nba.com/games/20140402/MEMMIN/gameinfo.html","2014-04-02 00:00:00")).
+nega(game(22,3,28,-1,"http://www.nba.com/games/20140402/GSWSAS/gameinfo.html","2014-04-02 00:00:00")).
 game(23,10,12,1,"http://www.nba.com/games/20140402/NOPDEN/gameinfo.html","2014-04-02 00:00:00").
 game(24,13,29,1,"http://www.nba.com/games/20140402/LACPHX/gameinfo.html","2014-04-02 00:00:00").
-neg(game(25,2,11,-1,"http://www.nba.com/games/20140402/LALSAC/gameinfo.html","2014-04-02 00:00:00")).
-neg(game(26,28,30,-1,"http://www.nba.com/games/20140403/SASOKC/gameinfo.html","2014-04-03 00:00:00")).
+nega(game(25,2,11,-1,"http://www.nba.com/games/20140402/LALSAC/gameinfo.html","2014-04-02 00:00:00")).
+nega(game(26,28,30,-1,"http://www.nba.com/games/20140403/SASOKC/gameinfo.html","2014-04-03 00:00:00")).
 game(27,4,13,1,"http://www.nba.com/games/20140403/DALLAC/gameinfo.html","2014-04-03 00:00:00").
 game(28,9,10,1,"http://www.nba.com/games/20140404/DENMEM/gameinfo.html","2014-04-04 00:00:00").
 game(29,24,27,1,"http://www.nba.com/games/20140404/ORLCHA/gameinfo.html","2014-04-04 00:00:00").
