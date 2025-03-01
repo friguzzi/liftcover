@@ -618,7 +618,6 @@ compute_par_kg(M:R,FileStat,R1):-
 
 update_rules_rel(M,Rel,Par,R):-
   M:rules(Rel,R0),
-  flush_output,
   maplist(update_rule,R0,Par,R).
 
 parallel(M):-
@@ -641,7 +640,7 @@ rules_for_rel(M:Rules,Rel,RulesRel):-
 
 partition_rules(M,Rel):-
   M:rules(R),
-  findall(R1,(member(R1,R),R1=(tt(_,Rel,_): _ :- _)),RRel),
+  findall((tt(S,Rel,T): P :- Body),member((tt(S,Rel,T): P :- Body),R),RRel),
   assert(M:rules(Rel,RRel)).
 
 compute_statistics_kg(M,Rel,MI,MIN):-
@@ -1613,6 +1612,13 @@ write_rules_anyburl(R,File):-
   maplist(print_rule(S),R),
   close(S).
 
+print_rule(S, (H:P :- true) ):-!,
+  copy_term(H,H1),
+  triple_to_atom(H1,HA),
+  numbervars(HA,23,_),
+  Supp is round(1000000*P),
+  format(S,"1000000\t~w\t~w\t~w <= ~n",[Supp,P,HA]).
+
 print_rule(S, (H:P :- B) ):-
   copy_term((H,B),(H1,B1)),
   triple_to_atom(H1,HA),
@@ -1667,6 +1673,13 @@ write_clauses_kg([ClH|ClT],S):-
   write_clause_kg(S,ClH),
   writeln(S,'),'),
   write_clauses_kg(ClT,S).
+
+write_clause_kg(S,(H :- true)):-!,
+  copy_term(H,H1),
+  numbervars(H1,0,_),
+  write_head_kg(H1,S),
+  format(S,' :-',[]),
+  write_body_kg([],S).
 
 write_clause_kg(S,(H:-B)):-
   copy_term((H,B),(H1,B1)),
