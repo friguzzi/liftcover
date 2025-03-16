@@ -10,6 +10,9 @@
 %% let collapsible pdf bookmarks panel have high depth per default
 \PassOptionsToPackage{bookmarksdepth=5}{hyperref}
 
+\PassOptionsToPackage{booktabs}{sphinx}
+\PassOptionsToPackage{colorrows}{sphinx}
+
 \PassOptionsToPackage{warn}{textcomp}
 \usepackage[utf8]{inputenc}
 \ifdefined\DeclareUnicodeCharacter
@@ -60,7 +63,7 @@
 
 
 \title{LIFTCOVER Documentation}
-\date{Feb 15, 2024}
+\date{Mar 16, 2025}
 \release{1.0.0}
 \author{Fabrizio Riguzzi}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -595,7 +598,7 @@ If \sphinxcode{\sphinxupquote{List}} has \sphinxcode{\sphinxupquote{N}} elements
 To execute LIFTCOVER, prepare an input file as indicated above and call
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-?\PYGZhy{} induce\PYGZus{}lift\PYGZus{}par(+List\PYGZus{}of\PYGZus{}folds:list,\PYGZhy{}P:list).
+?\PYGZhy{} induce\PYGZus{}par\PYGZus{}lift(+List\PYGZus{}of\PYGZus{}folds:list,\PYGZhy{}P:list).
 \end{sphinxVerbatim}
 
 \sphinxAtStartPar
@@ -606,7 +609,7 @@ the input program with updated parameters.
 For example \sphinxhref{http://cplint.eu/e/lift/bongard.pl}{bongard.pl}, you can perform parameter learning on the \sphinxcode{\sphinxupquote{train}} fold with
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-?\PYGZhy{} induce\PYGZus{}lift\PYGZus{}par([train],P).
+?\PYGZhy{} induce\PYGZus{}par\PYGZus{}lift([train],P).
 \end{sphinxVerbatim}
 
 \sphinxAtStartPar
@@ -719,7 +722,7 @@ Then you can draw the curves using C3.js as follows
 For example, to test on fold \sphinxcode{\sphinxupquote{test}} the program learned on fold \sphinxcode{\sphinxupquote{train}} you can run the query
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-?\PYGZhy{} induce\PYGZus{}lift\PYGZus{}par([train],P),
+?\PYGZhy{} induce\PYGZus{}par\PYGZus{}lift([train],P),
 test\PYGZus{}lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 \end{sphinxVerbatim}
 

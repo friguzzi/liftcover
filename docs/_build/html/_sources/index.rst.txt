@@ -379,14 +379,14 @@ Parameter Learning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To execute LIFTCOVER, prepare an input file as indicated above and call ::
 
-	?- induce_lift_par(+List_of_folds:list,-P:list).
+	?- induce_par_lift(+List_of_folds:list,-P:list).
 
 where :code:`<list of folds>` is a list of the folds for training and :code:`P` will contain 
 the input program with updated parameters.
 
 For example `bongard.pl <http://cplint.eu/e/lift/bongard.pl>`__, you can perform parameter learning on the :code:`train` fold with ::
 
-	?- induce_lift_par([train],P).
+	?- induce_par_lift([train],P).
 
 The algorithm that is used for parameter learning is specified by 
 the parameter :code:`parameter_learning` that can be set to 
@@ -454,7 +454,7 @@ Then you can draw the curves using C3.js as follows ::
 
 For example, to test on fold :code:`test` the program learned on fold :code:`train` you can run the query ::
 
-	?- induce_lift_par([train],P),
+	?- induce_par_lift([train],P),
   	test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 
 Or you can test the input program on the fold :code:`test` with ::

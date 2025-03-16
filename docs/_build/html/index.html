@@ -1,27 +1,24 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>LIFTCOVER Manual &#8212; liftcover 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=f11ead97" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=8d563738"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
-    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -38,24 +35,24 @@
           <div class="body" role="main">
             
   <section id="liftcover-manual">
-<h1>LIFTCOVER Manual<a class="headerlink" href="#liftcover-manual" title="Permalink to this heading">¶</a></h1>
+<h1>LIFTCOVER Manual<a class="headerlink" href="#liftcover-manual" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
 <dl class="simple">
-<dt>LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind</dt><dd><p><span id="id1">[<a class="reference internal" href="#id7" title="Elisabetta Gentili, Alice Bizzarri, Damiano Azzolini, Riccardo Zese, and Fabrizio Riguzzi. Regularization in probabilistic inductive logic programming. In Elena Bellodi, Francesca Alessandra Lisi, and Riccardo Zese, editors, Inductive Logic Programming - ILP 2023, volume 14363 of Lecture Notes in Artificial Intelligence, 16-29. Cham, 2023. Springer Nature Switzerland. doi:10.1007/978-3-031-49299-0_2.">GBA+23</a>, <a class="reference internal" href="#id34" title="Arnaud Nguembang Fadja and Fabrizio Riguzzi. Lifted discriminative learning of probabilistic logic programs. Machine Learning, 108(7):1111-1135, 2019. doi:10.1007/s10994-018-5750-0.">NFR19</a>]</span>.</p>
+<dt>LIFTCOVER is a system for learning simple probabilistic logic programs with scalability in mind</dt><dd><p><span id="id1">[<a class="reference internal" href="#id7" title="Elisabetta Gentili, Alice Bizzarri, Damiano Azzolini, Riccardo Zese, and Fabrizio Riguzzi. Regularization in probabilistic inductive logic programming. In Elena Bellodi, Francesca Alessandra Lisi, and Riccardo Zese, editors, Inductive Logic Programming - ILP 2023, volume 14363 of Lecture Notes in Artificial Intelligence, 16–29. Cham, 2023. Springer Nature Switzerland. doi:10.1007/978-3-031-49299-0_2.">GBA+23</a>, <a class="reference internal" href="#id34" title="Arnaud Nguembang Fadja and Fabrizio Riguzzi. Lifted discriminative learning of probabilistic logic programs. Machine Learning, 108(7):1111–1135, 2019. doi:10.1007/s10994-018-5750-0.">NFR19</a>]</span>.</p>
 </dd>
 </dl>
 </section>
 <section id="predicate-reference">
-<h2>Predicate Reference<a class="headerlink" href="#predicate-reference" title="Permalink to this heading">¶</a></h2>
+<h2>Predicate Reference<a class="headerlink" href="#predicate-reference" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://friguzzi.github.io/liftcover/pldoc/liftcover.html">liftcover</a></p></li>
 </ul>
 </section>
 <section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h2>
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
 <p>LIFTCOVER is distributed as a <a class="reference external" href="http://www.swi-prolog.org/pack/list?p=liftcover">pack</a> of <a class="reference external" href="http://www.swi-prolog.org/">SWI-Prolog</a>.
 To install it, use</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ swipl
@@ -63,7 +60,7 @@ To install it, use</p>
 </pre></div>
 </div>
 <section id="requirements">
-<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading">¶</a></h3>
+<h3>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h3>
 <p>It uses the packs</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/friguzzi/lbfgs">lbfgs</a></p></li>
@@ -87,7 +84,7 @@ If they are not installed, the algorithms that use them do not work, but you can
 In this case, they need to be upgraded manually.</p>
 </section>
 <section id="example-of-use">
-<h3>Example of use<a class="headerlink" href="#example-of-use" title="Permalink to this heading">¶</a></h3>
+<h3>Example of use<a class="headerlink" href="#example-of-use" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd &lt;pack&gt;/liftcover/prolog/examples
 $ swipl
 ?- [muta].
@@ -96,7 +93,7 @@ $ swipl
 </div>
 </section>
 <section id="testing-the-installation">
-<h3>Testing the installation<a class="headerlink" href="#testing-the-installation" title="Permalink to this heading">¶</a></h3>
+<h3>Testing the installation<a class="headerlink" href="#testing-the-installation" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ swipl
 ?- [library(test_liftcover)].
 ?- test.
@@ -105,7 +102,7 @@ $ swipl
 </section>
 </section>
 <section id="syntax">
-<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this heading">¶</a></h2>
+<h2>Syntax<a class="headerlink" href="#syntax" title="Link to this heading">¶</a></h2>
 <p>LIFTCOVER learns <em>liftable probabilistic logic programs</em> a restricted version of Logic programs with annotated disjunctions LPADs (<span id="id2">[<a class="reference internal" href="#id24" title="J. Vennekens and S. Verbaeten. Logic programs with annotated disjunctions. Technical Report CW386, K. U. Leuven, 2003.">VV03</a>, <a class="reference internal" href="#id8" title="J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In International Conference on Logic Programming, volume 3131 of LNCS, 195-209. Springer, 2004.">VVB04</a>]</span>). A HPLP is a set of annotated clauses whose head contain a single atom annotated with a probability. For the rest, the usual syntax of Prolog is used.</p>
 <p>A clause in such a program has a single head with the <em>target predicate</em> (the predicate you want to learn)
 and a body composed of <em>input predicates</em> or predicates defined by deterministic clauses (typically facts).</p>
@@ -137,13 +134,13 @@ are input predicates.</p>
 </dl>
 </section>
 <section id="semantics">
-<h2>Semantics<a class="headerlink" href="#semantics" title="Permalink to this heading">¶</a></h2>
+<h2>Semantics<a class="headerlink" href="#semantics" title="Link to this heading">¶</a></h2>
 <p>The semantics of liftable PLP directly inherits the semantics of LPADs.</p>
 </section>
 <section id="learning">
-<h2>Learning<a class="headerlink" href="#learning" title="Permalink to this heading">¶</a></h2>
+<h2>Learning<a class="headerlink" href="#learning" title="Link to this heading">¶</a></h2>
 <section id="input">
-<h3>Input<a class="headerlink" href="#input" title="Permalink to this heading">¶</a></h3>
+<h3>Input<a class="headerlink" href="#input" title="Link to this heading">¶</a></h3>
 <p>To execute the learning algorithms, prepare a Prolog file divided in five parts</p>
 <ul class="simple">
 <li><p>preamble</p></li>
@@ -155,7 +152,7 @@ are input predicates.</p>
 <p>The preamble must come first, the order of the other parts can be changed.</p>
 <p>For example, consider the Bongard problems of <span id="id4">[<a class="reference internal" href="#id22" title="L. De Raedt and W. Van Laer. Inductive constraint logic. In Proceedings of the 6th Conference on Algorithmic Learning Theory (ALT 1995), volume 997 of LNAI, 80-94. Fukuoka, Japan, 1995. Springer.">DRVL95</a>]</span>. <a class="reference external" href="http://cplint.eu/e/lift/bongard.pl">bongard.pl</a> and <a class="reference external" href="http://cplint.eu/e/lift/bongardkeys.pl">bongardkeys.pl</a> represent a Bongard problem for LIFTCOVER.</p>
 <section id="preamble">
-<h4>Preamble<a class="headerlink" href="#preamble" title="Permalink to this heading">¶</a></h4>
+<h4>Preamble<a class="headerlink" href="#preamble" title="Link to this heading">¶</a></h4>
 <p>In the preamble, the LIFTCOVER library is loaded with (<a class="reference external" href="http://cplint.eu/e/lift/bongard.pl">bongard.pl</a>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="o">-</span> <span class="n">use_module</span><span class="p">(</span><span class="n">library</span><span class="p">(</span><span class="n">liftcover</span><span class="p">))</span><span class="o">.</span>
 </pre></div>
@@ -173,7 +170,7 @@ are input predicates.</p>
 <p>We will later see the list of available parameters.</p>
 </section>
 <section id="background-and-initial-hierarchical-program">
-<h4>Background and Initial hierarchical program<a class="headerlink" href="#background-and-initial-hierarchical-program" title="Permalink to this heading">¶</a></h4>
+<h4>Background and Initial hierarchical program<a class="headerlink" href="#background-and-initial-hierarchical-program" title="Link to this heading">¶</a></h4>
 <p>Now you can specify the background knowledge with a fact of the form</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bg</span><span class="p">(</span><span class="o">&lt;</span><span class="nb">list</span> <span class="n">of</span> <span class="n">terms</span> <span class="n">representing</span> <span class="n">clauses</span><span class="o">&gt;</span><span class="p">)</span><span class="o">.</span>
 </pre></div>
@@ -218,7 +215,7 @@ Remember to enclose each clause in parentheses because <code class="code docutil
 <p>The annotations of the head atoms of the initial program can be probabilities, as in the example above. In parameter learning, the learning procedure can start with the initial parameters in the program. In this case, it is up to the user to ensure that there are values between 0 and 1. In the case of structure learning, the initial program is not necessary.</p>
 </section>
 <section id="language-bias">
-<h4>Language Bias<a class="headerlink" href="#language-bias" title="Permalink to this heading">¶</a></h4>
+<h4>Language Bias<a class="headerlink" href="#language-bias" title="Link to this heading">¶</a></h4>
 <p>The language bias part contains the declarations of the input and output predicates.
 The output predicate is declared as</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="p">(</span><span class="o">&lt;</span><span class="n">predicate</span><span class="o">&gt;/&lt;</span><span class="n">arity</span><span class="o">&gt;</span><span class="p">)</span><span class="o">.</span>
@@ -297,7 +294,7 @@ For example</p>
 <p>state that <code class="code docutils literal notranslate"><span class="pre">triangle/1</span></code> can appear in the body of clauses for <code class="code docutils literal notranslate"><span class="pre">pos/0</span></code>.</p>
 </section>
 <section id="example-interpretations">
-<h4>Example Interpretations<a class="headerlink" href="#example-interpretations" title="Permalink to this heading">¶</a></h4>
+<h4>Example Interpretations<a class="headerlink" href="#example-interpretations" title="Link to this heading">¶</a></h4>
 <p>The last part of the file contains the data.
 You can specify data with two modalities: models and keys.
 In the models case, you specify an example model (or interpretation or mega-example) as a list of Prolog facts initiated by <code class="code docutils literal notranslate"><span class="pre">begin(model(&lt;name&gt;)).</span></code> and terminated by <code class="code docutils literal notranslate"><span class="pre">end(model(&lt;name&gt;)).</span></code> as in</p>
@@ -374,17 +371,17 @@ If <code class="code docutils literal notranslate"><span class="pre">List</span>
 </section>
 </section>
 <section id="commands">
-<h3>Commands<a class="headerlink" href="#commands" title="Permalink to this heading">¶</a></h3>
+<h3>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h3>
 <section id="parameter-learning">
-<h4>Parameter Learning<a class="headerlink" href="#parameter-learning" title="Permalink to this heading">¶</a></h4>
+<h4>Parameter Learning<a class="headerlink" href="#parameter-learning" title="Link to this heading">¶</a></h4>
 <p>To execute LIFTCOVER, prepare an input file as indicated above and call</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- induce_lift_par(+List_of_folds:list,-P:list).
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- induce_par_lift(+List_of_folds:list,-P:list).
 </pre></div>
 </div>
 <p>where <code class="code docutils literal notranslate"><span class="pre">&lt;list</span> <span class="pre">of</span> <span class="pre">folds&gt;</span></code> is a list of the folds for training and <code class="code docutils literal notranslate"><span class="pre">P</span></code> will contain
 the input program with updated parameters.</p>
 <p>For example <a class="reference external" href="http://cplint.eu/e/lift/bongard.pl">bongard.pl</a>, you can perform parameter learning on the <code class="code docutils literal notranslate"><span class="pre">train</span></code> fold with</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- induce_lift_par([train],P).
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- induce_par_lift([train],P).
 </pre></div>
 </div>
 <p>The algorithm that is used for parameter learning is specified by
@@ -398,7 +395,7 @@ the parameter <code class="code docutils literal notranslate"><span class="pre">
 </ul>
 </section>
 <section id="structure-learning">
-<h4>Structure Learning<a class="headerlink" href="#structure-learning" title="Permalink to this heading">¶</a></h4>
+<h4>Structure Learning<a class="headerlink" href="#structure-learning" title="Link to this heading">¶</a></h4>
 <p>To execute LIFTCOVER, prepare an input file in the editor panel as indicated above and call</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- induce_lift(+List_of_folds:list,-P:list).
 </pre></div>
@@ -411,7 +408,7 @@ the parameter <code class="code docutils literal notranslate"><span class="pre">
 <p>A program can also be tested on a test set with <code class="code docutils literal notranslate"><span class="pre">test_lift/7</span></code>  as described below.</p>
 </section>
 <section id="helper-predicates">
-<h4>Helper Predicates<a class="headerlink" href="#helper-predicates" title="Permalink to this heading">¶</a></h4>
+<h4>Helper Predicates<a class="headerlink" href="#helper-predicates" title="Link to this heading">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sort_rules</span><span class="p">(</span><span class="o">+</span><span class="n">RulesIn</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">,</span><span class="o">-</span><span class="n">RulesOut</span><span class="p">:</span><span class="n">list_of_rules</span><span class="p">)</span> <span class="ow">is</span> <span class="n">det</span>
 </pre></div>
 </div>
@@ -430,7 +427,7 @@ the parameter <code class="code docutils literal notranslate"><span class="pre">
 <p>The predicate removes the rules with a probability of 0.0.</p>
 </section>
 <section id="testing">
-<h4>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h4>
+<h4>Testing<a class="headerlink" href="#testing" title="Link to this heading">¶</a></h4>
 <p>A program can also be tested on a test set in LIFTCOVER with</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">test_lift</span><span class="p">(</span><span class="o">+</span><span class="n">Program</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span><span class="o">+</span><span class="n">List_of_folds</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span><span class="o">-</span><span class="n">LL</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span><span class="o">-</span><span class="n">AUCROC</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span><span class="o">-</span><span class="n">ROC</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span><span class="o">-</span><span class="n">AUCPR</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span><span class="o">-</span><span class="n">PR</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span> <span class="ow">is</span> <span class="n">det</span>
 </pre></div>
@@ -443,7 +440,7 @@ the parameter <code class="code docutils literal notranslate"><span class="pre">
 </div>
 <p>(from pack <a class="reference external" href="http://www.swi-prolog.org/pack/list?p=auc">auc.pl</a>) that takes as input a list <code class="code docutils literal notranslate"><span class="pre">ExampleList</span></code> of pairs probability-literal.</p>
 <p>For example, to test on fold <code class="code docutils literal notranslate"><span class="pre">test</span></code> the program learned on fold <code class="code docutils literal notranslate"><span class="pre">train</span></code> you can run the query</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- induce_lift_par([train],P),
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?- induce_par_lift([train],P),
 test_lift(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 </pre></div>
 </div>
@@ -506,7 +503,7 @@ given progarm for <code class="code docutils literal notranslate"><span class="p
 </section>
 </section>
 <section id="hyper-parameters-for-learning">
-<h3>Hyper-parameters for Learning<a class="headerlink" href="#hyper-parameters-for-learning" title="Permalink to this heading">¶</a></h3>
+<h3>Hyper-parameters for Learning<a class="headerlink" href="#hyper-parameters-for-learning" title="Link to this heading">¶</a></h3>
 <p>Hyper-parameters are set with commands of the form</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="o">-</span> <span class="n">set_lift</span><span class="p">(</span><span class="o">&lt;</span><span class="n">parameter</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="p">)</span><span class="o">.</span>
 </pre></div>
@@ -555,42 +552,49 @@ given progarm for <code class="code docutils literal notranslate"><span class="p
 </section>
 </section>
 <section id="example-files">
-<h2>Example Files<a class="headerlink" href="#example-files" title="Permalink to this heading">¶</a></h2>
+<h2>Example Files<a class="headerlink" href="#example-files" title="Link to this heading">¶</a></h2>
 <p>The <code class="code docutils literal notranslate"><span class="pre">pack/liftcover/prolog/examples</span></code> folder in SWI-Prolog home contains some example programs.
 The <code class="code docutils literal notranslate"><span class="pre">pack/liftcover/docs</span></code> folder contains this manual in latex, html and pdf.</p>
 </section>
 <section id="manual-in-pdf">
-<h2>Manual in PDF<a class="headerlink" href="#manual-in-pdf" title="Permalink to this heading">¶</a></h2>
+<h2>Manual in PDF<a class="headerlink" href="#manual-in-pdf" title="Link to this heading">¶</a></h2>
 <p>A PDF version of the manual is available at <a class="reference external" href="https://friguzzi.github.io/liftcover/_build/latex/liftcover.pdf">https://friguzzi.github.io/liftcover/_build/latex/liftcover.pdf</a>.</p>
 </section>
 <section id="license">
-<h2>License<a class="headerlink" href="#license" title="Permalink to this heading">¶</a></h2>
+<h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
 <p>phil follows the MIT License that you can find in phil root folder.
 The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
 <div class="docutils container" id="id6">
-<dl class="citation">
-<dt class="label" id="id23"><span class="brackets"><a class="fn-backref" href="#id5">Coh95</a></span></dt>
-<dd><p>William W. Cohen. Pac-learning non-recursive prolog clauses. <em>Artif. Intell.</em>, 79(1):1–38, 1995.</p>
-</dd>
-<dt class="label" id="id22"><span class="brackets"><a class="fn-backref" href="#id4">DRVL95</a></span></dt>
-<dd><p>L. De Raedt and W. Van Laer. Inductive constraint logic. In <em>Proceedings of the 6th Conference on Algorithmic Learning Theory (ALT 1995)</em>, volume 997 of LNAI, 80–94. Fukuoka, Japan, 1995. Springer.</p>
-</dd>
-<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id1">GBA+23</a></span></dt>
-<dd><p>Elisabetta Gentili, Alice Bizzarri, Damiano Azzolini, Riccardo Zese, and Fabrizio Riguzzi. Regularization in probabilistic inductive logic programming. In Elena Bellodi, Francesca Alessandra Lisi, and Riccardo Zese, editors, <em>Inductive Logic Programming - ILP 2023</em>, volume 14363 of Lecture Notes in Artificial Intelligence, 16–29. Cham, 2023. Springer Nature Switzerland. <a class="reference external" href="https://doi.org/10.1007/978-3-031-49299-0_2">doi:10.1007/978-3-031-49299-0_2</a>.</p>
-</dd>
-<dt class="label" id="id29"><span class="brackets"><a class="fn-backref" href="#id3">KD05</a></span></dt>
-<dd><p>Stanley Kok and Pedro Domingos. Learning the structure of markov logic networks. In <em>Proceedings of the 22nd international conference on Machine learning</em>, 441–448. 2005.</p>
-</dd>
-<dt class="label" id="id34"><span class="brackets"><a class="fn-backref" href="#id1">NFR19</a></span></dt>
-<dd><p>Arnaud Nguembang Fadja and Fabrizio Riguzzi. Lifted discriminative learning of probabilistic logic programs. <em>Machine Learning</em>, 108(7):1111–1135, 2019. <a class="reference external" href="https://doi.org/10.1007/s10994-018-5750-0">doi:10.1007/s10994-018-5750-0</a>.</p>
-</dd>
-<dt class="label" id="id24"><span class="brackets"><a class="fn-backref" href="#id2">VV03</a></span></dt>
-<dd><p>J. Vennekens and S. Verbaeten. Logic programs with annotated disjunctions. Technical Report CW386, K. U. Leuven, 2003.</p>
-</dd>
-<dt class="label" id="id8"><span class="brackets"><a class="fn-backref" href="#id2">VVB04</a></span></dt>
-<dd><p>J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In <em>International Conference on Logic Programming</em>, volume 3131 of LNCS, 195–209. Springer, 2004.</p>
-</dd>
-</dl>
+<div role="list" class="citation-list">
+<div class="citation" id="id23" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">Coh95</a><span class="fn-bracket">]</span></span>
+<p>William W. Cohen. Pac-learning non-recursive prolog clauses. <em>Artif. Intell.</em>, 79(1):1–38, 1995.</p>
+</div>
+<div class="citation" id="id22" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">DRVL95</a><span class="fn-bracket">]</span></span>
+<p>L. De Raedt and W. Van Laer. Inductive constraint logic. In <em>Proceedings of the 6th Conference on Algorithmic Learning Theory (ALT 1995)</em>, volume 997 of LNAI, 80–94. Fukuoka, Japan, 1995. Springer.</p>
+</div>
+<div class="citation" id="id7" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">GBA+23</a><span class="fn-bracket">]</span></span>
+<p>Elisabetta Gentili, Alice Bizzarri, Damiano Azzolini, Riccardo Zese, and Fabrizio Riguzzi. Regularization in probabilistic inductive logic programming. In Elena Bellodi, Francesca Alessandra Lisi, and Riccardo Zese, editors, <em>Inductive Logic Programming - ILP 2023</em>, volume 14363 of Lecture Notes in Artificial Intelligence, 16–29. Cham, 2023. Springer Nature Switzerland. <a class="reference external" href="https://doi.org/10.1007/978-3-031-49299-0_2">doi:10.1007/978-3-031-49299-0_2</a>.</p>
+</div>
+<div class="citation" id="id29" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">KD05</a><span class="fn-bracket">]</span></span>
+<p>Stanley Kok and Pedro Domingos. Learning the structure of markov logic networks. In <em>Proceedings of the 22nd international conference on Machine learning</em>, 441–448. 2005.</p>
+</div>
+<div class="citation" id="id34" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">NFR19</a><span class="fn-bracket">]</span></span>
+<p>Arnaud Nguembang Fadja and Fabrizio Riguzzi. Lifted discriminative learning of probabilistic logic programs. <em>Machine Learning</em>, 108(7):1111–1135, 2019. <a class="reference external" href="https://doi.org/10.1007/s10994-018-5750-0">doi:10.1007/s10994-018-5750-0</a>.</p>
+</div>
+<div class="citation" id="id24" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">VV03</a><span class="fn-bracket">]</span></span>
+<p>J. Vennekens and S. Verbaeten. Logic programs with annotated disjunctions. Technical Report CW386, K. U. Leuven, 2003.</p>
+</div>
+<div class="citation" id="id8" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">VVB04</a><span class="fn-bracket">]</span></span>
+<p>J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In <em>International Conference on Logic Programming</em>, volume 3131 of LNCS, 195–209. Springer, 2004.</p>
+</div>
+</div>
 </div>
 </section>
 </section>
@@ -600,7 +604,7 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="#">Table of Contents</a></h3>
@@ -646,7 +650,7 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -657,8 +661,8 @@ The copyright is by Fabrizio Riguzzi and Arnaud Nguembang Fadja.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2023, Riguzzi Fabrizio, Arnaud Nguembang Fadja.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    &#169; Copyright 2023, Riguzzi Fabrizio, Arnaud Nguembang Fadja.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>
 </html>
